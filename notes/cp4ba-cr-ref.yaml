@@ -12,9 +12,8 @@
 ##  patterns: foundation,content,workflow
 ##  optional components: cmis
 ## TBM
-##  - set admin user/group (cpadmin / cpadmins)
-##  - parametrize section ldap_configuration
 ##  - parametrize section application_engine_configuration
+##  - set admin user/group (cpadmin / cpadmins)
 ##  - 
 ##  - 
 ##  - 
