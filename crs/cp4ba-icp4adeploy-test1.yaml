@@ -22,16 +22,16 @@
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
 metadata:
-  name: ${CP4BA_INST_CR_NAME}
-  namespace: ${CP4BA_INST_NAMESPACE}
+  name: icp4adeploy
+  namespace: cp4ba-test1
   labels:
     app.kubernetes.io/instance: ibm-dba
     app.kubernetes.io/managed-by: ibm-dba
     app.kubernetes.io/name: ibm-dba
-    release: ${CP4BA_INST_RELEASE}
+    release: 23.0.2
 spec:
 
-  appVersion: ${CP4BA_INST_APPVER}
+  appVersion: 23.0.2
   ibm_license: accept
 
   shared_configuration:
@@ -49,10 +49,10 @@ spec:
     sc_ingress_enable: false
     trusted_certificate_list: []
     storage_configuration:
-      sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-      sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-      sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-      sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
+      sc_slow_file_storage_classname: "managed-nfs-storage"
+      sc_medium_file_storage_classname: "managed-nfs-storage"
+      sc_fast_file_storage_classname: "managed-nfs-storage"
+      sc_block_storage_classname: "thin-csi"
     sc_iam:
       default_admin_username: "cpadmin"
     enable_fips: false
@@ -74,15 +74,15 @@ spec:
 
   ldap_configuration:
     lc_selected_ldap_type: "Custom"
-    lc_ldap_server: "${CP4BA_INST_LDAP_HOST}"
-    lc_ldap_port: "${CP4BA_INST_LDAP_PORT}"
-    lc_bind_secret: "${CP4BA_INST_LDAP_SECRET}"
-    lc_ldap_base_dn: "${CP4BA_INST_LDAP_BASE_DOMAIN}"
+    lc_ldap_server: ""
+    lc_ldap_port: ""
+    lc_bind_secret: "ldap-bind-test1"
+    lc_ldap_base_dn: ""
     lc_ldap_ssl_enabled: false
     lc_ldap_ssl_secret_name: ""
     lc_ldap_user_name_attribute: "*:cn"
     lc_ldap_user_display_name_attr: "cn"
-    lc_ldap_group_base_dn: "${CP4BA_INST_LDAP_BASE_DOMAIN}"
+    lc_ldap_group_base_dn: ""
     lc_ldap_group_name_attribute: "*:cn"
     lc_ldap_group_display_name_attr: "cn"
     lc_ldap_group_membership_search_filter: "(&(cn=%v)(objectclass=groupOfNames))"
@@ -100,9 +100,9 @@ spec:
     dc_icn_datasource:
       dc_database_type: "postgresql"
       dc_common_icn_datasource_name: "ECMClientDS"
-      database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
-      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      database_name: "${CP4BA_INST_DB_FAMILY_PREFIX}icn"
+      database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+      database_port: "5432"
+      database_name: "test1icn"
       database_ssl_secret_name: ""
       dc_hadr_validation_timeout: 15
       dc_hadr_standby_servername: ""
@@ -114,9 +114,9 @@ spec:
       dc_database_type: "postgresql"
       dc_common_gcd_datasource_name: "FNGCDDS"
       dc_common_gcd_xa_datasource_name: "FNGCDDSXA"
-      database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
-      database_name: "${CP4BA_INST_DB_FAMILY_PREFIX}gcd"
-      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+      database_name: "test1gcd"
+      database_port: "5432"
       database_ssl_secret_name: ""
       dc_hadr_validation_timeout: 15
       dc_hadr_standby_servername: ""
@@ -129,9 +129,9 @@ spec:
         dc_os_label: ""
         dc_common_os_datasource_name: "FNOS1DS"
         dc_common_os_xa_datasource_name: "FNOS1DSXA"
-        database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
-        database_name: "${CP4BA_INST_DB_FAMILY_PREFIX}os1"
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+        database_name: "test1os1"
+        database_port: "5432"
         database_ssl_secret_name: ""
         dc_hadr_validation_timeout: 15
         dc_hadr_standby_servername: ""
@@ -143,9 +143,9 @@ spec:
         dc_os_label: ""
         dc_common_os_datasource_name: "BAWINS1DOCS"
         dc_common_os_xa_datasource_name: "BAWINS1DOCSXA"
-        database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
-        database_name: "${CP4BA_INST_DB_FAMILY_PREFIX}bawdocs"
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+        database_name: "test1bawdocs"
+        database_port: "5432"
         database_ssl_secret_name: ""
         dc_hadr_validation_timeout: 15
         dc_hadr_standby_servername: ""
@@ -157,9 +157,9 @@ spec:
         dc_os_label: ""
         dc_common_os_datasource_name: "BAWINS1DOS"
         dc_common_os_xa_datasource_name: "BAWINS1DOSXA"
-        database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
-        database_name: "${CP4BA_INST_DB_FAMILY_PREFIX}bawdos"
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+        database_name: "test1bawdos"
+        database_port: "5432"
         database_ssl_secret_name: ""
         dc_oracle_os_jdbc_url: ""
         dc_hadr_validation_timeout: 15
@@ -172,9 +172,9 @@ spec:
         dc_os_label: ""
         dc_common_os_datasource_name: "BAWINS1TOS"
         dc_common_os_xa_datasource_name: "BAWINS1TOSXA"
-        database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
-        database_name: "${CP4BA_INST_DB_FAMILY_PREFIX}bawtos"
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+        database_name: "test1bawtos"
+        database_port: "5432"
         database_ssl_secret_name: ""
         dc_hadr_validation_timeout: 15
         dc_hadr_standby_servername: ""
@@ -183,13 +183,13 @@ spec:
         dc_hadr_max_retries_for_client_reroute: 3
 
   application_engine_configuration:
-    - name: ${CP4BA_INST_AE_1_NAME} 
-      admin_secret_name: "${CP4BA_INST_AE_1_AD_SECRET_NAME}"
-      admin_user: "${CP4BA_INST_AE_1_ADMIN_USER}"
+    - name: workspace1 
+      admin_secret_name: "icp4adeploy-workspace1-aae-app-engine-admin-secret"
+      admin_user: "cp4admin"
       database:
-        host: "${CP4BA_INST_AE_1_DB_HOST}"
-        port: "${CP4BA_INST_AE_1_DB_PORT}"      
-        name: "${CP4BA_INST_AE_1_DB_NAME}"
+        host: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+        port: "5432"      
+        name: "test1_aedb_1"
         type: postgresql
         enable_ssl: false
         db_cert_secret_name: ""
@@ -289,17 +289,17 @@ spec:
 
   # IBM Business Automation Workflow configuration
   baw_configuration:
-    - name: ${CP4BA_INST_BAW_1_NAME} 
+    - name: baw1 
       capabilities: "workflow"
       admin_user: "cpadmin"
       database:
         enable_ssl: false
         db_cert_secret_name: ""
         type: "postgresql"
-        server_name: "${CP4BA_INST_BAW_1_DB_HOST}"
-        port: "${CP4BA_INST_BAW_1_DB_PORT}"
-        database_name: "${CP4BA_INST_BAW_1_DB_NAME}"
-        secret_name: "${CP4BA_INST_BAW_1_DB_SECRET}"
+        server_name: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+        port: "5432"
+        database_name: "test1_baw_1"
+        secret_name: "test1-baw1-server-db-secret"
         use_custom_jdbc_drivers: false
         hadr:
           standbydb_host: ""
