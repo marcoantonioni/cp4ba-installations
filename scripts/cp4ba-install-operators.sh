@@ -62,6 +62,7 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
       echo "Ready to run 'cp4a-clusteradmin-setup.sh' script for namespace '${CP4BA_INST_NAMESPACE}' (save the name, the script will ask for it)"
       _ACT_DIR=$(pwd)
       cd ${_SCRIPTS}
+      export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
       /bin/bash ./cp4a-clusteradmin-setup.sh
       cd ${_ACT_DIR}
       echo "Ready to deploy ICP4ACluster CR in namespace '${CP4BA_INST_NAMESPACE}'"
