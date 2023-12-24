@@ -43,6 +43,11 @@ time ./cp4ba-install-operators.sh -c ../configs/env1.properties -s ${caseManager
 # duration: +/- ?? minutes
 time ./cp4ba-deploy-env.sh -c ../configs/env1.properties -s ../configs/db-statements.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties
 
+!!! completare unico script per installazione completa, verifica degli errori su avvio sh
+caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+time ./cp4ba-one-shot-installation.sh -c ../configs/env1.properties -s ../configs/db-statements.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+
+
 #source ../configs/_cfg-production-ldap-domain.properties
 #source ../configs/_cfg-production-idp.properties
 #source ../configs/env1.properties
@@ -80,3 +85,6 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/19.0.x?topic=piban-creating-volumes-folders-deployment-kubernetes
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scripts-creating-required-databases-in-postgresql
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-runtime-workstream-services
+
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployments-installing-cp4ba-process-federation-server-production-deployment
+

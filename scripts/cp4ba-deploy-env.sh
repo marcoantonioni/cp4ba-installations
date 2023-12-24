@@ -28,24 +28,29 @@ done
 
 if [[ -z "${_CFG}" ]] || [[ -z "${_STATEMENTS}" ]] || [[ -z "${_LDAP}" ]] || [[ -z "${_IDP}" ]]; then
   echo "usage: $_me -c path-of-config-file -s sql-statements-file -l ldap-config-file -i idp-config-file"
-  exit
+  exit 1
 fi
 
 if [[ ! -f "${_STATEMENTS}" ]]; then
   echo "SQL Statements file not found: "${_STATEMENTS}
+  exit 1
 fi
 
 if [[ ! -f "${_LDAP}" ]]; then
   echo "LDAP configuration file not found: "${_LDAP}
+  exit 1
 fi
 
 if [[ ! -f "${_IDP}" ]]; then
   echo "IDP configuration file not found: "${_IDP}
+  exit 1
 fi
 
 if [[ ! -f "${_CFG}" ]]; then
   echo "Configuration file not found: "${_CFG}
+  exit 1
 fi
+
 source ${_LDAP}
 source ${_IDP}
 source ${_CFG}
@@ -59,6 +64,9 @@ deployEnvironment () {
 ./cp4ba-create-secrets.sh -c ${_CFG} -s
 envsubst < ../notes/cp4ba-cr-ref.yaml > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 ./cp4ba-create-pvc.sh -c ${_CFG}
+
+echo -e "#==========================================================="
+echo -e "${_CLR_GREEN}Deploying ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 oc apply -n ${CP4BA_INST_NAMESPACE} -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 
 ./cp4ba-create-secrets.sh -c ${_CFG} -w
@@ -88,4 +96,4 @@ deployEnvironment
 waitDeploymentReadiness
 echo ""
 echo -e "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
-
+exit 0

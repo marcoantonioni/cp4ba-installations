@@ -56,6 +56,7 @@ EOF
 
 oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_NAMESPACE}
 
+_OK=false
 if [[ ! -z "${_SCRIPTS}" ]]; then
   if [[ -d "${_SCRIPTS}" ]]; then
     if [[ -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
@@ -66,6 +67,13 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
       /bin/bash ./cp4a-clusteradmin-setup.sh
       cd ${_ACT_DIR}
       echo "Ready to deploy ICP4ACluster CR in namespace '${CP4BA_INST_NAMESPACE}'"
+      _OK=true
     fi
   fi
 fi
+if [[ "${_OK}" = "false" ]]; then
+  echo -e ">>> \x1b[5mWARNING\x1b[25m <<<"
+  echo "CP4BA Operators not installed."
+  exit 1
+fi
+exit 0
