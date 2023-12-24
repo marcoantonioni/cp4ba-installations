@@ -1,0 +1,152 @@
+
+#---------------------------------------------------------
+# database for IBM Business Automation Workflow
+
+-- create user bawadmin/bawadmin
+-- CREATE ROLE bawadmin PASSWORD 'bawadmin_password' CREATEDB CREATEROLE INHERIT LOGIN;
+
+-- test1_baw_1
+CREATE DATABASE test1_baw_1 OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1_baw_1 to postgres;
+\c test1_baw_1;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+
+#---------------------------------------------------------
+# ICN Navigator
+
+-- test1icn
+CREATE DATABASE test1icn OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1icn to postgres;
+\c test1icn;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+#---------------------------------------------------------
+-- test1gcd
+
+CREATE DATABASE test1gcd OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1gcd to postgres;
+\c test1gcd;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+#---------------------------------------------------------
+-- test1os1
+
+CREATE DATABASE test1os1 OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1os1 to postgres;
+\c test1os1;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+#---------------------------------------------------------
+-- test1bawdocs
+
+CREATE DATABASE test1bawdocs OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1bawdocs to postgres;
+\c test1bawdocs;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+
+#---------------------------------------------------------
+-- test1bawdos
+
+CREATE DATABASE test1bawdos OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1bawdos to postgres;
+\c test1bawdos;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+#---------------------------------------------------------
+-- test1bawtos
+
+CREATE DATABASE test1bawtos OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1bawtos to postgres;
+\c test1bawtos;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+#---------------------------------------------------------
+-- test1_aedb_1
+
+CREATE DATABASE test1_aedb_1 OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1_aedb_1 to postgres;
+\c test1_aedb_1;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+
+#==========================================================
+
+\c test1_aedb_1
+\dn+
+\dt+ dbasb.*
+
+\c test1_baw_1
+\dn+
+
+\c 
+\dn+
+\dt+ .*
+
+#OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+# in pod postgres
+
+oc rsh -c='postgres' my-postgres-for-cp4ba-1 mkdir -p /run/setupdb
+oc cp ../configs/db-statements.sql my-postgres-for-cp4ba-1:/run/setupdb/ -c='postgres'
+oc rsh -c='postgres' my-postgres-for-cp4ba-1 ls -al /run/setupdb
+oc rsh -c='postgres' my-postgres-for-cp4ba-1 psql -U postgres -f /run/setupdb/db-statements.sql
+
+CREATE DATABASE test1_aedb_1 OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1_aedb_1 to postgres;
+\c test1_aedb_1;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+CREATE DATABASE test1_baw_1 OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1_baw_1 to postgres;
+\c test1_baw_1;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+CREATE DATABASE test1icn OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1icn to postgres;
+\c test1icn;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+
+
+CREATE DATABASE test1gcd OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1gcd to postgres;
+\c test1gcd;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+CREATE DATABASE test1os1 OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1os1 to postgres;
+\c test1os1;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+CREATE DATABASE test1bawdocs OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1bawdocs to postgres;
+\c test1bawdocs;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+CREATE DATABASE test1bawdos OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1bawdos to postgres;
+\c test1bawdos;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+
+CREATE DATABASE test1bawtos OWNER postgres ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE test1bawtos to postgres;
+\c test1bawtos;
+CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA postgres to postgres;
+

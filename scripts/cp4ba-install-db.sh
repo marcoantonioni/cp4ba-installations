@@ -1,7 +1,31 @@
+#!/bin/bash
 
-# https://cloudnative-pg.io/documentation/1.19/bootstrap/
+_me=$(basename "$0")
 
-source ../configs/env1.properties
+_CFG=""
+
+#--------------------------------------------------------
+_CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
+_CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
+_CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
+_CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
+_CLR_NC="\033[0m"
+
+#--------------------------------------------------------
+# read command line params
+while getopts c:s: flag
+do
+    case "${flag}" in
+        c) _CFG=${OPTARG};;
+    esac
+done
+
+if [[ -z "${_CFG}" ]]; then
+  echo "usage: $_me -c path-of-config-file"
+  exit
+fi
+
+source ${_CFG}
 
 cat <<EOF | oc create -f -
 apiVersion: postgresql.k8s.enterprisedb.io/v1
@@ -13,15 +37,13 @@ spec:
   logLevel: info
   startDelay: 30
   stopDelay: 30
-  imagePullSecrets:
-    - name: ibm-entitlement-key
   resources:
     limits:
-      cpu: '2'
-      memory: 3Gi
+      cpu: "${CP4BA_INST_DB_LIMITS_CPU}"
+      memory: "${CP4BA_INST_DB_LIMITS_MEMORY}"
     requests:
-      cpu: '1'
-      memory: 2Gi
+      cpu: "${CP4BA_INST_DB_REQS_CPU}"
+      memory: "${CP4BA_INST_DB_REQS_MEMORY}"
   imageName: >-
     icr.io/cpopen/edb/postgresql:13.10-4.14.0@sha256:0064d1e77e2f7964d562c5538f0cb3a63058d55e6ff998eb361c03e0ef7a96dd
   enableSuperuserAccess: true
@@ -67,9 +89,14 @@ spec:
   switchoverDelay: 40000000
   storage:
     resizeInUseVolumes: true
-    size: 30Gi
+    size: "${CP4BA_INST_DB_STORAGE_SIZE}"
     storageClass: ${CP4BA_INST_SC_FILE}
   primaryUpdateStrategy: unsupervised
   instances: 1
 EOF
 
+if [[ "${CP4BA_INST_SUPPORT_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
+  if [ $(oc get -n ${CP4BA_INST_SUPPORT_NAMESPACE} csv --no-headers | grep "cloud-native-postgresql.v" | wc -l) -lt 1 ]; then
+    echo -e "${_CLR_GREEN}Remember to install 'EDB Postgres for Kubernetes' operator in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
+  fi
+fi
