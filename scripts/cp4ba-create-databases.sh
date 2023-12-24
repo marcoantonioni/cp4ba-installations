@@ -70,12 +70,14 @@ createDatabases () {
     done
   fi
 
-  if [[ ! -z "${_USER_NAME}" ]]; then
-    oc rsh -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 mkdir -p /run/setupdb
-    oc cp ${_STATEMENTS} ${CP4BA_INST_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
-    oc rsh -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql
+  if [[ ! -z "${_STATEMENTS}" ]]; then
+    oc wait pod -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_CR_NAME}-1 --for condition=Ready --timeout=90s
+    echo -e "${_CLR_GREEN}Load and execute sql statements in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
+    oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 mkdir -p /run/setupdb
+    oc cp ${_STATEMENTS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${CP4BA_INST_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
+    oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql
   fi
-  if [[ $_FOUND = 0 ]]; then
+  if [[ "$_FOUND" = "0" ]]; then
     echo ""
     echo -e ">>> \x1b[5mWARNING\x1b[25m <<<"
     echo "Rerun this script after db '${CP4BA_INST_DB_CR_NAME}' setup."

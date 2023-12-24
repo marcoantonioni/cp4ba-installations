@@ -64,26 +64,28 @@ oc apply -n ${CP4BA_INST_NAMESPACE} -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4B
 ./cp4ba-create-secrets.sh -c ${_CFG} -w
 ./cp4ba-create-databases.sh -c ${_CFG} -s ${_STATEMENTS} -w
 
+}
 
+waitDeploymentReadiness () {
+  _seconds=0
+  while [ true ]; 
+  do   
+    _NUM=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | wc -l)
+    if [[ $_NUM -eq 1 ]]; then
+      echo ""     
+      oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o yaml
+      break;   
+    fi;   
+    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' ready and config map '${_CLR_YELLOW}access-info${_CLR_GREEN}' $_seconds${_CLR_NC}\033[0K\r"
+    ((_seconds=_seconds+1))
+    sleep 1
+  done
 }
 
 echo -e "#==========================================================="
 echo -e "${_CLR_GREEN}Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 deployEnvironment
-
-_seconds=0
-while [ true ]; 
-do   
-  _NUM=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | wc -l)
-  if [[ $_NUM -eq 1 ]]; then
-    echo ""     
-    oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o yaml
-    break;   
-  fi;   
-  echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' ready and config map '${_CLR_YELLOW}access-info${_CLR_GREEN}' $_seconds${_CLR_NC}\033[0K\r"
-  ((_seconds=_seconds+1))
-  sleep 1
-done
+waitDeploymentReadiness
 echo ""
 echo -e "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
 
