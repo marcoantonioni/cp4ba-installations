@@ -77,9 +77,8 @@ if [[ $? -eq 0 ]]; then
   if [[ $? -eq 0 ]]; then
     _OK=1
   fi
-else
 fi
-if [[ "${_OK}" = "0" ]]
+if [[ "${_OK}" = "0" ]]; then
   echo -e "${_CLR_RED}Installation error, environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_RED}' not installed !!!${_CLR_NC}"
   echo "Verify the configuration and/or run parameters."
   echo "If the installation was started and subsequently interrupted it is recommended to remove the entire namespace"
