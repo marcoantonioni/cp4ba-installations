@@ -301,7 +301,7 @@ spec:
         database_name: "${CP4BA_INST_BAW_1_DB_NAME}"
         secret_name: "${CP4BA_INST_BAW_1_DB_SECRET}"
         use_custom_jdbc_drivers: false
-        cm_max_pool_size: 200
+        cm_max_pool_size: ${CP4BA_INST_BAW_1_MAX_POOL_SIZE}
       content_integration:
         domain_name: "P8DOMAIN"
         object_store_name: "BAWINS1DOCS"

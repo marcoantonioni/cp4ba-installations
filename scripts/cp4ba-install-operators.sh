@@ -39,11 +39,26 @@ export CP4BA_AUTO_FIPS_CHECK=No
 export CP4BA_AUTO_PRIVATE_CATALOG=No
 export CP4BA_AUTO_DEPLOYMENT_TYPE="production"
 
-echo -e "${_CLR_YELLOW}==============================================="
-echo -e "Install CP4BA Operators in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
-echo -e "===============================================${_CLR_NC}"
+#-------------------------------
+checkPrepreqTools () {
+  which jq &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
+    exit 1
+  fi
+  which openssl &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
+  fi
+}
 
-oc new-project ${CP4BA_INST_NAMESPACE}
+echo -e "${_CLR_YELLOW}=============================================================="
+echo -e "Install CP4BA Operators in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
+echo -e "==============================================================${_CLR_NC}"
+
+checkPrepreqTools
+
+oc new-project ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
 
 cat << EOF | oc create -n ${CP4BA_INST_NAMESPACE} -f -
 apiVersion: v1

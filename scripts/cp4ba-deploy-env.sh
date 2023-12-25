@@ -55,6 +55,18 @@ source ${_LDAP}
 source ${_IDP}
 source ${_CFG}
 
+#-------------------------------
+checkPrepreqTools () {
+  which jq &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
+    exit 1
+  fi
+  which openssl &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
+  fi
+}
 
 #-------------------------------
 deployEnvironment () {
@@ -96,6 +108,8 @@ echo ""
 echo "#=========================================================================="
 echo -e "${_CLR_GREEN}Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 echo "#=========================================================================="
+echo ""
+checkPrepreqTools
 deployEnvironment
 waitDeploymentReadiness
 echo ""

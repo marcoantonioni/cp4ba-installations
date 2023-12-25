@@ -15,7 +15,7 @@ apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
 metadata:
   name: icp4adeploy
-  namespace: cp4ba-test1
+  namespace: cp4ba-test3
   labels:
     app.kubernetes.io/instance: ibm-dba
     app.kubernetes.io/managed-by: ibm-dba
@@ -67,9 +67,9 @@ spec:
 
   ldap_configuration:
     lc_selected_ldap_type: "Custom"
-    lc_ldap_server: "vuxprod-ldap.cp4ba-test1.svc.cluster.local"
+    lc_ldap_server: "vuxprod-ldap.cp4ba-test3.svc.cluster.local"
     lc_ldap_port: "389"
-    lc_bind_secret: "ldap-bind-test1"
+    lc_bind_secret: "ldap-bind-test3"
     lc_ldap_base_dn: "dc=vuxprod,dc=net"
     lc_ldap_ssl_enabled: false
     lc_ldap_ssl_secret_name: ""
@@ -93,9 +93,9 @@ spec:
     dc_icn_datasource:
       dc_database_type: "postgresql"
       dc_common_icn_datasource_name: "ECMClientDS"
-      database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+      database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test3.svc.cluster.local"
       database_port: "5432"
-      database_name: "test1_icn"
+      database_name: "test3_icn"
       database_ssl_secret_name: ""
       #dc_hadr_validation_timeout: 15
       #dc_hadr_standby_servername: ""
@@ -109,9 +109,9 @@ spec:
       admin_secret_name: "icp4adeploy-workspace1-aae-app-engine-admin-secret"
       admin_user: "cp4admin"
       database:
-        host: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+        host: "my-postgres-for-cp4ba-rw.cp4ba-test3.svc.cluster.local"
         port: "5432"      
-        name: "test1_aedb_1"
+        name: "test3_aedb_1"
         type: postgresql
         enable_ssl: false
         db_cert_secret_name: ""
@@ -128,12 +128,12 @@ spec:
         enable_ssl: false
         db_cert_secret_name: ""
         type: "postgresql"
-        server_name: "my-postgres-for-cp4ba-rw.cp4ba-test1.svc.cluster.local"
+        server_name: "my-postgres-for-cp4ba-rw.cp4ba-test3.svc.cluster.local"
         port: "5432"
-        database_name: "test1_baw_1"
-        secret_name: "test1-baw1-server-db-secret"
+        database_name: "test3_baw_1"
+        secret_name: "test3-baw1-server-db-secret"
         use_custom_jdbc_drivers: false
-        cm_max_pool_size: 200
+        cm_max_pool_size: 50
       #content_integration:
       #  domain_name: "P8DOMAIN"
       #  object_store_name: "BAWINS1DOCS"

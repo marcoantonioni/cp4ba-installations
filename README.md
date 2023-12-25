@@ -1,5 +1,10 @@
 # cp4ba-installations
 
+## TBD
+- onboarding utenze a fine installazione
+- creazione pvc da riveder con configurazione automatica del navigator
+- aggiunta sezioni in CR templates
+
 cd .../cp4ba-installations/scripts
 
 caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
@@ -50,6 +55,11 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statement
 
 #------------------------------
 CONFIG_FILE=../configs/env2.properties
+caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+
+#------------------------------
+CONFIG_FILE=../configs/env3.properties
 caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 

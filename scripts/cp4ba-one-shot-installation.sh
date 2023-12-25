@@ -70,15 +70,30 @@ source ${_LDAP}
 source ${_IDP}
 source ${_CFG}
 
+#-------------------------------
+checkPrepreqTools () {
+  which jq &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
+    exit 1
+  fi
+  which openssl &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
+  fi
+}
 
+echo ""
 echo -e "${_CLR_YELLOW}***********************************************************************"
 echo -e "Install CP4BA complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
 echo -e "***********************************************************************${_CLR_NC}"
 echo ""
+
+checkPrepreqTools
+
 _OK=0
 ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
 if [[ $? -eq 0 ]]; then
-  echo ""
   ./cp4ba-deploy-env.sh -c ${_CFG} -s ${_STATEMENTS} -l ${_LDAP} -i ${_IDP}
   if [[ $? -eq 0 ]]; then
     _OK=1
