@@ -138,7 +138,7 @@ createSecrets () {
     do
       resourceExist "${CP4BA_INST_SUPPORT_NAMESPACE}" "secret" "${CP4BA_INST_DB_CR_NAME}-app"
       if [ $? -eq 0 ]; then
-        echo -e -n "${_CLR_GREEN}wait for secret '${_CLR_YELLOW}"${CP4BA_INST_DB_CR_NAME}-app"${_CLR_GREEN}' $_seconds${_CLR_NC}\033[0K\r"
+        echo -e -n "${_CLR_GREEN}Wait for DB credentials secret '${_CLR_YELLOW}"${CP4BA_INST_DB_CR_NAME}-app"${_CLR_GREEN}' (may take minutes) [$_seconds]${_CLR_NC}\033[0K\r"
         sleep 1
         ((_seconds=_seconds+1))
       else

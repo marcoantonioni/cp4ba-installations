@@ -15,6 +15,10 @@ _CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
+# "\33[32m[✔] ${1}\33[0m"
+# "\33[33m[✗] ${1}\33[0m"
+# bold: echo -e "\x1B[1m${1}\x1B[0m\n"
+
 #--------------------------------------------------------
 # read command line params
 while getopts c:p:s:l:i: flag
@@ -67,21 +71,26 @@ source ${_IDP}
 source ${_CFG}
 
 
-echo -e "${_CLR_YELLOW}==============================================="
+echo -e "${_CLR_YELLOW}***********************************************************************"
 echo -e "Install CP4BA complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
-echo -e "===============================================${_CLR_NC}"
+echo -e "***********************************************************************${_CLR_NC}"
+echo ""
 _OK=0
 ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
 if [[ $? -eq 0 ]]; then
+  echo ""
   ./cp4ba-deploy-env.sh -c ${_CFG} -s ${_STATEMENTS} -l ${_LDAP} -i ${_IDP}
   if [[ $? -eq 0 ]]; then
     _OK=1
   fi
 fi
 if [[ "${_OK}" = "0" ]]; then
-  echo -e "${_CLR_RED}Installation error, environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_RED}' not installed !!!${_CLR_NC}"
+  echo -e "${_CLR_RED}[✗] Installation error, environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_RED}' not installed !!!${_CLR_NC}"
   echo "Verify the configuration and/or run parameters."
   echo "If the installation was started and subsequently interrupted it is recommended to remove the entire namespace"
   echo "using the 'remove-cp4ba' tool."
   echo "See link https://github.com/marcoantonioni/cp4ba-utilities"
+else
+  echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
+  echo "\x1B[1mPlease note\x1B[0m, some pods may still be in the not ready state. Check before using the system."
 fi

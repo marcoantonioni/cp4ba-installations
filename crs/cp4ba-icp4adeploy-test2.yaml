@@ -57,7 +57,7 @@ spec:
     #  sc_dns_namespace:
     #  sc_dns_port:
     #sc_drivers_url:
-    sc_content_initialization: false
+    sc_content_initialization: true
     sc_content_verification: false
     encryption_key_secret: ibm-iaws-shared-key-secret
     image_pull_secrets:
@@ -95,7 +95,7 @@ spec:
       dc_common_icn_datasource_name: "ECMClientDS"
       database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test2.svc.cluster.local"
       database_port: "5432"
-      database_name: "test2icn"
+      database_name: "test2_icn"
       database_ssl_secret_name: ""
       #dc_hadr_validation_timeout: 15
       #dc_hadr_standby_servername: ""

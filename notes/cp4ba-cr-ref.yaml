@@ -57,7 +57,7 @@ spec:
     #  sc_dns_namespace:
     #  sc_dns_port:
     #sc_drivers_url:
-    sc_content_initialization: false
+    sc_content_initialization: true
     sc_content_verification: false
     encryption_key_secret: ibm-iaws-shared-key-secret
     image_pull_secrets:
@@ -95,7 +95,7 @@ spec:
       dc_common_icn_datasource_name: "ECMClientDS"
       database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
       database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      database_name: "${CP4BA_INST_DB_FAMILY_PREFIX}icn"
+      database_name: "${CP4BA_INST_DB_FAMILY_PREFIX}_icn"
       database_ssl_secret_name: ""
       #dc_hadr_validation_timeout: 15
       #dc_hadr_standby_servername: ""
@@ -133,9 +133,7 @@ spec:
         database_name: "${CP4BA_INST_BAW_1_DB_NAME}"
         secret_name: "${CP4BA_INST_BAW_1_DB_SECRET}"
         use_custom_jdbc_drivers: false
-        #hadr:
-        #  standbydb_host: ""
-        #  standbydb_port: ""
+        cm_max_pool_size: 200
       #content_integration:
       #  domain_name: "P8DOMAIN"
       #  object_store_name: "BAWINS1DOCS"
@@ -156,5 +154,68 @@ spec:
         requests:
           cpu: "500m"
           memory: "1048Mi"
+      ## Resource configuration for init job
+      resources_init:
+        limits:
+          ## CPU limit for init job containers.
+          cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"
+          ## Memory limit for init job containers.
+          memory: 512Mi
+        requests:
+          ## Requested amount of CPU for init job containers.
+          cpu: "200m"
+          ## Requested amount of memory for init job containers.
+          memory: 128Mi
+
+      ## Resource configuration for heavy init job such as database init job
+      resources_init_heavy_job:
+        limits:
+          ## CPU limit for Workflow Server database init job container.
+          cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"
+          ## Memory limit for Workflow Server database init job container.
+          memory: 2048Mi
+        requests:
+          ## Requested amount of CPU for Workflow Server database init job container.
+          cpu: "500m"
+          ## Requested amount of memory for Workflow Server database init job container.
+          memory: 512Mi
       logs:
         trace_specification: "${CP4BA_INST_BAW_1_LOGS_TRACE}"
+
+      # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
+      #process_federation_server:
+      #  hostname:
+      #  port:
+      #  context_root_prefix:
+
+      ### federation config
+      #federation_config:
+      #  workflow_server:
+      #      ## Number of primary shards of the Elasticsearch index used to store Workflow Server data.
+      #      index_number_of_shards: 3
+      #      ## Number of shard replicas of the Elasticsearch index used to store Workflow Server data.
+      #      index_number_of_replicas: 1
+      #  case_manager:
+      #        ## Case Manager object store name.
+      #      - object_store_name: BAWINS1TOS
+      #        ## Number of primary shards of the Elasticsearch index used to store Case Manager object store data.
+      #        index_number_of_shards: 3
+      #        ## Number of shard replicas of the Elasticsearch index used to store Case Manager object store data.
+      #        index_number_of_replicas: 1
+
+      #tls:
+      #  ## Workflow Server TLS secret that contains tls.key and tls.crt.
+      #  ## If you want to use a customized Workflow Server TLS certificate, ensure it is signed by the CA in shared_configuration.root_ca_secret.
+      #  ## If you do not want to use a customized Workflow Server TLS certificate, leave it empty.
+      #  tls_secret_name:
+      #  ## Workflow Server TLS trust list.
+      #  ## You might specify a list of secrets, every secret stores a trusted CA
+      #  ## Use command `kubectl create secret generic baw_custom_trust_ca_secret1 --from-file=tls.crt=./ca1.crt` to generate the secret.
+      #  tls_trust_list:
+      #  ## Secret to store your custom trusted keystore (optional). The type for the keystore must be JKS or PKCS12. All certificates from the keystore are imported into the trust keystore of the Workflow Server.
+      #  ## When FIPS mode is enabled, you cannot use this parameter, and external sourced trust stores are not supported.
+      #  ## You might run the following sample command to create the secret:
+      #  ## `kubectl create secret generic baw_custom_trusted_keystore_secret --from-file=truststorefile=./trust.p12 --from-literal=type=PKCS12  --from-literal=password=WebAS`
+      #  tls_trust_store:
+
+      # proseguire da sezione IBM Business Automation Navigator configuration+FNCM+... / ibm_cp4a_cr_production_FC_workflow.yaml

@@ -43,9 +43,15 @@ time ./cp4ba-install-operators.sh -c ../configs/env1.properties -s ${caseManager
 # duration: +/- ?? minutes
 time ./cp4ba-deploy-env.sh -c ../configs/env1.properties -s ../configs/db-statements.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties
 
-!!! completare unico script per installazione completa, verifica degli errori su avvio sh
+#------------------------------
+CONFIG_FILE=../configs/env1.properties
 caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ../configs/env1.properties -s ../configs/db-statements.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+
+#------------------------------
+CONFIG_FILE=../configs/env2.properties
+caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 
 #source ../configs/_cfg-production-ldap-domain.properties

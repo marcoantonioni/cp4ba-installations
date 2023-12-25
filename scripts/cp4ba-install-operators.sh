@@ -60,19 +60,24 @@ _OK=false
 if [[ ! -z "${_SCRIPTS}" ]]; then
   if [[ -d "${_SCRIPTS}" ]]; then
     if [[ -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
-      echo "Ready to run 'cp4a-clusteradmin-setup.sh' script for namespace '${CP4BA_INST_NAMESPACE}' (save the name, the script will ask for it)"
+      echo "Executing 'cp4a-clusteradmin-setup.sh' script for namespace '${CP4BA_INST_NAMESPACE}'"
       _ACT_DIR=$(pwd)
       cd ${_SCRIPTS}
       export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
-      /bin/bash ./cp4a-clusteradmin-setup.sh
-      cd ${_ACT_DIR}
-      echo "Ready to deploy ICP4ACluster CR in namespace '${CP4BA_INST_NAMESPACE}'"
-      _OK=true
+      /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
+      if [ $? -eq 0 ]; then
+        rm ./_clusteradmin.out
+        cd ${_ACT_DIR}
+        echo "Ready to deploy ICP4ACluster CR in namespace '${CP4BA_INST_NAMESPACE}'"
+        _OK=true
+      else
+        cat ./_clusteradmin.out
+      fi
     fi
   fi
 fi
 if [[ "${_OK}" = "false" ]]; then
-  echo -e ">>> \x1b[5mWARNING\x1b[25m <<<"
+  echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
   echo "CP4BA Operators not installed."
   exit 1
 fi

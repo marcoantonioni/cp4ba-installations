@@ -118,7 +118,7 @@ GRANT ALL PRIVILEGES ON DATABASE test1icn to postgres;
 CREATE SCHEMA IF NOT EXISTS postgres AUTHORIZATION postgres;
 GRANT ALL ON SCHEMA postgres to postgres;
 
-
+#----- case
 
 CREATE DATABASE test1gcd OWNER postgres ENCODING UTF8;
 GRANT ALL PRIVILEGES ON DATABASE test1gcd to postgres;

@@ -27,6 +27,8 @@ fi
 
 source ${_CFG}
 
+deployDBCluster () {
+
 cat <<EOF | oc create -f -
 apiVersion: postgresql.k8s.enterprisedb.io/v1
 kind: Cluster
@@ -95,6 +97,13 @@ spec:
   instances: 1
 EOF
 
+}
+
+#==================================
+echo -e "#==========================================================="
+echo -e "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}${_CLR_GREEN}' in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
+deployDBCluster
+# test if operator present in ns when different namespaces
 if [[ "${CP4BA_INST_SUPPORT_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
   if [ $(oc get -n ${CP4BA_INST_SUPPORT_NAMESPACE} csv --no-headers | grep "cloud-native-postgresql.v" | wc -l) -lt 1 ]; then
     echo -e "${_CLR_GREEN}Remember to install 'EDB Postgres for Kubernetes' operator in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
