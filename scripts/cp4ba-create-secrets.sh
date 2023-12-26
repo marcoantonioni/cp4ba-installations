@@ -7,7 +7,7 @@ _WAIT=false
 _SILENT=false
 _ERROR=0
 
-_maxWait=600
+_maxWait=60
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -22,13 +22,14 @@ while getopts c:ws flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
+        t) _maxWait=${OPTARG};;
         w) _WAIT=true;;
         s) _SILENT=true;;
     esac
 done
 
 if [[ -z "${_CFG}" ]]; then
-  echo "usage: $_me -c path-of-config-file"
+  echo "usage: $_me -c path-of-config-file -w wait-for-db-creation -t time-to-wait-in-seconds -s silent-mode"
   exit
 fi
 
@@ -131,6 +132,8 @@ createSecretBAW_1 () {
 
 #-------------------------------
 createSecrets () {
+  # no need to wait
+  createSecretLDAP
 
   if [[ "${_WAIT}" = "true" ]]; then
     _seconds=0
@@ -142,10 +145,10 @@ createSecrets () {
         sleep 1
         ((_seconds=_seconds+1))
       else
-        echo ""
         break
       fi
     done
+    echo ""
   fi
 
   _USER_NAME=$(oc get secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_CR_NAME}-app -o jsonpath='{.data.username}' 2> /dev/null | base64 -d)
@@ -153,7 +156,6 @@ createSecrets () {
   # echo $_USER_NAME / $_USER_PASSWORD
 
   if [[ ! -z "${_USER_NAME}" ]]; then
-    createSecretLDAP
     createSecretAE
     createSecretFNCM
     createSecretBAN

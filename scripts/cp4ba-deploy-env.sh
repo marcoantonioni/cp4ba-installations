@@ -69,6 +69,18 @@ checkPrepreqTools () {
 }
 
 #-------------------------------
+_MAX_CHECKS=30
+_checks=0
+checkSecrets () {
+  _FOUND=$(oc get secret --no-headers -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} | wc -l)
+  if [[ "${_FOUND}" = "0" ]] && [[ $_checks -lt $_MAX_CHECKS ]]; then
+    ((_checks=_checks+1))
+    ./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 60
+    checkSecrets
+  fi
+}
+
+#-------------------------------
 deployEnvironment () {
 
 ../../cp4ba-idp-ldap/scripts/add-ldap.sh -p ${_LDAP}
@@ -81,8 +93,10 @@ echo -e "#==========================================================="
 echo -e "${_CLR_GREEN}Deploying ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 oc apply -n ${CP4BA_INST_NAMESPACE} -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 
-./cp4ba-create-secrets.sh -c ${_CFG} -w
+./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 60
 ./cp4ba-create-databases.sh -c ${_CFG} -s ${_STATEMENTS} -w
+
+checkSecrets
 
 }
 

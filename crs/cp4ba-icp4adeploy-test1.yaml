@@ -133,7 +133,7 @@ spec:
         database_name: "test1_baw_1"
         secret_name: "test1-baw1-server-db-secret"
         use_custom_jdbc_drivers: false
-        cm_max_pool_size: 200
+        cm_max_pool_size: 50
       #content_integration:
       #  domain_name: "P8DOMAIN"
       #  object_store_name: "BAWINS1DOCS"

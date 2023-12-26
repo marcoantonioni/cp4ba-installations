@@ -83,6 +83,12 @@ checkPrepreqTools () {
   fi
 }
 
+onboardUsers () {
+  echo -e "#==========================================================="
+  echo -e "${_CLR_GREEN}Onboarding users from domain '${_CLR_YELLOW}${CP4BA_INST_LDAP_BASE_DOMAIN}${_CLR_GREEN}'${_CLR_NC}"
+  ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ${_IDP} -o add -s
+}
+
 echo ""
 echo -e "${_CLR_YELLOW}***********************************************************************"
 echo -e "Install CP4BA complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
@@ -96,6 +102,7 @@ _OK=0
 if [[ $? -eq 0 ]]; then
   ./cp4ba-deploy-env.sh -c ${_CFG} -s ${_STATEMENTS} -l ${_LDAP} -i ${_IDP}
   if [[ $? -eq 0 ]]; then
+    onboardUsers
     _OK=1
   fi
 fi
