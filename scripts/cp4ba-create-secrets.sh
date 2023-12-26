@@ -22,7 +22,7 @@ while getopts c:t:ws flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
-        t) _maxWait=expr ${OPTARG};;
+        t) _maxWait=${OPTARG};;
         w) _WAIT=true;;
         s) _SILENT=true;;
     esac
