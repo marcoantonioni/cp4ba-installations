@@ -69,7 +69,7 @@ checkPrepreqTools () {
 }
 
 #-------------------------------
-_MAX_CHECKS=30
+_MAX_CHECKS=10
 _checks=0
 checkSecrets () {
   _FOUND=$(oc get secret --no-headers -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} | wc -l)

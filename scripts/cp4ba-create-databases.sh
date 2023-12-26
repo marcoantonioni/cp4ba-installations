@@ -84,6 +84,8 @@ createDatabases () {
       oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 mkdir -p /run/setupdb
       oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${CP4BA_INST_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
       oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
+      _NUM_DB=$(cat ${ENV_STATS} | grep "CREATE DATABASE" | wc -l)
+      echo -e "${_CLR_GREEN}Created '${_CLR_YELLOW}${_NUM_DB}${_CLR_GREEN}' databases.${_CLR_NC}"
       rm ${ENV_STATS}
       _DONE=1
     fi

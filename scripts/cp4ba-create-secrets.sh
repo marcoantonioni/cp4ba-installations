@@ -146,14 +146,14 @@ createSecrets () {
         ((_seconds=_seconds+1))
       else
         echo ""
+        break
       fi
     done
-    echo ""
   fi
 
   _USER_NAME=$(oc get secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_CR_NAME}-app -o jsonpath='{.data.username}' 2> /dev/null | base64 -d)
   _USER_PASSWORD=$(oc get secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_CR_NAME}-app -o jsonpath='{.data.password}' 2> /dev/null | base64 -d)
-  # echo $_USER_NAME / $_USER_PASSWORD
+  echo "CP4BA_INST_DB_CR_NAME User: " $_USER_NAME / $_USER_PASSWORD
 
   if [[ ! -z "${_USER_NAME}" ]]; then
     createSecretAE
