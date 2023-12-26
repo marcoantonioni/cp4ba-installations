@@ -50,20 +50,20 @@ resourceExist () {
 #-------------------------------
 createSecretLDAP () {
   echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_LDAP_SECRET}${_CLR_NC}'"
-  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_LDAP_SECRET} 2> /dev/null
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_LDAP_SECRET} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_LDAP_SECRET} \
     --from-literal=ldapUsername="cn=admin,dc=vuxprod,dc=net" \
-    --from-literal=ldapPassword="passw0rd"
+    --from-literal=ldapPassword="passw0rd" 1> /dev/null
 }
 
 #-------------------------------
 createSecretAE () {
   echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_AE_1_AD_SECRET_NAME}${_CLR_NC}'"
   if [[ ! -z "${_USER_NAME}" ]]; then
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_AE_1_AD_SECRET_NAME} 2> /dev/null
+    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_AE_1_AD_SECRET_NAME} 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_AE_1_AD_SECRET_NAME} \
       --from-literal=AE_DATABASE_USER="${_USER_NAME}" \
-      --from-literal=AE_DATABASE_PWD="${_USER_PASSWORD}"
+      --from-literal=AE_DATABASE_PWD="${_USER_PASSWORD}" 1> /dev/null
   else
     _ERROR=1
     echo -e "${_CLR_RED}Secret ${CP4BA_INST_AE_1_AD_SECRET_NAME} NOT created (troubleshooting 'username' for secret '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-app${_CLR_RED}') !!!${_CLR_NC}"
@@ -74,7 +74,7 @@ createSecretAE () {
 createSecretFNCM () {
   echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_NC}'"
   if [[ ! -z "${_USER_NAME}" ]]; then
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null
+    oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
       --from-literal=osDBUsername="${_USER_NAME}" \
       --from-literal=osDBPassword="${_USER_PASSWORD}" \
@@ -85,7 +85,7 @@ createSecretFNCM () {
       --from-literal=appLoginUsername="cp4admin" \
       --from-literal=appLoginPassword="dem0s" \
       --from-literal=ltpaPassword="passw0rd" \
-      --from-literal=keystorePassword="changeitchangeit"
+      --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
   else
     _ERROR=1
     echo -e "${_CLR_RED}Secret ibm-fncm-secret NOT created (troubleshooting 'username' for secret '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-app${_CLR_RED}') !!!${_CLR_NC}"
@@ -96,14 +96,14 @@ createSecretFNCM () {
 createSecretBAN () {
   echo -e "Secret '${_CLR_YELLOW}ibm-ban-secret${_CLR_NC}'"
   if [[ ! -z "${_USER_NAME}" ]]; then
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-ban-secret 2> /dev/null
+    oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-ban-secret 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-ban-secret \
       --from-literal=navigatorDBUsername="${_USER_NAME}" \
       --from-literal=navigatorDBPassword="${_USER_PASSWORD}" \
       --from-literal=appLoginUsername="cp4admin" \
       --from-literal=appLoginPassword="dem0s" \
       --from-literal=keystorePassword="changeit" \
-      --from-literal=ltpaPassword="changeit"
+      --from-literal=ltpaPassword="changeit" 1> /dev/null
   else
     _ERROR=1
     echo -e "${_CLR_RED}Secret ibm-ban-secret NOT created (troubleshooting 'username' for secret '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-app${_CLR_RED}') !!!${_CLR_NC}"
@@ -119,10 +119,10 @@ createSecretBAW_1 () {
       CP4BA_INST_BAW_1_DB_USER="${_USER_NAME}"
       CP4BA_INST_BAW_1_DB_PWD="${_USER_PASSWORD}"
     fi
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} 2> /dev/null
+    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_BAW_1_DB_SECRET} \
       --from-literal=dbUser="${CP4BA_INST_BAW_1_DB_USER}" \
-      --from-literal=password="${CP4BA_INST_BAW_1_DB_PWD}"
+      --from-literal=password="${CP4BA_INST_BAW_1_DB_PWD}"  1> /dev/null
   else
     _ERROR=1
     echo -e "${_CLR_RED}Secret ${CP4BA_INST_BAW_1_DB_SECRET} NOT created (troubleshooting 'username' for secret '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-app${_CLR_RED}') !!!${_CLR_NC}"

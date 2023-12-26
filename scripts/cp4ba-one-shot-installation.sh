@@ -91,11 +91,17 @@ onboardUsers () {
 
 echo ""
 echo -e "${_CLR_YELLOW}***********************************************************************"
-echo -e "Install CP4BA complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
+echo -e "Install CP4BA complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}' at "$(date)
 echo -e "***********************************************************************${_CLR_NC}"
 echo ""
 
 checkPrepreqTools
+
+# verify logged in OCP
+oc project 2>/dev/null 1>/dev/null
+if [ $? -gt 0 ]; then
+  echo -e "\x1B[1;31mNot logged in to OCP cluster. Please login to an OCP cluster and rerun this command. \x1B[0m" && exit 1
+fi
 
 _OK=0
 ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
@@ -115,6 +121,6 @@ if [[ "${_OK}" = "0" ]]; then
   echo "See link https://github.com/marcoantonioni/cp4ba-utilities"
 else
   echo ""
-  echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
-  echo "\x1B[1mPlease note\x1B[0m, some pods may still be in the not ready state. Check before using the system."
+  echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC} at "$(date)
+  echo -e "\x1B[1mPlease note\x1B[0m, some pods may still be in the not ready state. Check before using the system."
 fi

@@ -106,13 +106,21 @@ waitDeploymentReadiness () {
   do   
     _NUM=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null | grep access-info | wc -l) 
     if [[ $_NUM -eq 1 ]]; then
-      echo "Config Map: cp4ba-access-info"     
+      ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
+      NUM_KEYS=$(echo $ACC_INFO | jq length)
+      echo "" > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+      echo 
+      for (( i=0; i<$NUM_KEYS; i++ ));
+      do
+        KEY=$(echo $ACC_INFO | jq keys[$i])
+        echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+      done
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
-      oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}'
+      echo "See acces info urls in file ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"     
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
       break;   
     fi;   
-    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' ready [$_seconds]${_CLR_NC}\033[0K\r"
+    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready [$_seconds]${_CLR_NC}\033[0K\r"
     ((_seconds=_seconds+1))
     sleep 1
   done
@@ -124,6 +132,12 @@ echo -e "${_CLR_GREEN}Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_EN
 echo "#=========================================================================="
 echo ""
 checkPrepreqTools
+
+# verify logged in OCP
+oc project 2>/dev/null 1>/dev/null
+if [ $? -gt 0 ]; then
+  echo -e "\x1B[1;31mNot logged in to OCP cluster. Please login to an OCP cluster and rerun this command. \x1B[0m" && exit 1
+fi
 deployEnvironment
 waitDeploymentReadiness
 echo ""

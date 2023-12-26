@@ -1,7 +1,6 @@
 # cp4ba-installations
 
 ## TBD
-- onboarding utenze a fine installazione
 - creazione pvc da rivedere con configurazione automatica del navigator
 - aggiunta sezioni in CR templates
 - rivedere script quando più di un BAW / FNCM
