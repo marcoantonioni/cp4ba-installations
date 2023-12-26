@@ -22,7 +22,7 @@ while getopts c:wst flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
-        t) _maxWait=${OPTARG};;
+        t) _maxWait=expr ${OPTARG};;
         w) _WAIT=true;;
         s) _SILENT=true;;
     esac
@@ -145,7 +145,7 @@ createSecrets () {
         sleep 1
         ((_seconds=_seconds+1))
       else
-        break
+        echo ""
       fi
     done
     echo ""
