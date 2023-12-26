@@ -78,7 +78,7 @@ createDatabases () {
     _RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${CP4BA_INST_DB_CR_NAME}-1 --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
     _IS_READY=$(echo $_RES | grep "condition met" | wc -l)
     if [ $_IS_READY -eq 1 ]; then
-      echo -e "${_CLR_GREEN}DB is ready, load and execute sql statements in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
+      echo -e "${_CLR_GREEN}Database pod is ready, load and execute sql statements in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
       ENV_STATS="./env-statements.sql"
       cat ${_STATEMENTS} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV}"'/g' > ${ENV_STATS}
       oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 mkdir -p /run/setupdb
@@ -101,7 +101,7 @@ createDatabases () {
 
 }
 
-echo -e "#==========================================================="
+echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Creating databases in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
 createDatabases
 

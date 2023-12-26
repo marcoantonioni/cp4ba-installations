@@ -49,7 +49,9 @@ resourceExist () {
 
 #-------------------------------
 createSecretLDAP () {
-  echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_LDAP_SECRET}${_CLR_NC}'"
+  if [[ "${_WAIT}" = "true" ]]; then
+    echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_LDAP_SECRET}${_CLR_NC}'"
+  fi
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_LDAP_SECRET} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_LDAP_SECRET} \
     --from-literal=ldapUsername="cn=admin,dc=vuxprod,dc=net" \
@@ -161,8 +163,8 @@ createSecrets () {
     createSecretBAW_1
   fi
   if [[ $_ERROR = 1 ]] || [[ -z "${_USER_NAME}" ]]; then
-    echo ""
     if [[ "${_SILENT}" = "false" ]]; then
+      echo ""
       echo -e ">>> \x1b[5mWARNING\x1b[25m <<<"
       echo "Rerun this script after db '${CP4BA_INST_DB_CR_NAME}' setup."
       echo "" 
@@ -171,6 +173,6 @@ createSecrets () {
 
 }
 
-echo -e "#==========================================================="
+echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Creating secrets in '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
 createSecrets

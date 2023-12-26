@@ -28,7 +28,7 @@ fi
 
 source ${_CFG}
 
-echo -e "#==========================================================="
+echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Creating PVCs in '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
 
 #---------------------------

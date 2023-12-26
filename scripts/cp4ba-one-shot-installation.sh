@@ -84,14 +84,15 @@ checkPrepreqTools () {
 }
 
 onboardUsers () {
-  echo -e "#==========================================================="
+  echo -e "=============================================================="
   echo -e "${_CLR_GREEN}Onboarding users from domain '${_CLR_YELLOW}${CP4BA_INST_LDAP_BASE_DOMAIN}${_CLR_GREEN}'${_CLR_NC}"
   ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ${_IDP} -l ${_LDAP} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -o add -s
 }
 
 echo ""
 echo -e "${_CLR_YELLOW}***********************************************************************"
-echo -e "Install CP4BA complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}' at "$(date)
+echo -e "Install CP4BA complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
+echo -e "  started at ${_CLR_GREEN}"$(date)"${_CLR_YELLOW}"
 echo -e "***********************************************************************${_CLR_NC}"
 echo ""
 
@@ -104,6 +105,9 @@ if [ $? -gt 0 ]; then
 fi
 
 _OK=0
+
+START_SECONDS=$SECONDS
+
 ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
 if [[ $? -eq 0 ]]; then
   ./cp4ba-deploy-env.sh -c ${_CFG} -s ${_STATEMENTS} -l ${_LDAP} -i ${_IDP}
@@ -112,6 +116,9 @@ if [[ $? -eq 0 ]]; then
     _OK=1
   fi
 fi
+
+STOP_SECONDS=$SECONDS
+
 if [[ "${_OK}" = "0" ]]; then
   echo ""
   echo -e "${_CLR_RED}[✗] Installation error, environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_RED}' not installed !!!${_CLR_NC}"
@@ -120,7 +127,11 @@ if [[ "${_OK}" = "0" ]]; then
   echo "using the 'remove-cp4ba' tool."
   echo "See link https://github.com/marcoantonioni/cp4ba-utilities"
 else
+  ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
+  TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
+  TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
   echo ""
-  echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC} at "$(date)
+  echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
+  echo -e "  terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
   echo -e "\x1B[1mPlease note\x1B[0m, some pods may still be in the not ready state. Check before using the system."
 fi

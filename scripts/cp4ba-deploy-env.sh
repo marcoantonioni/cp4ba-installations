@@ -89,7 +89,7 @@ deployEnvironment () {
 envsubst < ../notes/cp4ba-cr-ref.yaml > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 ./cp4ba-create-pvc.sh -c ${_CFG}
 
-echo -e "#==========================================================="
+echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Deploying ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 oc apply -n ${CP4BA_INST_NAMESPACE} -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 
@@ -127,9 +127,9 @@ waitDeploymentReadiness () {
 }
 
 echo ""
-echo "#=========================================================================="
+echo "=============================================================="
 echo -e "${_CLR_GREEN}Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
-echo "#=========================================================================="
+echo "=============================================================="
 echo ""
 checkPrepreqTools
 

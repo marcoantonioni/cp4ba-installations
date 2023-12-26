@@ -100,7 +100,8 @@ EOF
 }
 
 #==================================
-echo -e "#==========================================================="
+
+echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}${_CLR_GREEN}' in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
 deployDBCluster
 # test if operator present in ns when different namespaces
