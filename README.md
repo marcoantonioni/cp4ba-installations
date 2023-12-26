@@ -7,7 +7,7 @@
 
 cd .../cp4ba-installations/scripts
 
-caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 
 1. crea ns e installa operatori
 1.1 ./cp4ba-install-operators.sh -c ../configs/env1.properties -s ${caseManagerScriptsFolder}
@@ -43,7 +43,7 @@ caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp
 ```
 
 # duration: +/- 9 minutes (TechZone - 16cpu x node)
-caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 time ./cp4ba-install-operators.sh -c ../configs/env1.properties -s ${caseManagerScriptsFolder}
 
 # duration: +/- ?? minutes
@@ -51,17 +51,17 @@ time ./cp4ba-deploy-env.sh -c ../configs/env1.properties -s ../configs/db-statem
 
 #------------------------------
 CONFIG_FILE=../configs/env1.properties
-caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 #------------------------------
 CONFIG_FILE=../configs/env2.properties
-caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 #------------------------------
 CONFIG_FILE=../configs/env3.properties
-caseManagerScriptsFolder="/home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 
