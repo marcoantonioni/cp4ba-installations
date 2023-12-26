@@ -86,7 +86,7 @@ checkPrepreqTools () {
 onboardUsers () {
   echo -e "#==========================================================="
   echo -e "${_CLR_GREEN}Onboarding users from domain '${_CLR_YELLOW}${CP4BA_INST_LDAP_BASE_DOMAIN}${_CLR_GREEN}'${_CLR_NC}"
-  ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ${_IDP} -o add -s
+  ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ${_IDP} -l ${_LDAP} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -o add -s
 }
 
 echo ""
@@ -107,12 +107,14 @@ if [[ $? -eq 0 ]]; then
   fi
 fi
 if [[ "${_OK}" = "0" ]]; then
+  echo ""
   echo -e "${_CLR_RED}[✗] Installation error, environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_RED}' not installed !!!${_CLR_NC}"
   echo "Verify the configuration and/or run parameters."
   echo "If the installation was started and subsequently interrupted it is recommended to remove the entire namespace"
   echo "using the 'remove-cp4ba' tool."
   echo "See link https://github.com/marcoantonioni/cp4ba-utilities"
 else
+  echo ""
   echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
   echo "\x1B[1mPlease note\x1B[0m, some pods may still be in the not ready state. Check before using the system."
 fi

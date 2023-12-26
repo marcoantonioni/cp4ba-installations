@@ -145,7 +145,6 @@ createSecrets () {
         sleep 1
         ((_seconds=_seconds+1))
       else
-        echo ""
         break
       fi
     done
@@ -153,7 +152,7 @@ createSecrets () {
 
   _USER_NAME=$(oc get secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_CR_NAME}-app -o jsonpath='{.data.username}' 2> /dev/null | base64 -d)
   _USER_PASSWORD=$(oc get secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_CR_NAME}-app -o jsonpath='{.data.password}' 2> /dev/null | base64 -d)
-  echo "CP4BA_INST_DB_CR_NAME User: " $_USER_NAME / $_USER_PASSWORD
+  #echo "CP4BA_INST_DB_CR_NAME User: " $_USER_NAME / $_USER_PASSWORD
 
   if [[ ! -z "${_USER_NAME}" ]]; then
     createSecretAE
@@ -162,8 +161,8 @@ createSecrets () {
     createSecretBAW_1
   fi
   if [[ $_ERROR = 1 ]] || [[ -z "${_USER_NAME}" ]]; then
+    echo ""
     if [[ "${_SILENT}" = "false" ]]; then
-      echo ""
       echo -e ">>> \x1b[5mWARNING\x1b[25m <<<"
       echo "Rerun this script after db '${CP4BA_INST_DB_CR_NAME}' setup."
       echo "" 

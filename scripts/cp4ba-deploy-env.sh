@@ -72,7 +72,7 @@ checkPrepreqTools () {
 _MAX_CHECKS=10
 _checks=0
 checkSecrets () {
-  _FOUND=$(oc get secret --no-headers -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} | wc -l)
+  _FOUND=$(oc get secret --no-headers -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} 2>/dev/null | wc -l)
   if [[ "${_FOUND}" = "0" ]] && [[ $_checks -lt $_MAX_CHECKS ]]; then
     ((_checks=_checks+1))
     ./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 60
