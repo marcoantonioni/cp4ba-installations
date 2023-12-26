@@ -18,7 +18,7 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:wst flag
+while getopts c:t:ws flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
