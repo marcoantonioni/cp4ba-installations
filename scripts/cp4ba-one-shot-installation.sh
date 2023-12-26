@@ -89,7 +89,9 @@ checkPrepreqTools () {
 onboardUsers () {
   echo -e "=============================================================="
   echo -e "${_CLR_GREEN}Onboarding users from domain '${_CLR_YELLOW}${CP4BA_INST_LDAP_BASE_DOMAIN}${_CLR_GREEN}'${_CLR_NC}"
-  ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ${_IDP} -l ${_LDAP} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -o add -s
+
+  # !!! cp4admin perde ruoli Automation Administrator, Automation Developer se remove-and-add
+  ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ${_IDP} -l ${_LDAP} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -s -o add
 }
 
 echo ""

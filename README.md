@@ -36,8 +36,7 @@ caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp
 11. creazione db
 11. da pod postgres poi creare script
 12. onboard users from LDAP
-12.1 ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ../configs/_cfg-production-idp.properties  -o add -s
-
+12.1 ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ../configs/_cfg-production-idp.properties -l ../configs/_cfg-production-ldap-domain.properties -n ${CP4BA_INST_SUPPORT_NAMESPACE} -s -o add
 
 #---------------
 ```
