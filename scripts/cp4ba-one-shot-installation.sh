@@ -2,6 +2,9 @@
 
 _me=$(basename "$0")
 
+CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PARENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+
 _CFG=""
 _SCRIPTS=""
 _STATEMENTS=""
@@ -130,8 +133,9 @@ else
   ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
   TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
   TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
-  echo ""
+  echo -e "${_CLR_YELLOW}***********************************************************************"
   echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
   echo -e "  terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
   echo -e "\x1B[1mPlease note\x1B[0m, some pods may still be in the not ready state. Check before using the system."
+  echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
 fi
