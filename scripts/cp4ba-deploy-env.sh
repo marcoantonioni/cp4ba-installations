@@ -117,9 +117,9 @@ waitDeploymentReadiness () {
 }
 
 echo ""
-echo "=============================================================="
-echo -e "${_CLR_GREEN}Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
-echo "=============================================================="
+echo -e "${_CLR_YELLOW}=============================================================="
+echo -e "${_CLR_YELLOW}Deploying CP4BA environment '${_CLR_GREEN}${CP4BA_INST_ENV}${_CLR_YELLOW}' in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'${_CLR_NC}"
+echo -e "==============================================================${_CLR_NC}"
 echo ""
 checkPrepreqTools
 
