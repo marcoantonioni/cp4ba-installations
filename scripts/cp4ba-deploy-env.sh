@@ -32,8 +32,7 @@ if [[ ! -z "${_LDAP}" ]]; then
     echo "LDAP configuration file not found: "${_LDAP}
     exit 1
   fi
-    source ${_LDAP}
-  fi
+  source ${_LDAP}
 fi
 
 if [[ ! -f "${_CFG}" ]]; then
