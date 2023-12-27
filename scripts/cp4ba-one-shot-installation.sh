@@ -7,7 +7,6 @@ PARENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 _CFG=""
 _SCRIPTS=""
-_STATEMENTS=""
 _LDAP=""
 _IDP=""
 
@@ -29,30 +28,30 @@ do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         p) _SCRIPTS=${OPTARG};;
-        s) _STATEMENTS=${OPTARG};;
         l) _LDAP=${OPTARG};;
         i) _IDP=${OPTARG};;
     esac
 done
 
-if [[ -z "${_CFG}" ]] || [[ -z "${_SCRIPTS}" ]] || [[ -z "${_STATEMENTS}" ]] || [[ -z "${_LDAP}" ]] || [[ -z "${_IDP}" ]]; then
-  echo "usage: $_me -c path-of-config-file -s sql-statements-file -l ldap-config-file -i idp-config-file -p cp4ba-case-pkg-scripts-folder"
+if [[ -z "${_CFG}" ]] || [[ -z "${_SCRIPTS}" ]] || [[ -z "${_LDAP}" ]] || [[ -z "${_IDP}" ]]; then
+  echo "usage: $_me -c path-of-config-file -p cp4ba-case-pkg-scripts-folder -l(optional) ldap-config-file -i(optional) idp-config-file"
   exit 1
 fi
 
-if [[ ! -f "${_STATEMENTS}" ]]; then
-  echo "SQL Statements file not found: "${_STATEMENTS}
-  exit 1
+if [[ ! -z "${_LDAP}" ]]; then
+  if [[ ! -f "${_LDAP}" ]]; then
+    echo "LDAP configuration file not found: "${_LDAP}
+    exit 1
+  fi
+  source ${_LDAP}
 fi
 
-if [[ ! -f "${_LDAP}" ]]; then
-  echo "LDAP configuration file not found: "${_LDAP}
-  exit 1
-fi
-
-if [[ ! -f "${_IDP}" ]]; then
-  echo "IDP configuration file not found: "${_IDP}
-  exit 1
+if [[ ! -z "${_IDP}" ]]; then
+  if [[ ! -f "${_IDP}" ]]; then
+    echo "IDP configuration file not found: "${_IDP}
+    exit 1
+  fi
+  source ${_IDP}
 fi
 
 if [[ ! -f "${_CFG}" ]]; then
@@ -69,8 +68,6 @@ if [[ ! -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
   exit 1
 fi
 
-source ${_LDAP}
-source ${_IDP}
 source ${_CFG}
 
 #-------------------------------
@@ -115,9 +112,11 @@ START_SECONDS=$SECONDS
 
 ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
 if [[ $? -eq 0 ]]; then
-  ./cp4ba-deploy-env.sh -c ${_CFG} -s ${_STATEMENTS} -l ${_LDAP} -i ${_IDP}
+  ./cp4ba-deploy-env.sh -c ${_CFG} -s ${CP4BA_INST_DB_TEMPLATE} -l ${_LDAP}
   if [[ $? -eq 0 ]]; then
-    onboardUsers
+    if [[ ! -z "${_IDP}" ]]; then
+      onboardUsers
+    fi
     _OK=1
   fi
 fi

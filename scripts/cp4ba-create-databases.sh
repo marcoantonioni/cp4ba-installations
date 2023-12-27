@@ -3,7 +3,6 @@
 _me=$(basename "$0")
 
 _CFG=""
-_STATEMENTS=""
 _WAIT=false
 
 #--------------------------------------------------------
@@ -15,28 +14,29 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:s:w flag
+while getopts c:w flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
-        s) _STATEMENTS=${OPTARG};;
         w) _WAIT=true;;
     esac
 done
 
-if [[ -z "${_CFG}" ]] || [[ -z "${_STATEMENTS}" ]]; then
-  echo "usage: $_me -c path-of-config-file -s sql-statements-file"
+if [[ -z "${_CFG}" ]]; then
+  echo "usage: $_me -c path-of-config-file"
   exit
-fi
-
-if [[ ! -f "${_STATEMENTS}" ]]; then
-  echo "SQL Statements file not found: "${_STATEMENTS}
 fi
 
 if [[ ! -f "${_CFG}" ]]; then
   echo "Configuration file not found: "${_CFG}
 fi
+
 source ${_CFG}
+
+if [[ ! -f "${CP4BA_INST_DB_TEMPLATE}" ]]; then
+  echo "SQL Statements file not found: "${CP4BA_INST_DB_TEMPLATE}
+  exit 1
+fi
 
 #-------------------------------
 resourceExist () {
@@ -80,7 +80,7 @@ createDatabases () {
     if [ $_IS_READY -eq 1 ]; then
       echo -e "${_CLR_GREEN}Database pod is ready, load and execute sql statements in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
       ENV_STATS="./env-statements.sql"
-      cat ${_STATEMENTS} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV}"'/g' > ${ENV_STATS}
+      cat ${CP4BA_INST_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV}"'/g' > ${ENV_STATS}
       oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 mkdir -p /run/setupdb
       oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${CP4BA_INST_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
       oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
@@ -102,6 +102,9 @@ createDatabases () {
 }
 
 echo -e "=============================================================="
-echo -e "${_CLR_GREEN}Creating databases in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
-createDatabases
-
+if [[ "${CP4BA_INST_DB}" = "true" ]]; then
+  echo -e "${_CLR_GREEN}Creating databases in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
+  createDatabases
+else
+  echo -e "${_CLR_BLUE}Skipping creation of databases${_CLR_NC}"
+fi

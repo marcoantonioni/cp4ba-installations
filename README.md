@@ -3,6 +3,7 @@
 ## TBD
 - creazione pvc da rivedere con configurazione automatica del navigator
 - aggiunta sezioni in CR templates
+- creare CR scenario federazione 'elasticsearch'
 - rivedere script quando più di un BAW / FNCM
 
 cd .../cp4ba-installations/scripts
@@ -23,7 +24,7 @@ caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp
 5. crea secrets
 5.1 ./cp4ba-create-secrets-pre.sh -c ../configs/env1.properties
 6. genera CR
-6.1 envsubst < ../notes/cp4ba-cr-ref.yaml > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
+6.1 envsubst < ../templates/cp4ba-cr-ref.yaml > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 6.2 more ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 7. crea pvc
 7.1 ./cp4ba-create-pvc.sh -c ../configs/env1.properties
@@ -51,17 +52,17 @@ time ./cp4ba-deploy-env.sh -c ../configs/env1.properties -s ../configs/db-statem
 #------------------------------
 CONFIG_FILE=../configs/env1.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../templates/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 #------------------------------
 CONFIG_FILE=../configs/env2.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../templates/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 #------------------------------
 CONFIG_FILE=../configs/env3.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../templates/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 
 #source ../configs/_cfg-production-ldap-domain.properties
@@ -70,7 +71,7 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../notes/db-statement
 #../../cp4ba-idp-ldap/scripts/add-ldap.sh -p ../configs/_cfg-production-ldap-domain.properties
 #./cp4ba-install-db.sh -c ../configs/env1.properties
 #./cp4ba-create-secrets.sh -c ../configs/env1.properties
-#envsubst < ../notes/cp4ba-cr-ref.yaml > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
+#envsubst < ../templates/cp4ba-cr-ref.yaml > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 #./cp4ba-create-pvc.sh -c ../configs/env1.properties
 #oc apply -n ${CP4BA_INST_NAMESPACE} --dry-run=server -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 #
