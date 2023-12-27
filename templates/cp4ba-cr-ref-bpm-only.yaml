@@ -80,6 +80,23 @@ spec:
       lc_user_filter: "(&(cn=%v)(objectclass=person))"
       lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
 
+  datasource_configuration:
+    dc_ssl_enabled: false
+
+    dc_gcd_datasource:
+      dc_database_type: "postgresql"
+      dc_common_gcd_datasource_name: "FNGCDDS"
+      dc_common_gcd_xa_datasource_name: "FNGCDDSXA"
+      database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
+      database_name: "${CP4BA_INST_DB_FAMILY_PREFIX}_gcd"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_ssl_secret_name: ""
+      dc_hadr_validation_timeout: 15
+      dc_hadr_standby_servername: ""
+      dc_hadr_standby_port: ""
+      dc_hadr_retry_interval_for_client_reroute: 15
+      dc_hadr_max_retries_for_client_reroute: 3
+
   # IBM Business Automation Workflow configuration
   baw_configuration:
     - name: ${CP4BA_INST_BAW_1_NAME} 

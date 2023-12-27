@@ -80,6 +80,23 @@ spec:
       lc_user_filter: "(&(cn=%v)(objectclass=person))"
       lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
 
+  datasource_configuration:
+    dc_ssl_enabled: false
+
+    dc_gcd_datasource:
+      dc_database_type: "postgresql"
+      dc_common_gcd_datasource_name: "FNGCDDS"
+      dc_common_gcd_xa_datasource_name: "FNGCDDSXA"
+      database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1-bpm.svc.cluster.local"
+      database_name: "test1-bpm_gcd"
+      database_port: "5432"
+      database_ssl_secret_name: ""
+      dc_hadr_validation_timeout: 15
+      dc_hadr_standby_servername: ""
+      dc_hadr_standby_port: ""
+      dc_hadr_retry_interval_for_client_reroute: 15
+      dc_hadr_max_retries_for_client_reroute: 3
+
   # IBM Business Automation Workflow configuration
   baw_configuration:
     - name: baw1 
@@ -101,7 +118,7 @@ spec:
         fs_groupchangepolicy:
       # Production, Staging, Test, Development
       env_type: Test
-      replicas: 1
+      replicas: 2
       resources:
         limits:
           cpu: "2000m"
