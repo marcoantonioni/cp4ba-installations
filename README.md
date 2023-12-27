@@ -47,22 +47,22 @@ caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp
 time ./cp4ba-install-operators.sh -c ../configs/env1.properties -s ${caseManagerScriptsFolder}
 
 # duration: +/- ?? minutes
-time ./cp4ba-deploy-env.sh -c ../configs/env1.properties -s ../configs/db-statements.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties
+time ./cp4ba-deploy-env.sh -c ../configs/env1.properties -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties
 
 #------------------------------
 CONFIG_FILE=../configs/env1.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../templates/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 #------------------------------
 CONFIG_FILE=../configs/env2.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../templates/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 #------------------------------
 CONFIG_FILE=../configs/env3.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../templates/db-statements-ref-no-case.sql -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
 
 #source ../configs/_cfg-production-ldap-domain.properties
@@ -78,7 +78,7 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -s ../templates/db-state
 #oc apply -n ${CP4BA_INST_NAMESPACE} -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 #
 #./cp4ba-create-secrets.sh -c ../configs/env1.properties -w
-#./cp4ba-create-databases.sh -c ../configs/env1.properties -s ../configs/db-statements.sql -w
+#./cp4ba-create-databases.sh -c ../configs/env1.properties -w
 
 ```
 # Notes
