@@ -5,6 +5,7 @@
 - verifica configurazione CR base se LDAP e DB preesistenti
 - creazione dinamica CR finale in base a sezioni configurate (CP4BA_INST_AE_1, CP4BA_INST_BAW_1)
 - aggiunta sezioni in CR templates
+  /home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/descriptors/patterns
 - creare CR scenario federazione 'elasticsearch'
 - rivedere script quando più di un BAW / FNCM
 

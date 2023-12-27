@@ -112,7 +112,7 @@ START_SECONDS=$SECONDS
 
 ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
 if [[ $? -eq 0 ]]; then
-  ./cp4ba-deploy-env.sh -c ${_CFG} -s ${CP4BA_INST_DB_TEMPLATE} -l ${_LDAP}
+  ./cp4ba-deploy-env.sh -c ${_CFG} -l ${_LDAP}
   if [[ $? -eq 0 ]]; then
     if [[ ! -z "${_IDP}" ]]; then
       onboardUsers

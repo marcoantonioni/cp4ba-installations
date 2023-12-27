@@ -23,7 +23,7 @@ do
 done
 
 if [[ -z "${_CFG}" ]]; then
-  echo "usage: $_me -c path-of-config-file -s sql-statements-file -l(optional) ldap-config-file"
+  echo "usage: $_me -c path-of-config-file -l(optional) ldap-config-file"
   exit 1
 fi
 
