@@ -104,19 +104,19 @@ spec:
       #dc_hadr_max_retries_for_client_reroute: 3
 
   # IBM Application Engine configuration
-  application_engine_configuration:
-    - name: ${CP4BA_INST_AE_1_NAME} 
-      admin_secret_name: "${CP4BA_INST_AE_1_AD_SECRET_NAME}"
-      admin_user: "${CP4BA_INST_AE_1_ADMIN_USER}"
-      database:
-        host: "${CP4BA_INST_AE_1_DB_HOST}"
-        port: "${CP4BA_INST_AE_1_DB_PORT}"      
-        name: "${CP4BA_INST_AE_1_DB_NAME}"
-        type: postgresql
-        enable_ssl: false
-        db_cert_secret_name: ""
-      session:
-        use_external_store: false
+  #application_engine_configuration:
+  #  - name: ${CP4BA_INST_AE_1_NAME} 
+  #    admin_secret_name: "${CP4BA_INST_AE_1_AD_SECRET_NAME}"
+  #    admin_user: "${CP4BA_INST_AE_1_ADMIN_USER}"
+  #    database:
+  #      host: "${CP4BA_INST_AE_1_DB_HOST}"
+  #      port: "${CP4BA_INST_AE_1_DB_PORT}"      
+  #      name: "${CP4BA_INST_AE_1_DB_NAME}"
+  #      type: postgresql
+  #      enable_ssl: false
+  #      db_cert_secret_name: ""
+  #    session:
+  #      use_external_store: false
 
   # IBM Business Automation Workflow configuration
   baw_configuration:
@@ -147,6 +147,7 @@ spec:
         fs_groupchangepolicy:
       # Production, Staging, Test, Development
       env_type: Test
+      replicas: ${CP4BA_INST_BAW_1_REPLICAS}
       resources:
         limits:
           cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"

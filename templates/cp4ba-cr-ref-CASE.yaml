@@ -315,6 +315,7 @@ spec:
         fs_groupchangepolicy:
       # Production, Staging, Test, Development
       env_type: Test
+      replicas: ${CP4BA_INST_BAW_1_REPLICAS}
       resources:
         limits:
           cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"

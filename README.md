@@ -6,6 +6,7 @@
 - creazione dinamica CR finale in base a sezioni configurate (CP4BA_INST_AE_1, CP4BA_INST_BAW_1)
 - aggiunta sezioni in CR templates
   /home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/descriptors/patterns
+- usare yq per validare CR generata
 - creare CR scenario federazione 'elasticsearch'
 - rivedere script quando più di un BAW / FNCM
 
@@ -73,6 +74,11 @@ CONFIG_FILE=../configs/env3.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
 
+#------------------------------
+CONFIG_FILE=../configs/env1-bpm-only.properties
+caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties -p ${caseManagerScriptsFolder}
+
 
 #source ../configs/_cfg-production-ldap-domain.properties
 #source ../configs/_cfg-production-idp.properties
@@ -113,3 +119,15 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scripts-cr
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-runtime-workstream-services
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployments-installing-cp4ba-process-federation-server-production-deployment
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
+
+
+# Create production CR
+```
+folder: /cert-kubernetes/descriptors/patterns
+
+full: ibm_cp4a_cr_production_FC_workflow.yaml
+
+
+
+```
+

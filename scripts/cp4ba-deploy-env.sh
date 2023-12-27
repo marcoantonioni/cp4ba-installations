@@ -81,6 +81,30 @@ envsubst < ../templates/${CP4BA_INST_CR_TEMPLATE} > ../crs/cp4ba-${CP4BA_INST_CR
 
 echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Deploying ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
+
+if [[ -f "../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml" ]]; then
+  MISSED_TRANSFORMATIONS=$(cat ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml | grep "\${" | wc -l)
+  if [[ MISSED_TRANSFORMATIONS -gt 0 ]]; then
+    echo -e "${_CLR_GREEN}Error, env var missed in '${_CLR_YELLOW}../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml${_CLR_RED}'${_CLR_NC}"
+    echo "++++++++++++++++++++++++++++++++++++++++"
+    cat ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml | grep "\${"
+    echo "++++++++++++++++++++++++++++++++++++++++"
+    exit 1
+  fi
+  yq ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml 2>/dev/null 1>/dev/null
+  YAML_ERROR=$?
+  if [ $YAML_ERROR -gt 0 ]; then
+    echo -e "${_CLR_GREEN}Error, wrong yaml format in '${_CLR_YELLOW}../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml${_CLR_RED}'${_CLR_NC}"
+    echo "++++++++++++++++++++++++++++++++++++++++"
+    yq ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
+    echo "++++++++++++++++++++++++++++++++++++++++"
+    exit 1
+  fi
+else
+  echo -e "${_CLR_GREEN}Error, file not found '${_CLR_YELLOW}../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml${_CLR_RED}'${_CLR_NC}"
+  exit 1
+fi 
+
 oc apply -n ${CP4BA_INST_NAMESPACE} -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 
 ./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 60

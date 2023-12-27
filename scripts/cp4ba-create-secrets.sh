@@ -60,15 +60,17 @@ createSecretLDAP () {
 
 #-------------------------------
 createSecretAE () {
-  echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_AE_1_AD_SECRET_NAME}${_CLR_NC}'"
-  if [[ ! -z "${_USER_NAME}" ]]; then
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_AE_1_AD_SECRET_NAME} 2> /dev/null 1> /dev/null
-    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_AE_1_AD_SECRET_NAME} \
-      --from-literal=AE_DATABASE_USER="${_USER_NAME}" \
-      --from-literal=AE_DATABASE_PWD="${_USER_PASSWORD}" 1> /dev/null
-  else
-    _ERROR=1
-    echo -e "${_CLR_RED}Secret ${CP4BA_INST_AE_1_AD_SECRET_NAME} NOT created (troubleshooting 'username' for secret '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-app${_CLR_RED}') !!!${_CLR_NC}"
+  if [[ ! -z "${CP4BA_INST_AE_1_AD_SECRET_NAME}" ]]; then
+    echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_AE_1_AD_SECRET_NAME}${_CLR_NC}'"
+    if [[ ! -z "${_USER_NAME}" ]]; then
+      oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_AE_1_AD_SECRET_NAME} 2> /dev/null 1> /dev/null
+      oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_AE_1_AD_SECRET_NAME} \
+        --from-literal=AE_DATABASE_USER="${_USER_NAME}" \
+        --from-literal=AE_DATABASE_PWD="${_USER_PASSWORD}" 1> /dev/null
+    else
+      _ERROR=1
+      echo -e "${_CLR_RED}Secret ${CP4BA_INST_AE_1_AD_SECRET_NAME} NOT created (troubleshooting 'username' for secret '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-app${_CLR_RED}') !!!${_CLR_NC}"
+    fi
   fi
 }
 
