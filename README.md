@@ -1,6 +1,11 @@
 # cp4ba-installations
 
 ## TBD
+- verificare se BPM-ONLY funziona senza esplicitare foundation
+  sc_deployment_patterns: workflow
+    mandatory components: ban, ums, rr, app_engine 
+    optional components: bai,elasticsearch
+- quali db sono il minimo per workflow senza case ? configurazione ammessa ?
 - creazione pvc da rivedere con configurazione automatica del navigator
 - TEST - verifica configurazione CR base se LDAP e DB preesistenti
 - creazione dinamica CR finale in base a sezioni configurate (CP4BA_INST_AE_1, CP4BA_INST_BAW_1)
