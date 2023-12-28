@@ -53,6 +53,10 @@ resourceExist () {
 #-------------------------------
 createDatabases () {
   _FOUND=0
+  if [[ "${_WAIT}" = "false" ]]; then
+    _MAX_WAIT=1
+    _WAIT=true
+  fi
   if [[ "${_WAIT}" = "true" ]]; then
     _seconds=0
     _MAX_WAIT=600
@@ -79,8 +83,8 @@ createDatabases () {
     _IS_READY=$(echo $_RES | grep "condition met" | wc -l)
     if [ $_IS_READY -eq 1 ]; then
       echo -e "${_CLR_GREEN}Database pod is ready, load and execute sql statements in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
-      ENV_STATS="./env-statements.sql"
-      cat ${CP4BA_INST_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV}"'/g' | sed 's/-/_/g' > ${ENV_STATS}
+      ENV_STATS="./env-statements.$RANDOM.sql"
+      cat ${CP4BA_INST_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' | sed 's/-/_/g' > ${ENV_STATS}
       oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 mkdir -p /run/setupdb
       oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${CP4BA_INST_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
       oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null

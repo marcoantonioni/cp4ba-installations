@@ -68,49 +68,67 @@ checkSecrets () {
 }
 
 #-------------------------------
+deployPreEnv () {
+  if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+    if [[ ! -z "${_LDAP}" ]]; then
+      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-ldap.sh -p ${_LDAP}
+    else
+      echo -e "${_CLR_RED}Error, LDAP configuration file not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+  ./cp4ba-install-db.sh -c ${_CFG}
+
+  # no wait for db secrets
+  ./cp4ba-create-secrets.sh -c ${_CFG} -s -t 0
+}
+
+#-------------------------------
+deployPostEnv () {
+  # wait for db secrets
+  ./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 300
+  
+  ./cp4ba-create-databases.sh -c ${_CFG} -w
+
+  checkSecrets
+}
+
+#-------------------------------
 deployEnvironment () {
 
-if [[ ! -z "${_LDAP}" ]]; then
-  ../../cp4ba-idp-ldap/scripts/add-ldap.sh -p ${_LDAP}
-fi
+_INST_ENV_FULL_PATH="../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
+envsubst < ../templates/${CP4BA_INST_CR_TEMPLATE} > ${_INST_ENV_FULL_PATH}
 
-./cp4ba-install-db.sh -c ${_CFG}
-./cp4ba-create-secrets.sh -c ${_CFG} -s
-envsubst < ../templates/${CP4BA_INST_CR_TEMPLATE} > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
-./cp4ba-create-pvc.sh -c ${_CFG}
+## !!! ./cp4ba-create-pvc.sh -c ${_CFG}
 
 echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Deploying ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
-if [[ -f "../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml" ]]; then
-  MISSED_TRANSFORMATIONS=$(cat ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml | grep "\${" | wc -l)
+if [[ -f "${_INST_ENV_FULL_PATH}" ]]; then
+  MISSED_TRANSFORMATIONS=$(cat ${_INST_ENV_FULL_PATH} | grep "\${" | wc -l)
   if [[ MISSED_TRANSFORMATIONS -gt 0 ]]; then
-    echo -e "${_CLR_GREEN}Error, env var missed in '${_CLR_YELLOW}../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml${_CLR_RED}'${_CLR_NC}"
+    echo -e "${_CLR_RED}Error, env var missed in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
     echo "++++++++++++++++++++++++++++++++++++++++"
-    cat ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml | grep "\${"
+    cat ${_INST_ENV_FULL_PATH} | grep "\${"
     echo "++++++++++++++++++++++++++++++++++++++++"
     exit 1
   fi
-  yq ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml 2>/dev/null 1>/dev/null
+  yq ${_INST_ENV_FULL_PATH} 2>/dev/null 1>/dev/null
   YAML_ERROR=$?
   if [ $YAML_ERROR -gt 0 ]; then
-    echo -e "${_CLR_GREEN}Error, wrong yaml format in '${_CLR_YELLOW}../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml${_CLR_RED}'${_CLR_NC}"
+    echo -e "${_CLR_RED}Error, wrong yaml format in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
     echo "++++++++++++++++++++++++++++++++++++++++"
-    yq ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
+    yq ${_INST_ENV_FULL_PATH}
     echo "++++++++++++++++++++++++++++++++++++++++"
     exit 1
   fi
 else
-  echo -e "${_CLR_GREEN}Error, file not found '${_CLR_YELLOW}../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml${_CLR_RED}'${_CLR_NC}"
+  echo -e "${_CLR_GREEN}Error, file not found '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
   exit 1
 fi 
 
-oc apply -n ${CP4BA_INST_NAMESPACE} -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
-
-./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 60
-./cp4ba-create-databases.sh -c ${_CFG} -w
-
-checkSecrets
+oc apply -n ${CP4BA_INST_NAMESPACE} -f ${_INST_ENV_FULL_PATH}
 
 }
 
@@ -150,10 +168,15 @@ checkPrepreqTools
 # verify logged in OCP
 oc project 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
-  echo -e "\x1B[1;31mNot logged in to OCP cluster. Please login to an OCP cluster and rerun this command. \x1B[0m" && exit 1
+  echo -e "\x1B[1;31mNot logged in to OCP cluster. Please login to an OCP cluster and rerun this command. \x1B[0m"
+  exit 1
 fi
+
+deployPreEnv
 deployEnvironment
+deployPostEnv
 waitDeploymentReadiness
+
 echo ""
 echo -e "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
 exit 0

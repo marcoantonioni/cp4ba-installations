@@ -7,8 +7,12 @@ PARENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 _CFG=""
 _SCRIPTS=""
-_LDAP=""
-_IDP=""
+_CPAK_MGR=false
+_CPAK_MGR_VER=""
+_CPAK_MGR_FOLDER=""
+
+_OK=0
+_ERR_PKG_MGR=0
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -23,52 +27,70 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:p:s:l:i: flag
+while getopts c:p:s:v:d:m flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         p) _SCRIPTS=${OPTARG};;
-        l) _LDAP=${OPTARG};;
-        i) _IDP=${OPTARG};;
+        m) _CPAK_MGR=true;;
+        v) _CPAK_MGR_VER=${OPTARG};;
+        d) _CPAK_MGR_FOLDER=${OPTARG};;
     esac
 done
 
-if [[ -z "${_CFG}" ]] || [[ -z "${_SCRIPTS}" ]] || [[ -z "${_LDAP}" ]] || [[ -z "${_IDP}" ]]; then
-  echo "usage: $_me -c path-of-config-file -p cp4ba-case-pkg-scripts-folder -l(optional) ldap-config-file -i(optional) idp-config-file"
+usage () {
+  echo ""
+  echo -e "${_CLR_GREEN}usage: $_me
+    -c full-path-to-config-file
+       (eg: '../configs/env1.properties')
+    -p cp4ba-case-pkg-scripts-folder [uses a previously installed CP4BA Case Manager, mutually exclusive with -m option]
+       (eg: <full-path-to>/cert-kubernetes/scripts) 
+    -m(optional flag) install-case-package-manager [if set install a fresh package manager]
+    -v(optional) case-package-manager-version [install latest version if not set, see 'cp4ba-casemanager-setup' repository for further options]
+       (eg: '5.1.0') 
+    -d(optional) full-path-to-target-folder-for-case-package-manager [mandatory if -m is set, created if not exists]
+       (eg: '/tmp/my-pckg-mgr')${_CLR_NC}"
+}
+
+if [[ -z "${_CFG}" ]]; then
+  usage
   exit 1
 fi
 
-if [[ ! -z "${_LDAP}" ]]; then
-  if [[ ! -f "${_LDAP}" ]]; then
-    echo "LDAP configuration file not found: "${_LDAP}
-    exit 1
-  fi
-  source ${_LDAP}
-fi
-
-if [[ ! -z "${_IDP}" ]]; then
-  if [[ ! -f "${_IDP}" ]]; then
-    echo "IDP configuration file not found: "${_IDP}
-    exit 1
-  fi
-  source ${_IDP}
+if [[ "${_CPAK_MGR}" = "false" ]] && [[ -z "${_SCRIPTS}" ]]; then
+  usage
+  exit 1
 fi
 
 if [[ ! -f "${_CFG}" ]]; then
   echo "Configuration file not found: "${_CFG}
-  exit 1
-fi
-
-if [[ ! -d "${_SCRIPTS}" ]]; then
-  echo "Scripts folder not found: "${_SCRIPTS}
-  exit 1
-fi
-if [[ ! -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
-  echo "Script 'cp4a-clusteradmin-setup.sh' not found in folder: "${_SCRIPTS}
+    usage
   exit 1
 fi
 
 source ${_CFG}
+
+if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+  if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
+    if [[ ! -f "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
+      echo "LDAP configuration file not found: "${CP4BA_INST_LDAP_CFG_FILE}
+      usage
+      exit 1
+    fi
+    source ${CP4BA_INST_LDAP_CFG_FILE}
+  fi
+fi
+
+if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
+  if [[ ! -z "${CP4BA_INST_IDP_CFG_FILE}" ]]; then
+    if [[ ! -f "${CP4BA_INST_IDP_CFG_FILE}" ]]; then
+      echo "IDP configuration file not found: "${CP4BA_INST_IDP_CFG_FILE}
+      usage
+      exit 1
+    fi
+    source ${CP4BA_INST_IDP_CFG_FILE}
+  fi
+fi
 
 #-------------------------------
 checkPrepreqTools () {
@@ -84,11 +106,65 @@ checkPrepreqTools () {
 }
 
 onboardUsers () {
+
+  if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+    if [[ -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
+      echo -e "${_CLR_RED}Error, LDAP configuration file value not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      exit 1
+    fi
+    if [[ ! -f "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
+      echo -e "${_CLR_RED}Error, LDAP configuration file not not found for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      exit 1
+    fi
+
+    if [[ -z "${CP4BA_INST_IDP_CFG_FILE}" ]]; then
+      echo -e "${_CLR_RED}Error, IDP configuration file value not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      exit 1
+    fi
+    if [[ ! -f "${CP4BA_INST_IDP_CFG_FILE}" ]]; then
+      echo -e "${_CLR_RED}Error, LDAP configuration file not not found for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+  source ${CP4BA_INST_LDAP_CFG_FILE}
+  source ${CP4BA_INST_IDP_CFG_FILE} 
   echo -e "=============================================================="
-  echo -e "${_CLR_GREEN}Onboarding users from domain '${_CLR_YELLOW}${CP4BA_INST_LDAP_BASE_DOMAIN}${_CLR_GREEN}'${_CLR_NC}"
+  echo -e "${_CLR_GREEN}CP4BA Onboarding users${_CLR_NC}"
 
   # !!! cp4admin perde ruoli Automation Administrator, Automation Developer se remove-and-add
-  ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ${_IDP} -l ${_LDAP} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -s -o add
+  ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_IDP_CFG_FILE} -l ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -s -o add
+}
+
+installAndVerifyCasePkgMgr () {
+  if [[ "${_CPAK_MGR}" = "true" ]] && [[ ! -z "${_CPAK_MGR_FOLDER}" ]]; then
+    mkdir -p ${_CPAK_MGR_FOLDER}
+    _USE_VER=""
+    if [[ ! -z "${_CPAK_MGR_VER}" ]]; then
+      _USE_VER=" -v ${_CPAK_MGR_VER}"
+    fi
+    ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -r -d ${_CPAK_MGR_FOLDER} ${_USE_VER}
+    if [[ $? -gt 0 ]]; then
+      _ERR_PKG_MGR=1
+    else
+      if [[ -z "${_CPAK_MGR_VER}" ]]; then
+        _CPAK_MGR_VER=$(find ${_CPAK_MGR_FOLDER} -maxdepth 1 -type d | sort -r | head -n 1 | sed 's/.*\/ibm-cp-automation-//g')
+      fi
+      _SCRIPTS=${_CPAK_MGR_FOLDER}"/ibm-cp-automation-${_CPAK_MGR_VER}/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+    fi
+  fi
+  if [[ $_ERR_PKG_MGR -eq 0 ]]; then
+    if [[ ! -d "${_SCRIPTS}" ]]; then
+      echo "Scripts folder not found: "${_SCRIPTS}
+      usage
+      exit 1
+    fi
+    if [[ ! -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
+      echo "Script 'cp4a-clusteradmin-setup.sh' not found in folder: "${_SCRIPTS}
+      usage
+      exit 1
+    fi
+  fi
 }
 
 echo ""
@@ -106,18 +182,19 @@ if [ $? -gt 0 ]; then
   echo -e "\x1B[1;31mNot logged in to OCP cluster. Please login to an OCP cluster and rerun this command. \x1B[0m" && exit 1
 fi
 
-_OK=0
-
 START_SECONDS=$SECONDS
 
-./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
-if [[ $? -eq 0 ]]; then
-  ./cp4ba-deploy-env.sh -c ${_CFG} -l ${_LDAP}
+installAndVerifyCasePkgMgr
+if [[ $_ERR_PKG_MGR -eq 0 ]]; then
+  ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
   if [[ $? -eq 0 ]]; then
-    if [[ ! -z "${_IDP}" ]]; then
-      onboardUsers
+    ./cp4ba-deploy-env.sh -c ${_CFG} -l ${CP4BA_INST_LDAP_CFG_FILE}
+    if [[ $? -eq 0 ]]; then
+      if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
+        onboardUsers
+      fi
+      _OK=1
     fi
-    _OK=1
   fi
 fi
 

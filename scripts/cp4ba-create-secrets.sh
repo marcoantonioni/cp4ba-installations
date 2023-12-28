@@ -7,7 +7,7 @@ _WAIT=false
 _SILENT=false
 _ERROR=0
 
-_maxWait=60
+_maxWait=5
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code

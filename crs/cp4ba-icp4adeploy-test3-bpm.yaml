@@ -17,7 +17,7 @@ apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
 metadata:
   name: icp4adeploy
-  namespace: cp4ba-test1-bpm
+  namespace: cp4ba-test3-bpm
   labels:
     app.kubernetes.io/instance: ibm-dba
     app.kubernetes.io/managed-by: ibm-dba
@@ -62,9 +62,9 @@ spec:
 
   ldap_configuration:
     lc_selected_ldap_type: "Custom"
-    lc_ldap_server: "vuxprod-ldap.cp4ba-test1-bpm.svc.cluster.local"
+    lc_ldap_server: "vuxprod-ldap.cp4ba-test3-bpm.svc.cluster.local"
     lc_ldap_port: "389"
-    lc_bind_secret: "ldap-bind-test1-bpm"
+    lc_bind_secret: "ldap-bind-test3-bpm"
     lc_ldap_base_dn: "dc=vuxprod,dc=net"
     lc_ldap_ssl_enabled: false
     lc_ldap_ssl_secret_name: ""
@@ -88,9 +88,9 @@ spec:
     dc_icn_datasource:
       dc_database_type: "postgresql"
       dc_common_icn_datasource_name: "ECMClientDS"
-      database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1-bpm.svc.cluster.local"
+      database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test3-bpm.svc.cluster.local"
       database_port: "5432"
-      database_name: "test1_bpm_icn"
+      database_name: "test3_bpm_icn"
       database_ssl_secret_name: ""
       dc_hadr_validation_timeout: 15
       dc_hadr_standby_servername: ""
@@ -102,8 +102,8 @@ spec:
       dc_database_type: "postgresql"
       dc_common_gcd_datasource_name: "FNGCDDS"
       dc_common_gcd_xa_datasource_name: "FNGCDDSXA"
-      database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1-bpm.svc.cluster.local"
-      database_name: "test1_bpm_gcd"
+      database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test3-bpm.svc.cluster.local"
+      database_name: "test3_bpm_gcd"
       database_port: "5432"
       database_ssl_secret_name: ""
       dc_hadr_validation_timeout: 15
@@ -117,8 +117,8 @@ spec:
         dc_os_label: ""
         dc_common_os_datasource_name: "FNOS1DS"
         dc_common_os_xa_datasource_name: "FNOS1DSXA"
-        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1-bpm.svc.cluster.local"
-        database_name: "test1_bpm_os1"
+        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test3-bpm.svc.cluster.local"
+        database_name: "test3_bpm_os1"
         database_port: "5432"
         database_ssl_secret_name: ""
         dc_hadr_validation_timeout: 15
@@ -131,8 +131,8 @@ spec:
         dc_os_label: ""
         dc_common_os_datasource_name: "BAWINS1DOCS"
         dc_common_os_xa_datasource_name: "BAWINS1DOCSXA"
-        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1-bpm.svc.cluster.local"
-        database_name: "test1_bpm_bawdocs"
+        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test3-bpm.svc.cluster.local"
+        database_name: "test3_bpm_bawdocs"
         database_port: "5432"
         database_ssl_secret_name: ""
         dc_hadr_validation_timeout: 15
@@ -145,8 +145,8 @@ spec:
         dc_os_label: ""
         dc_common_os_datasource_name: "BAWINS1DOS"
         dc_common_os_xa_datasource_name: "BAWINS1DOSXA"
-        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1-bpm.svc.cluster.local"
-        database_name: "test1_bpm_bawdos"
+        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test3-bpm.svc.cluster.local"
+        database_name: "test3_bpm_bawdos"
         database_port: "5432"
         database_ssl_secret_name: ""
         dc_oracle_os_jdbc_url: ""
@@ -160,8 +160,8 @@ spec:
         dc_os_label: ""
         dc_common_os_datasource_name: "BAWINS1TOS"
         dc_common_os_xa_datasource_name: "BAWINS1TOSXA"
-        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test1-bpm.svc.cluster.local"
-        database_name: "test1_bpm_bawtos"
+        database_servername: "my-postgres-for-cp4ba-rw.cp4ba-test3-bpm.svc.cluster.local"
+        database_name: "test3_bpm_bawtos"
         database_port: "5432"
         database_ssl_secret_name: ""
         dc_hadr_validation_timeout: 15
@@ -226,24 +226,24 @@ spec:
           #oc_cpe_obj_store_workflow_data_tbl_space: "testbawtos_tbs"
           oc_cpe_obj_store_workflow_admin_group: "AdminsGroup"
           oc_cpe_obj_store_workflow_config_group: "AdminsGroup"
-          oc_cpe_obj_store_workflow_pe_conn_point_name: "TOS_connection"
+          oc_cpe_obj_store_workflow_pe_conn_point_name: "pe_conn_bawtos"
 
-    ic_icn_init_info:
-      icn_repos:
-        - add_repo_id: "my_demo_repo1"
-          add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
-          add_repo_os_sym_name: "OS01"
-          add_repo_os_dis_name: "OS01"
-          add_repo_workflow_enable: false
-          add_repo_work_conn_pnt: "objectstore1_connection:1"
-          add_repo_protocol: "FileNetP8WSI"
-      icn_desktop:
-        - add_desktop_id: "my_demo"
-          add_desktop_name: "icn_desktop"
-          add_desktop_description: "This is My ICN desktop"
-          add_desktop_is_default: false
-          add_desktop_repo_id: "my_demo_repo1"
-          add_desktop_repo_workflow_enable: false
+    #ic_icn_init_info:
+    #  icn_repos:
+    #    - add_repo_id: "demo_repo1"
+    #      add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
+    #      add_repo_os_sym_name: "OS01"
+    #      add_repo_os_dis_name: "OS01"
+    #      add_repo_workflow_enable: false
+    #      add_repo_work_conn_pnt: "pe_conn_os1:1"
+    #      add_repo_protocol: "FileNetP8WSI"
+    #  icn_desktop:
+    #    - add_desktop_id: "demo"
+    #      add_desktop_name: "icn_desktop"
+    #      add_desktop_description: "This is ICN desktop"
+    #      add_desktop_is_default: false
+    #      add_desktop_repo_id: "demo_repo1"
+    #      add_desktop_repo_workflow_enable: false
   
   # IBM Business Automation Workflow configuration
   baw_configuration:
@@ -255,10 +255,10 @@ spec:
         enable_ssl: false
         db_cert_secret_name: ""
         type: "postgresql"
-        server_name: "my-postgres-for-cp4ba-rw.cp4ba-test1-bpm.svc.cluster.local"
+        server_name: "my-postgres-for-cp4ba-rw.cp4ba-test3-bpm.svc.cluster.local"
         port: "5432"
-        database_name: "test1_bpm_baw_1"
-        secret_name: "test1-bpm-baw1-server-db-secret"
+        database_name: "test3_bpm_baw_1"
+        secret_name: "test3-bpm-baw1-server-db-secret"
         use_custom_jdbc_drivers: false
         cm_max_pool_size: 50
       security_context:
