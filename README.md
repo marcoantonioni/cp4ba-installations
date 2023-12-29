@@ -2,10 +2,13 @@
 
 ## TBD
 
-rivedere: oc_cpe_obj_store_workflow_pe_conn_point_name: 
+- rivedere dc_os_label e tutti campi Required
+
+- rivedere: oc_cpe_obj_store_workflow_pe_conn_point_name: 
   in https://cpd-cp4ba-test1-bpm.apps.658a741397f3750011a5d9d4.cloud.techzone.ibm.com/cpe/acce/
     default: "TOS_connection"
 
+  oc logs -f -n cp4ba-test3-bpm $(oc get pods -n cp4ba-test3-bpm | grep navigator-deploy | awk '{print $1}')
   Navigator > Work
   [FNRPE2131090485E]The connection point named "pe_conn_bawtos" is not defined
   Root cause:com.filenet.api.exception.EngineRuntimeException: The requested item was not found. Non-repository object pe_conn_bawtos not found.
@@ -89,6 +92,7 @@ CONFIG_FILE=../configs/env1-baw-only.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsFolder}
 
+
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-only.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
@@ -128,6 +132,8 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
   test1icn=# \dt+ icndb.*
 
+- SELECT spcname FROM pg_tablespace;
+
 - AE
   https://cpd-cp4ba-test1.apps.656d742d396eca001136ea72.cloud.techzone.ibm.com/ae-workspace1/v2/applications
 
@@ -143,13 +149,17 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-navigator
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=troubleshooting-navigator-initialization (pod name: icp4adeploy-navigator-deploy...)
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-authoring
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-initialization
+
+
+https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=vtpiicd-creating-postgresql-database-table-space-content-platform-engine-gcd
+
 
 # Create production CR
 ```
 folder: /cert-kubernetes/descriptors/patterns
 
-full: ibm_cp4a_cr_production_FC_workflow.yaml
 
 
 
