@@ -233,9 +233,9 @@ spec:
           oc_cpe_obj_store_workflow_region_number: 1
           oc_cpe_obj_store_workflow_region_name: TOSRegion1
           oc_cpe_obj_store_workflow_date_time_mask: "mm/dd/yy hh:tt am"
-          oc_cpe_obj_store_workflow_data_tbl_space: "VWDATA_TS"
-          oc_cpe_obj_store_workflow_blob_tbl_space: "VWBLOB_TS"
-          oc_cpe_obj_store_workflow_index_tbl_space: "VWINDEX_TS"
+          oc_cpe_obj_store_workflow_data_tbl_space: "vwdata_ts"
+          oc_cpe_obj_store_workflow_blob_tbl_space: "vwblob_ts"
+          oc_cpe_obj_store_workflow_index_tbl_space: "vwindex_ts"
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "pe_conn_tos"

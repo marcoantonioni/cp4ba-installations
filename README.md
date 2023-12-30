@@ -2,23 +2,7 @@
 
 ## TBD
 
-[INFO ] FFDC1015I: An FFDC Incident has been created: "[FNRPE2130660074E]Invalid pe_data tablespace or filegroup: "VWDATA_TS"
-com.ibm.ejs.container.BusinessExceptionMappingStrategy.setUncheckedException 506" at ffdc_23.12.29_18.10.14.0.log
-[ERROR ] WLTC0017E: Resources rolled back due to setRollbackOnly() being called.
-- rivedere dc_os_label e tutti campi Required
-
-- rivedere: oc_cpe_obj_store_workflow_pe_conn_point_name: 
-  in https://cpd-cp4ba-test1-bpm.apps.658a741397f3750011a5d9d4.cloud.techzone.ibm.com/cpe/acce/
-    default: "TOS_connection"
-
-  oc logs -f -n cp4ba-test3-bpm $(oc get pods -n cp4ba-test3-bpm | grep navigator-deploy | awk '{print $1}')
-  Navigator > Work
-  [FNRPE2131090485E]The connection point named "pe_conn_bawtos" is not defined
-  Root cause:com.filenet.api.exception.EngineRuntimeException: The requested item was not found. Non-repository object pe_conn_bawtos not found.
-
-- !!! rivedere secret createSecretFNCM con utenze db e relativa os_label !!!  
-
-- parametrizzare nome schema VWDATA_TS in template sql
+- parametrizzare nomi schema in template sql
 
 - se PFS aggiornare CR con
   sc_optional_components: 'elasticsearch'

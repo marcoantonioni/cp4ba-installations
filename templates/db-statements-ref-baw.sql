@@ -70,12 +70,12 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_bawtos to §§dbBAWTOSowner§�
 \c §§dbPrefix§§_bawtos;
 CREATE SCHEMA IF NOT EXISTS §§dbBAWTOSowner§§ AUTHORIZATION §§dbBAWTOSowner§§;
 GRANT ALL ON SCHEMA §§dbBAWTOSowner§§ to §§dbBAWTOSowner§§;
-CREATE TABLESPACE VWDATA_TS owner §§dbBAWTOSowner§§ location '/run/tbs/tosdata';
-CREATE TABLESPACE VWINDEX_TS owner §§dbBAWTOSowner§§ location '/run/tbs/tosindex';
-CREATE TABLESPACE VWBLOB_TS owner §§dbBAWTOSowner§§ location '/run/tbs/tosblob';
-GRANT CREATE ON TABLESPACE VWDATA_TS to §§dbBAWTOSowner§§; 
-GRANT CREATE ON TABLESPACE VWINDEX_TS to §§dbBAWTOSowner§§; 
-GRANT CREATE ON TABLESPACE VWBLOB_TS to §§dbBAWTOSowner§§; 
+CREATE TABLESPACE vwdata_ts owner §§dbBAWTOSowner§§ location '/run/tbs/tosdata';
+CREATE TABLESPACE vwindex_ts owner §§dbBAWTOSowner§§ location '/run/tbs/tosindex';
+CREATE TABLESPACE vwblob_ts owner §§dbBAWTOSowner§§ location '/run/tbs/tosblob';
+GRANT CREATE ON TABLESPACE vwdata_ts to §§dbBAWTOSowner§§; 
+GRANT CREATE ON TABLESPACE vwindex_ts to §§dbBAWTOSowner§§; 
+GRANT CREATE ON TABLESPACE vwblob_ts to §§dbBAWTOSowner§§; 
 
 /* AE */
 CREATE DATABASE §§dbPrefix§§_aedb_1 OWNER §§dbAEowner§§ ENCODING UTF8;
