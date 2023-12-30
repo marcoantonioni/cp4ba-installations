@@ -34,7 +34,7 @@ spec:
     sc_image_repository: cp.icr.io
     root_ca_secret: icp4a-root-ca
     sc_deployment_patterns: "foundation,workflow"
-    sc_optional_components: ""
+    sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
     sc_deployment_type: "Production"
     sc_deployment_platform: "OCP"
     sc_deployment_profile_size: "small"

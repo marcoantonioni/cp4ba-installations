@@ -20,6 +20,8 @@ com.ibm.ejs.container.BusinessExceptionMappingStrategy.setUncheckedException 506
 
 - parametrizzare nome schema VWDATA_TS in template sql
 
+- se PFS aggiornare CR con
+  sc_optional_components: 'elasticsearch'
 	
 - creare desktop baw in 'icn_desktop' ?
 
