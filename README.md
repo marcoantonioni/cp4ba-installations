@@ -2,6 +2,9 @@
 
 ## TBD
 
+[INFO ] FFDC1015I: An FFDC Incident has been created: "[FNRPE2130660074E]Invalid pe_data tablespace or filegroup: "VWDATA_TS"
+com.ibm.ejs.container.BusinessExceptionMappingStrategy.setUncheckedException 506" at ffdc_23.12.29_18.10.14.0.log
+[ERROR ] WLTC0017E: Resources rolled back due to setRollbackOnly() being called.
 - rivedere dc_os_label e tutti campi Required
 
 - rivedere: oc_cpe_obj_store_workflow_pe_conn_point_name: 
@@ -12,6 +15,11 @@
   Navigator > Work
   [FNRPE2131090485E]The connection point named "pe_conn_bawtos" is not defined
   Root cause:com.filenet.api.exception.EngineRuntimeException: The requested item was not found. Non-repository object pe_conn_bawtos not found.
+
+- !!! rivedere secret createSecretFNCM con utenze db e relativa os_label !!!  
+
+- parametrizzare nome schema VWDATA_TS in template sql
+
 	
 - creare desktop baw in 'icn_desktop' ?
 
@@ -106,6 +114,20 @@ CONFIG_FILE=../configs/env3-baw-only.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
 
+#------------------------------
+CONFIG_FILE=../configs/env1-wfps-bawonly.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+
+
+#------------------------------
+TNS=cp4ba-test-db
+oc new-project ${TNS}
+# install operator 
+
+./cp4ba-install-db.sh -c ../configs/env1-test-db.properties
+./cp4ba-create-databases.sh -c ../configs/env1-test-db.properties
+
+
 #source ../configs/_cfg-production-ldap-domain.properties
 #source ../configs/_cfg-production-idp.properties
 #source ../configs/env1.properties
@@ -154,7 +176,7 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters
 
 
 https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=vtpiicd-creating-postgresql-database-table-space-content-platform-engine-gcd
-
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=cfcmdswrps-creating-secrets-protect-sensitive-filenet-content-manager-configuration-data
 
 # Create production CR
 ```

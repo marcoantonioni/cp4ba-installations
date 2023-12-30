@@ -697,6 +697,12 @@ spec:
           oc_cpe_obj_store_workflow_config_group: "cpadmins"
           ## Provide a name for the connection point
           oc_cpe_obj_store_workflow_pe_conn_point_name: "pe_conn_bawtos"
+????
+          oc_cpe_obj_store_workflow_data_tbl_space: "VWDATA_TS"
+          oc_cpe_obj_store_workflow_index_tbl_space: "VWDATA_TS"
+          oc_cpe_obj_store_workflow_blob_tbl_space: "VWDATA_TS"
+          oc_cpe_obj_store_workflow_date_time_mask: "mm/dd/y hh:tt am"
+          
     ic_icn_init_info:
       icn_repos:
         - add_repo_id: "demo_repo1"

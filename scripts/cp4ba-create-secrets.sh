@@ -65,8 +65,8 @@ createSecretAE () {
     if [[ ! -z "${_USER_NAME}" ]]; then
       oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_AE_1_AD_SECRET_NAME} 2> /dev/null 1> /dev/null
       oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_AE_1_AD_SECRET_NAME} \
-        --from-literal=AE_DATABASE_USER="${_USER_NAME}" \
-        --from-literal=AE_DATABASE_PWD="${_USER_PASSWORD}" 1> /dev/null
+        --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
+        --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 1> /dev/null
     else
       _ERROR=1
       echo -e "${_CLR_RED}Secret ${CP4BA_INST_AE_1_AD_SECRET_NAME} NOT created (troubleshooting 'username' for secret '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-app${_CLR_RED}') !!!${_CLR_NC}"
@@ -75,19 +75,45 @@ createSecretAE () {
 }
 
 #-------------------------------
+#createSecretFNCM () {
+#  echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_NC}'"
+#  if [[ ! -z "${_USER_NAME}" ]]; then
+#    oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
+#    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
+#      --from-literal=osDBUsername="${CP4BA_INST_DB_OS_USER}" \
+#      --from-literal=osDBPassword="${CP4BA_INST_DB_OS_PWD}" \
+#      --from-literal=gcdDBUsername="${CP4BA_INST_DB_GCD_USER}" \
+#      --from-literal=gcdDBPassword="${CP4BA_INST_DB_GCD_PWD}" \
+#      --from-literal=contentDBUsername="${CP4BA_INST_DB_BAWDOCS_USER}" \
+#      --from-literal=contentDBPassword="${CP4BA_INST_DB_BAWDOCS_PWD}" \
+#      --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+#      --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
+#      --from-literal=ltpaPassword="passw0rd" \
+#      --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+#  else
+#    _ERROR=1
+#    echo -e "${_CLR_RED}Secret ibm-fncm-secret NOT created (troubleshooting 'username' for secret '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-app${_CLR_RED}') !!!${_CLR_NC}"
+#  fi
+#}
+
+#-------------------------------
 createSecretFNCM () {
   echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_NC}'"
   if [[ ! -z "${_USER_NAME}" ]]; then
     oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
-      --from-literal=osDBUsername="${_USER_NAME}" \
-      --from-literal=osDBPassword="${_USER_PASSWORD}" \
-      --from-literal=gcdDBUsername="${_USER_NAME}" \
-      --from-literal=gcdDBPassword="${_USER_PASSWORD}" \
-      --from-literal=contentDBUsername="${_USER_NAME}" \
-      --from-literal=contentDBPassword="${_USER_PASSWORD}" \
-      --from-literal=appLoginUsername="cp4admin" \
-      --from-literal=appLoginPassword="dem0s" \
+      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
+      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
+      --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
+      --from-literal="${CP4BA_INST_DB_BAWDOCS_LBL}"DBUsername="${CP4BA_INST_DB_BAWDOCS_USER}" \
+      --from-literal="${CP4BA_INST_DB_BAWDOCS_LBL}"DBPassword="${CP4BA_INST_DB_BAWDOCS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_BAWDOS_LBL}"DBUsername="${CP4BA_INST_DB_BAWDOS_USER}" \
+      --from-literal="${CP4BA_INST_DB_BAWDOS_LBL}"DBPassword="${CP4BA_INST_DB_BAWDOS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_BAWTOS_LBL}"DBUsername="${CP4BA_INST_DB_BAWTOS_USER}" \
+      --from-literal="${CP4BA_INST_DB_BAWTOS_LBL}"DBPassword="${CP4BA_INST_DB_BAWTOS_PWD}" \
+      --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+      --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
       --from-literal=ltpaPassword="passw0rd" \
       --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
   else
@@ -102,10 +128,10 @@ createSecretBAN () {
   if [[ ! -z "${_USER_NAME}" ]]; then
     oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-ban-secret 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-ban-secret \
-      --from-literal=navigatorDBUsername="${_USER_NAME}" \
-      --from-literal=navigatorDBPassword="${_USER_PASSWORD}" \
-      --from-literal=appLoginUsername="cp4admin" \
-      --from-literal=appLoginPassword="dem0s" \
+      --from-literal=navigatorDBUsername="${CP4BA_INST_DB_ICN_USER}" \
+      --from-literal=navigatorDBPassword="${CP4BA_INST_DB_ICN_PWD}" \
+      --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+      --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
       --from-literal=keystorePassword="changeit" \
       --from-literal=ltpaPassword="changeit" 1> /dev/null
   else

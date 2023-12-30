@@ -84,8 +84,19 @@ createDatabases () {
     if [ $_IS_READY -eq 1 ]; then
       echo -e "${_CLR_GREEN}Database pod is ready, load and execute sql statements in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
       ENV_STATS="./env-statements.$RANDOM.sql"
-      cat ${CP4BA_INST_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' | sed 's/-/_/g' > ${ENV_STATS}
-      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tos 
+
+      cat ${CP4BA_INST_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' \
+        | sed 's/-/_/g' \
+        | sed 's/§§dbBAWowner§§/'"${CP4BA_INST_DB_BAW_USER}"'/g' | sed 's/§§dbBAWowner_password§§/'"${CP4BA_INST_DB_BAW_PWD}"'/g' \
+        | sed 's/§§dbBAWDOCSowner§§/'"${CP4BA_INST_DB_BAWDOCS_USER}"'/g' | sed 's/§§dbBAWDOCSowner_password§§/'"${CP4BA_INST_DB_BAWDOCS_PWD}"'/g' \
+        | sed 's/§§dbBAWDOSowner§§/'"${CP4BA_INST_DB_BAWDOS_USER}"'/g' | sed 's/§§dbBAWDOSowner_password§§/'"${CP4BA_INST_DB_BAWDOS_PWD}"'/g' \
+        | sed 's/§§dbBAWTOSowner§§/'"${CP4BA_INST_DB_BAWTOS_USER}"'/g' | sed 's/§§dbBAWTOSowner_password§§/'"${CP4BA_INST_DB_BAWTOS_PWD}"'/g' \
+        | sed 's/§§dbICNowner§§/'"${CP4BA_INST_DB_ICN_USER}"'/g' | sed 's/§§dbICNowner_password§§/'"${CP4BA_INST_DB_ICN_PWD}"'/g' \
+        | sed 's/§§dbGCDowner§§/'"${CP4BA_INST_DB_GCD_USER}"'/g' | sed 's/§§dbGCDowner_password§§/'"${CP4BA_INST_DB_GCD_PWD}"'/g' \
+        | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' \
+        | sed 's/§§dbAEowner§§/'"${CP4BA_INST_DB_AE_USER}"'/g' | sed 's/§§dbAEowner_password§§/'"${CP4BA_INST_DB_AE_PWD}"'/g' > ${ENV_STATS}
+
+      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
       oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${CP4BA_INST_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
       oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
       _NUM_DB=$(cat ${ENV_STATS} | grep "CREATE DATABASE" | wc -l)
