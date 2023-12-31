@@ -1,0 +1,620 @@
+###############################################################################
+##
+##Licensed Materials - Property of IBM
+##
+##(C) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+##
+##US Government Users Restricted Rights - Use, duplication or
+##disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+##
+###############################################################################
+## DEPL.TYPE
+##  patterns: foundation,workflow
+##  BAW: 2 servers (baw1 is baw full, baw2 is bpm only)
+##  BAW 1 - content: yes
+##  BAW 1 - case: yes
+##  BAW 1 - navigator: yes
+##  BAW 2 - content: no
+##  BAW 2 - case: no
+##  BAW 2 - navigator: no
+###############################################################################
+apiVersion: icp4a.ibm.com/v1
+kind: ICP4ACluster
+metadata:
+  name: icp4adeploy
+  namespace: cp4ba-test1-baw-double
+  labels:
+    app.kubernetes.io/instance: ibm-dba
+    app.kubernetes.io/managed-by: ibm-dba
+    app.kubernetes.io/name: ibm-dba
+    release: 23.0.2
+spec:
+
+  appVersion: 23.0.2
+  ibm_license: accept
+
+  shared_configuration:
+    sc_deployment_fncm_license: "non-production"
+    sc_deployment_baw_license: "non-production"
+    sc_deployment_license: "non-production"
+    sc_deployment_context: "CP4A"
+    sc_image_repository: cp.icr.io
+    root_ca_secret: icp4a-root-ca
+    sc_deployment_patterns: "foundation,workflow"
+    sc_optional_components: ""
+    sc_deployment_type: "Production"
+    sc_deployment_platform: "OCP"
+    sc_deployment_profile_size: "small"
+    sc_ingress_enable: false
+    trusted_certificate_list: []
+    storage_configuration:
+      sc_slow_file_storage_classname: "managed-nfs-storage"
+      sc_medium_file_storage_classname: "managed-nfs-storage"
+      sc_fast_file_storage_classname: "managed-nfs-storage"
+      sc_block_storage_classname: "thin-csi"
+    sc_iam:
+      default_admin_username: "cpadmin"
+    enable_fips: false
+    sc_egress_configuration:
+      sc_restricted_internet_access: false
+    sc_content_initialization: true
+    sc_content_verification: false
+    encryption_key_secret: ibm-iaws-shared-key-secret
+    image_pull_secrets:
+      - ibm-entitlement-key
+    no_log: false
+    show_sensitive_log: true
+
+  ldap_configuration:
+    lc_selected_ldap_type: "Custom"
+    lc_ldap_server: "vuxprod-ldap.cp4ba-test1-baw-double.svc.cluster.local"
+    lc_ldap_port: "389"
+    lc_bind_secret: "ldap-bind-test1-baw-double"
+    lc_ldap_base_dn: "dc=vuxprod,dc=net"
+    lc_ldap_ssl_enabled: false
+    lc_ldap_ssl_secret_name: ""
+    lc_ldap_user_name_attribute: "*:cn"
+    lc_ldap_user_display_name_attr: "cn"
+    lc_ldap_group_base_dn: "dc=vuxprod,dc=net"
+    lc_ldap_group_name_attribute: "*:cn"
+    lc_ldap_group_display_name_attr: "cn"
+    lc_ldap_group_membership_search_filter: "(&(cn=%v)(objectclass=groupOfNames))"
+    lc_ldap_group_member_id_map: "memberof:member"
+    lc_ldap_recursive_search: true
+    lc_enable_pagination: false
+    lc_pagination_size: 4500     
+    custom:
+      lc_user_filter: "(&(cn=%v)(objectclass=person))"
+      lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
+
+  datasource_configuration:
+    dc_ssl_enabled: false
+
+    dc_icn_datasource:
+      dc_database_type: "postgresql"
+      dc_common_icn_datasource_name: "ECMClientDS"
+      database_servername: "my-postgres-1-for-cp4ba-rw.cp4ba-test1-baw-double.svc.cluster.local"
+      database_port: "5432"
+      database_name: "test1_baw_double_icn"
+      database_ssl_secret_name: ""
+      dc_hadr_validation_timeout: 15
+      dc_hadr_standby_servername: ""
+      dc_hadr_standby_port: ""
+      dc_hadr_retry_interval_for_client_reroute: 15
+      dc_hadr_max_retries_for_client_reroute: 3
+
+    dc_gcd_datasource:
+      dc_database_type: "postgresql"
+      dc_common_gcd_datasource_name: "FNGCDDS"
+      dc_common_gcd_xa_datasource_name: "FNGCDDSXA"
+      database_servername: "my-postgres-1-for-cp4ba-rw.cp4ba-test1-baw-double.svc.cluster.local"
+      database_name: "test1_baw_double_gcd"
+      database_port: "5432"
+      database_ssl_secret_name: ""
+      dc_hadr_validation_timeout: 15
+      dc_hadr_standby_servername: ""
+      dc_hadr_standby_port: ""
+      dc_hadr_retry_interval_for_client_reroute: 15
+      dc_hadr_max_retries_for_client_reroute: 3
+
+    dc_os_datasources:
+      - dc_database_type: "postgresql"
+        dc_os_label: "os"
+        dc_common_os_datasource_name: "FNOS1DS"
+        dc_common_os_xa_datasource_name: "FNOS1DSXA"
+        database_servername: "my-postgres-1-for-cp4ba-rw.cp4ba-test1-baw-double.svc.cluster.local"
+        database_name: "test1_baw_double_os1"
+        database_port: "5432"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+      - dc_database_type: "postgresql"
+        dc_os_label: "docs"
+        dc_common_os_datasource_name: "BAWINS1DOCS"
+        dc_common_os_xa_datasource_name: "BAWINS1DOCSXA"
+        database_servername: "my-postgres-1-for-cp4ba-rw.cp4ba-test1-baw-double.svc.cluster.local"
+        database_name: "test1_baw_double_bawdocs"
+        database_port: "5432"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+      - dc_database_type: "postgresql"
+        dc_os_label: "dos"
+        dc_common_os_datasource_name: "BAWINS1DOS"
+        dc_common_os_xa_datasource_name: "BAWINS1DOSXA"
+        database_servername: "my-postgres-1-for-cp4ba-rw.cp4ba-test1-baw-double.svc.cluster.local"
+        database_name: "test1_baw_double_bawdos"
+        database_port: "5432"
+        database_ssl_secret_name: ""
+        dc_oracle_os_jdbc_url: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+      - dc_database_type: "postgresql"
+        dc_os_label: "tos"
+        dc_common_os_datasource_name: "BAWINS1TOS"
+        dc_common_os_xa_datasource_name: "BAWINS1TOSXA"
+        database_servername: "my-postgres-1-for-cp4ba-rw.cp4ba-test1-baw-double.svc.cluster.local"
+        database_name: "test1_baw_double_bawtos"
+        database_port: "5432"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+  # IBM FileNet Content Manager initialize configuration
+  initialize_configuration:
+    ic_ldap_creation:
+      ic_ldap_admin_user_name:
+        - "cp4admin"
+      ic_ldap_admins_groups_name:
+        - "AdminsGroup"
+    ic_domain_creation:
+      domain_name: "P8DOMAIN"
+      encryption_key: "128"
+    ic_obj_store_creation:
+
+      object_stores:
+
+        - oc_cpe_obj_store_display_name: "OS01"
+          oc_cpe_obj_store_symb_name: "OS01"
+          oc_cpe_obj_store_conn:
+            name: "objectstore1_connection"
+            dc_os_datasource_name: "FNOS1DS"
+            dc_os_xa_datasource_name: "FNOS1DSXA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "cp4admin"
+            - "AdminsGroup"
+
+        - oc_cpe_obj_store_display_name: "BAWINS1DOCS"
+          oc_cpe_obj_store_symb_name: "BAWINS1DOCS"
+          oc_cpe_obj_store_conn:
+            name: "DOCS_connection"
+            dc_os_datasource_name: "BAWINS1DOCS"
+            dc_os_xa_datasource_name: "BAWINS1DOCSXA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "cp4admin"
+            - "AdminsGroup"
+
+        - oc_cpe_obj_store_display_name: "BAWINS1DOS"
+          oc_cpe_obj_store_symb_name: "BAWINS1DOS"
+          oc_cpe_obj_store_conn:
+            name: "DOS_connection"
+            dc_os_datasource_name: "BAWINS1DOS"
+            dc_os_xa_datasource_name: "BAWINS1DOSXA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "cp4admin"
+            - "AdminsGroup"
+          
+        - oc_cpe_obj_store_display_name: "BAWINS1TOS"
+          oc_cpe_obj_store_symb_name: "BAWINS1TOS"
+          oc_cpe_obj_store_conn:
+            name: "TOS_connection"
+            site_name: InitialSite
+            dc_os_datasource_name: "BAWINS1TOS"
+            dc_os_xa_datasource_name: "BAWINS1TOSXA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "cp4admin"
+            - "AdminsGroup"
+          oc_cpe_obj_store_enable_compression: false
+          oc_cpe_obj_store_enable_content_event_emitter: false
+          oc_cpe_obj_store_enable_workflow: true
+          oc_cpe_obj_store_workflow_locale: en
+          oc_cpe_obj_store_workflow_region_number: 1
+          oc_cpe_obj_store_workflow_region_name: "TOSRegion1"
+          oc_cpe_obj_store_workflow_date_time_mask: "mm/dd/yy hh:tt am"
+          oc_cpe_obj_store_workflow_data_tbl_space: "vwdata_ts"
+          oc_cpe_obj_store_workflow_index_tbl_space: "vwindex_ts"
+          oc_cpe_obj_store_workflow_blob_tbl_space: "vwblob_ts"
+          oc_cpe_obj_store_workflow_admin_group: "AdminsGroup"
+          oc_cpe_obj_store_workflow_config_group: "AdminsGroup"
+          oc_cpe_obj_store_workflow_pe_conn_point_name: "pe_conn_tos"
+
+    ic_icn_init_info:
+      icn_repos:
+        - add_repo_id: "my_demo_repo1"
+          add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
+          add_repo_os_sym_name: "OS01"
+          add_repo_os_dis_name: "OS01"
+          add_repo_workflow_enable: false
+          add_repo_work_conn_pnt: "objectstore1_connection:1"
+          add_repo_protocol: "FileNetP8WSI"
+
+        #- add_repo_id: "baw1_repo"
+        #  add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
+        #  add_repo_os_sym_name: "BAWINS1TOS"
+        #  add_repo_os_dis_name: "BAWINS1TOS"
+        #  add_repo_workflow_enable: false
+        #  add_repo_work_conn_pnt: "TOS_connection:1"
+        #  add_repo_protocol: "FileNetP8WSI"
+
+      icn_desktop:
+        - add_desktop_id: "my_demo"
+          add_desktop_name: "icn_desktop"
+          add_desktop_description: "This is My ICN desktop"
+          add_desktop_is_default: false
+          add_desktop_repo_id: "my_demo_repo1"
+          add_desktop_repo_workflow_enable: false
+
+        #- add_desktop_id: "baw"
+        #  add_desktop_name: "baw"
+        #  add_desktop_description: "BAW1 desktop"
+        #  add_desktop_is_default: true
+        #  add_desktop_repo_id: "baw1_repo"
+        #  add_desktop_repo_workflow_enable: true
+
+  # IBM Business Automation Workflow configuration
+  baw_configuration:
+
+    - name: baw1 
+      capabilities: "workflow"
+      host_federated_portal: true
+      admin_user: "cp4admin"
+      database:
+        enable_ssl: false
+        db_cert_secret_name: ""
+        type: "postgresql"
+        server_name: "my-postgres-1-for-cp4ba-rw.cp4ba-test1-baw-double.svc.cluster.local"
+        port: "5432"
+        database_name: "test1_baw_double_baw_1"
+        secret_name: "test1-baw-double-baw1-server-db-secret"
+        use_custom_jdbc_drivers: false
+        cm_max_pool_size: 50
+      security_context:
+        selinux_options:
+        fs_groupchangepolicy:
+      # Production, Staging, Test, Development
+      env_type: Test
+      replicas: 1
+      resources:
+        limits:
+          cpu: "2000m"
+          memory: "3096Mi"
+        requests:
+          cpu: "500m"
+          memory: "1048Mi"
+      ## Resource configuration for init job
+      resources_init:
+        limits:
+          ## CPU limit for init job containers.
+          cpu: "2000m"
+          ## Memory limit for init job containers.
+          memory: 512Mi
+        requests:
+          ## Requested amount of CPU for init job containers.
+          cpu: "200m"
+          ## Requested amount of memory for init job containers.
+          memory: 128Mi
+
+      ## Resource configuration for heavy init job such as database init job
+      resources_init_heavy_job:
+        limits:
+          ## CPU limit for Workflow Server database init job container.
+          cpu: "2000m"
+          ## Memory limit for Workflow Server database init job container.
+          memory: 2048Mi
+        requests:
+          ## Requested amount of CPU for Workflow Server database init job container.
+          cpu: "500m"
+          ## Requested amount of memory for Workflow Server database init job container.
+          memory: 512Mi
+      logs:
+        trace_specification: "*=info"
+
+      tls:
+        ## Workflow Server TLS secret that contains tls.key and tls.crt.
+        ## If you want to use a customized Workflow Server TLS certificate, ensure it is signed by the CA in shared_configuration.root_ca_secret.
+        ## If you do not want to use a customized Workflow Server TLS certificate, leave it empty.
+        tls_secret_name: ''
+        ## Workflow Server TLS trust list.
+        ## You might specify a list of secrets, every secret stores a trusted CA
+        ## Use command `kubectl create secret generic baw_custom_trust_ca_secret1 --from-file=tls.crt=./ca1.crt` to generate the secret.
+        tls_trust_list: []
+        ## Secret to store your custom trusted keystore (optional). The type for the keystore must be JKS or PKCS12. All certificates from the keystore are imported into the trust keystore of the Workflow Server.
+        ## When FIPS mode is enabled, you cannot use this parameter, and external sourced trust stores are not supported.
+        ## You might run the following sample command to create the secret:
+        ## `kubectl create secret generic baw_custom_trusted_keystore_secret --from-file=truststorefile=./trust.p12 --from-literal=type=PKCS12  --from-literal=password=WebAS`
+        tls_trust_store: ''
+
+      # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
+      #process_federation_server:
+      #  hostname:
+      #  port:
+      #  context_root_prefix:
+
+      ## The configurations for content integration for attachment in process
+      content_integration:
+        init_job_image:
+          ## Image name for content integration container.
+          repository: cp.icr.io/cp/cp4a/baw/iaws-ps-content-integration
+          ## Image tag for content integration container.
+          tag: "23.0.2"
+          ## Pull policy for content integration container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
+          pull_policy: IfNotPresent
+        ## Domain name for content integration. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
+        domain_name: "P8DOMAIN"
+        ## Object Store name for content integration.
+        ## The value must be an existing object store in CPE.
+        ## If use initialize_configuration for the object store initialization, the value must be one of initialize_configuration.ic_obj_store_creation.object_stores.
+        object_store_name: "BAWINS1DOCS"
+        ## Admin secret for connecting to Content Platform Engine (CPE). This parameter is optional. If not set, it will autodetect CPE's admin secret in the same namespace.
+        cpe_admin_secret: ""
+
+      # The configuration for case
+      case:
+        init_job_image:
+          ## Image name for CASE init job container.
+          repository: cp.icr.io/cp/cp4a/baw/workflow-server-case-initialization
+          ## Image tag for CASE init job container.
+          tag: "23.0.2"
+          ## Pull policy for CASE init job container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
+          pull_policy: IfNotPresent
+      
+        ## Domain name for CASE. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
+        domain_name: "P8DOMAIN"
+        ## Design Object Store name of CASE.
+        ## The value must be the same as the oc_cpe_obj_store_symb_name value of one of the object stores defined in initialize_configuration.ic_obj_store_creation.object_stores.
+        object_store_name_dos: "BAWINS1DOS"
+        
+        tos_list:
+        ## The tos_list is a list. You can deploy multiple Target Object Stores.
+        ## For each Target Object Store, the object_store_name value must be the same as the oc_cpe_obj_store_symb_name value of one of the object stores defined in initialize_configuration.ic_obj_store_creation.object_stores.
+        - object_store_name: "BAWINS1TOS"        
+          ## Connection point name for Target Object Store.
+          ## See initialize_configuration.ic_obj_store_creation.object_stores[x].oc_cpe_obj_store_workflow_pe_conn_point_name.
+          ## If oc_cpe_obj_store_workflow_pe_conn_point_name is not specified explicitly, the default value is pe_conn_<TOS_OS_DB_NAME>.
+          # connection_point_name: "TOS_connection"
+          ## Navigator desktop name for Target Object Store.
+          #desktop_id: "baw"
+          ## Name of the target environment or project area to register with the case components and associate with an IBM Content Navigator desktop.
+          #target_environment_name: "target_env_my_tos"          
+          ## Whether to use the Target Object Store as the default Target Object Store.
+          ## If none of the Target Object Stores is set as default, the first one in the tos_list will be set as the default Target Object Store.
+          #is_default: true
+
+        ## Persistent volume claim (PVC) name for case network shared directory.
+        ## This parameter must be set to the same value as the Business Automation Navigator pvc_for_icn_pluginstore parameter.
+        ## If navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore is not specified explicitly, the default value is icn-pluginstore.
+        network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
+        ## Custom package names for installing custom packages, where the value format is similar to package1.zip, package2.zip.
+        custom_package_names: ""
+        ## Custom extension names for installing custom packages, where the value format is similar to extension1.zip, extension2.zip.
+        custom_extension_names: ""
+        ## Number of seconds before a newly added or modified asset will take effect in the Case Client. The value must be an integer, e.g. "100."
+        ## The default value will be used if it is not set.
+        cpe_metadata_cache_time_to_live: ""
+        ## The event emitter settings if you want to enable Case Event Emitter. You can configure multiple Target Object Stores if you want to enable the Case Event Emitter for them. The following example shows sample values:
+        ## event_emitter:
+        ## - tos_name: TOS1Name
+        ##   connection_point_name: tos1_connection_point_name
+        ##   date_sql: 20200630T002840Z
+        ##   logical_unique_id: bawinst1
+        ##   solution_list: SampleSolution1,SampleSolution2
+        ## - tos_name: TOS2Name
+        ##   connection_point_name: tos2_connection_point_name
+        ##   date_sql: 20220930T002710Z
+        ##   logical_unique_id: bawinst1
+        ##   solution_list: SampleSolution3,SampleSolution4
+
+        #event_emitter:
+        ### Target Object Store name of CASE
+        #- tos_name: "BAWINS1TOS"
+        #  ## Connection point name for Target Object Store.
+        #  connection_point_name: "TOS_connection"
+        #  ## Creation date of the events.
+        #  ## The emitter starts processing the events from that date. If a bookmark exists, the emitter ignores this parameter and processes #the events from the bookmark.
+        #  date_sql: "<Required>"
+        #  ## An 8-character alphanumeric string without underscores.
+        #  ## This value is always required. While processing, the emitter tracks the events that are processed by using the Content Engine #Audit Processing Bookmark with a display name that is based on this value.
+        #  ## Therefore, if the emitter is restarted and if the bookmark exists, the emitter processes the events from the last bookmark.
+        #  logical_unique_id: "<Required>"
+        #  ## Comma-separated list of all the case solution names that need to be processed, e.g "solution1, solution2". Default value is "*". #Add all the solutions that you want to be processed before you deploy the Case event emitter.
+        #  solution_list: "*"
+        #  ## Comma-separated list of all the case types that need to be processed, e.g "casetype1, casetype2". Default value is "".
+        #  casetype_list: ""
+        #  ## Case event emitter batch size. Default value is 1000.
+        #  emitter_batch_size: 1000
+        #  ## Whether to process FileNet Process Engine events in addition to IBM Business Automation Workflow events. Default value is true.
+        #  process_pe_events: true
+
+      #  ## The event emitter settings if you want to enable Case History Emitter. The following example shows sample values:
+      #  ## case_history_emitter:
+      #  ##   enable: true
+      #  ##   dc_common_cpe_datasource_name: "CASEHISTORYDS"
+      #  ##   case_history_store_schema_name: "CHSCHEMA"
+      #  ##
+      #  case_history_emitter:
+      #    ## To enable Case History Emitter, this parameter must be set to true.
+      #    enable: false
+      #    ## The name of the non-XA datasource of Case History Store (from dc_common_cpe_datasource_name in the dc_cpe_datasources section)
+      #    ## This value is always required. To enable Case History Emitter, add the Case History database configuration in the dc_cpe_datasources section, and specify the non-XA datasource name(dc_common_cpe_datasource_name) as the value of this parameter.
+      #    dc_common_cpe_datasource_name: "<Required>"
+      #    ## The schema name for Case History Store.
+      #    case_history_store_schema_name: "CHSCHEMA"
+
+    - name: baw2 
+      capabilities: "workflow"
+      host_federated_portal: false
+      admin_user: "cp4admin"
+      database:
+        enable_ssl: false
+        db_cert_secret_name: ""
+        type: "postgresql"
+        server_name: "my-postgres-2-for-cp4ba-rw.cp4ba-test1-baw-double.svc.cluster.local"
+        port: "5432"
+        database_name: "test1_baw_double_baw_1"
+        secret_name: "test1-baw-double-baw2-server-db-secret"
+        use_custom_jdbc_drivers: false
+        cm_max_pool_size: 50
+      security_context:
+        selinux_options:
+        fs_groupchangepolicy:
+      # Production, Staging, Test, Development
+      env_type: Test
+      replicas: 1
+      resources:
+        limits:
+          cpu: "2000m"
+          memory: "3096Mi"
+        requests:
+          cpu: "500m"
+          memory: "1048Mi"
+      ## Resource configuration for init job
+      resources_init:
+        limits:
+          ## CPU limit for init job containers.
+          cpu: "2000m"
+          ## Memory limit for init job containers.
+          memory: 512Mi
+        requests:
+          ## Requested amount of CPU for init job containers.
+          cpu: "200m"
+          ## Requested amount of memory for init job containers.
+          memory: 128Mi
+
+      ## Resource configuration for heavy init job such as database init job
+      resources_init_heavy_job:
+        limits:
+          ## CPU limit for Workflow Server database init job container.
+          cpu: "2000m"
+          ## Memory limit for Workflow Server database init job container.
+          memory: 2048Mi
+        requests:
+          ## Requested amount of CPU for Workflow Server database init job container.
+          cpu: "500m"
+          ## Requested amount of memory for Workflow Server database init job container.
+          memory: 512Mi
+      logs:
+        trace_specification: "*=info"
+
+      tls:
+        ## Workflow Server TLS secret that contains tls.key and tls.crt.
+        ## If you want to use a customized Workflow Server TLS certificate, ensure it is signed by the CA in shared_configuration.root_ca_secret.
+        ## If you do not want to use a customized Workflow Server TLS certificate, leave it empty.
+        tls_secret_name: ''
+        ## Workflow Server TLS trust list.
+        ## You might specify a list of secrets, every secret stores a trusted CA
+        ## Use command `kubectl create secret generic baw_custom_trust_ca_secret1 --from-file=tls.crt=./ca1.crt` to generate the secret.
+        tls_trust_list: []
+        ## Secret to store your custom trusted keystore (optional). The type for the keystore must be JKS or PKCS12. All certificates from the keystore are imported into the trust keystore of the Workflow Server.
+        ## When FIPS mode is enabled, you cannot use this parameter, and external sourced trust stores are not supported.
+        ## You might run the following sample command to create the secret:
+        ## `kubectl create secret generic baw_custom_trusted_keystore_secret --from-file=truststorefile=./trust.p12 --from-literal=type=PKCS12  --from-literal=password=WebAS`
+        tls_trust_store: ''
+
+      # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
+      #process_federation_server:
+      #  hostname:
+      #  port:
+      #  context_root_prefix:
+
+  # IBM Business Automation Navigator configuration
+  navigator_configuration:
+    ## Navigator secret that contains user credentials for LDAP and database
+    ban_secret_name: ibm-ban-secret
+    replica_count: 1
+    image:
+      ## The default repository is the IBM Entitled Registry
+      repository: cp.icr.io/cp/cp4a/ban/navigator
+      tag: "23.0.2"
+      pull_policy: IfNotPresent
+    log:
+      format: json
+    resources:
+      requests:
+        cpu: 1
+        memory: 3072Mi
+        ephemeral_storage: 1Gi
+      limits:
+        cpu: 1
+        memory: 3072Mi
+        ephemeral_storage: 2.5Gi
+    disable_fips: false
+    disable_basic_auth: true
+
+    ## Below are the default ICN Production settings.  Make the necessary changes as you see fit.  Refer to Knowledge Center documentation for details.
+    icn_production_setting:
+      timezone: Etc/UTC
+      icn_jndids_name: ECMClientDS
+      # icn_schema: ICNDB
+      # icn_table_space: ICNDB
+      allow_remote_plugins_via_http: false
+    monitor_enabled: false
+    logging_enabled: false
+
+    ## Persistent Volume Claims for ICN.  If the storage_configuration in the shared_configuration is configured,
+    ## the Operator will create the PVC using the names below.
+    datavolume:
+      existing_pvc_for_icn_cfgstore: 
+        name: "icn-cfgstore"
+        size: 1Gi
+      existing_pvc_for_icn_logstore: 
+        name: "icn-logstore"
+        size: 1Gi
+      existing_pvc_for_icn_pluginstore: 
+        name: "icn-pluginstore"
+        size: 1Gi
+      existing_pvc_for_icnvw_cachestore: 
+        name: "icn-vw-cachestore"
+        size: 1Gi
+      existing_pvc_for_icnvw_logstore: 
+        name: "icn-vw-logstore"
+        size: 1Gi
+      existing_pvc_for_icn_aspera: 
+        name: "icn-asperastore" 
+        size: 1Gi
+
+    ## Default values for both rediness and liveness probes.  Modify these values to meet your requirements.
+    probe:
+      startup:
+        initial_delay_seconds: 120
+        period_seconds: 10
+        timeout_seconds: 10
+        failure_threshold: 6
+      readiness:
+        period_seconds: 10
+        timeout_seconds: 10
+        failure_threshold: 6
+      liveness:
+        period_seconds: 10
+        timeout_seconds: 5
+        failure_threshold: 6
+
+    ## Only use this parameter if you want to override the image_pull_secrets setting in the shared_configuration above.
+    image_pull_secrets:
+      name: "ibm-entitlement-key"
+    ## BAN Sync services work with Zen URL by default, change it to false to use BAN Route URL.
+    use_sync_with_zen_url: true

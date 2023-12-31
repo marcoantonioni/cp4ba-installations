@@ -2,6 +2,9 @@
 
 ## TBD
 
+- verificare navigator_configuration.icn_production_setting
+  schema e tablespace
+
 - rimuovere se PVC non necessitate (deploy-env.sh) 
     export CP4BA_INST_BAW_1_CFG_CONTENT=false
     export CP4BA_INST_BAW_1_CFG_CASE=false
