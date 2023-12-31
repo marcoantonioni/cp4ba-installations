@@ -277,7 +277,7 @@ spec:
 
     - name: baw1 
       capabilities: "workflow"
-      host_federated_portal: true
+      host_federated_portal: false
       admin_user: "cp4admin"
       database:
         enable_ssl: false

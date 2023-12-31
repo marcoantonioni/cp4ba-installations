@@ -53,7 +53,7 @@ spec:
     enable_fips: false
     sc_egress_configuration:
       sc_restricted_internet_access: false
-    sc_content_initialization: true
+    sc_content_initialization: false
     sc_content_verification: false
     encryption_key_secret: ibm-iaws-shared-key-secret
     image_pull_secrets:

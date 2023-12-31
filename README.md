@@ -88,6 +88,11 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
 
 
+
+#------------------------------
+TNS=cp4ba-test1-baw-bpm-only
+oc logs -f -n $TNS $(oc get pods -n $TNS | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
+
 #------------------------------
 TNS=cp4ba-test-db
 oc new-project ${TNS}

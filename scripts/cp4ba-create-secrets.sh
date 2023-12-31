@@ -103,8 +103,28 @@ createSecretFNCM () {
 }
 
 #-------------------------------
+createSecretFNCMBpmOnly () {
+  echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
+    --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+    --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
+    --from-literal=ltpaPassword="passw0rd" \
+    --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    echo -e "${_CLR_RED}Secret ibm-fncm-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
+}
+
+#-------------------------------
 createSecretBAN () {
   echo -e "Secret '${_CLR_YELLOW}ibm-ban-secret${_CLR_NC}'"
+
+  if [[ -z "${CP4BA_INST_DB_ICN_USER}" ]]; then
+    CP4BA_INST_DB_ICN_USER="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    CP4BA_INST_DB_ICN_PWD="${CP4BA_INST_PAKBA_ADMIN_PWD}"
+  fi
 
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-ban-secret 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-ban-secret \
@@ -169,10 +189,11 @@ createSecretBAW () {
 #-------------------------------
 createSecrets () {
   createSecretLDAP
-
+  createSecretBAN
   if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
     createSecretFNCM
-    createSecretBAN
+  else
+    createSecretFNCMBpmOnly
   fi
 
   i=1
