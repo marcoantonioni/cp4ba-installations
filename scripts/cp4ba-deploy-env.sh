@@ -4,6 +4,7 @@ _me=$(basename "$0")
 
 _CFG=""
 _LDAP=""
+_WAIT_ONLY=false
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -14,11 +15,12 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:l: flag
+while getopts c:l:w flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         l) _LDAP=${OPTARG};;
+        w) _WAIT_ONLY=true;;
     esac
 done
 
@@ -132,6 +134,8 @@ if [ $? -gt 0 ]; then
   exit 1
 fi
 
+echo -e "${_CLR_GREEN}CR for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' saved\nin file '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_YELLOW}'${_CLR_NC}"
+
 }
 
 waitDeploymentReadiness () {
@@ -176,9 +180,11 @@ if [ $? -gt 0 ]; then
   exit 1
 fi
 
-deployPreEnv
-deployEnvironment
-deployPostEnv
+if [[ "${_WAIT_ONLY}" = "false" ]]; then
+  deployPreEnv
+  deployEnvironment
+  deployPostEnv
+fi
 waitDeploymentReadiness
 
 echo ""
