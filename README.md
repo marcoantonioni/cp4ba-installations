@@ -68,6 +68,17 @@ CONFIG_FILE=../configs/env1-baw-only-double.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
 #------------------------------
+CONFIG_FILE=../configs/env1-baw-bpm-only.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+
+#------------------------------
+CONFIG_FILE=../configs/env1-wfps-bawonly.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+
+
+
+
+#------------------------------
 CONFIG_FILE=../configs/env2-baw-only.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
@@ -75,13 +86,6 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 CONFIG_FILE=../configs/env3-baw-only.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
-#------------------------------
-CONFIG_FILE=../configs/env1-baw-bpm-only.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
-
-#------------------------------
-CONFIG_FILE=../configs/env1-wfps-bawonly.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
 
 #------------------------------

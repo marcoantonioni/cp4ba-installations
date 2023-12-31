@@ -277,7 +277,7 @@ spec:
 
     - name: ${CP4BA_INST_BAW_1_NAME} 
       capabilities: "workflow"
-      host_federated_portal: true
+      host_federated_portal: false
       admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
       database:
         enable_ssl: false
