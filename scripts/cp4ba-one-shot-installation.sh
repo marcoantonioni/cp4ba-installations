@@ -211,9 +211,22 @@ else
   ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
   TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
   TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+
+  _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
+  _ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception" | wc -l)
   echo -e "${_CLR_YELLOW}***********************************************************************"
   echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
   echo -e "  terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
-  echo -e "\x1B[1mPlease note\x1B[0m, some pods may still be in the not ready state. Check before using the system."
+  if [[ $_PENDING -gt 0 ]]; then
+    echo -e "\x1B[1mPlease note\x1B[0m, some pods may be not yet ready. Check before using the system."
+    oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
+  fi
+  if [[ $_ERRORS -gt 0 ]]; then
+    echo -e "\x1B[1mPlease note\x1B[0m, some errors in Case initialization. May be a transient problem."
+    echo ""
+    oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception"
+    echo ""
+    echo "For Case initialization log run manually: oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}')"
+  fi
   echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
 fi
