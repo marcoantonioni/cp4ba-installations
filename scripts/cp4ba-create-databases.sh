@@ -101,6 +101,7 @@ _createDatabases () {
       _NUM_DB=$(cat ${ENV_STATS} | grep "CREATE DATABASE" | wc -l)
       echo -e "${_CLR_GREEN}Created '${_CLR_YELLOW}${_NUM_DB}${_CLR_GREEN}' databases.${_CLR_NC}"
       _T_NAME="${_DB_TEMPLATE##*/}"
+      mkdir -p ../crs
       _FULL_TARGET="../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
       mv ${ENV_STATS} ${_FULL_TARGET} 2>/dev/null
       echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"

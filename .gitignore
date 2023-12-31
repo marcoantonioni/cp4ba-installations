@@ -1,5 +1,3 @@
-crs/**.yaml
-crs/**.sql
-crs/**.txt
+crs/**
 
 

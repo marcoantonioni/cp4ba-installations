@@ -141,35 +141,6 @@ createSecretBAN () {
 }
 
 #-------------------------------
-
-#createSecretBAW_1 () {
-#  # vedi rif ibm-baw-wfs-server-db-secret
-#  echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_BAW_1_DB_SECRET}${_CLR_NC}'"
-#  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} 2> /dev/null 1> /dev/null
-#  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_BAW_1_DB_SECRET} \
-#    --from-literal=dbUser="${CP4BA_INST_BAW_1_DB_USER}" \
-#    --from-literal=password="${CP4BA_INST_BAW_1_DB_PWD}"  1> /dev/null
-#  if [[ $? -gt 0 ]]; then
-#    _ERROR=1
-#    echo -e "${_CLR_RED}Secret ${CP4BA_INST_BAW_1_DB_SECRET} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
-#  fi
-#}
-#
-#createSecretBAW_2 () {
-#  # vedi rif ibm-baw-wfs-server-db-secret
-#  echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_BAW_2_DB_SECRET}${_CLR_NC}'"
-#  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_2_DB_SECRET} 2> /dev/null 1> /dev/null
-#  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_BAW_2_DB_SECRET} \
-#    --from-literal=dbUser="${CP4BA_INST_BAW_2_DB_USER}" \
-#    --from-literal=password="${CP4BA_INST_BAW_2_DB_PWD}"  1> /dev/null
-#  if [[ $? -gt 0 ]]; then
-#    _ERROR=1
-#    echo -e "${_CLR_RED}Secret ${CP4BA_INST_BAW_1_DB_SECRET} NOT created (verify 'username/password' for secret '${_CLR_YELLOW}${CP4BA_INST_BAW_2_DB_SECRET}${_CLR_RED}') !!!${_CLR_NC}"
-#  fi
-#}
-
-
-#-------------------------------
 createSecretBAW () {
 # $1 secret name
 # $2 username

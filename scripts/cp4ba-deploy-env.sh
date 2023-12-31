@@ -92,7 +92,6 @@ deployPostEnv () {
 
 #-------------------------------
 deployEnvironment () {
-
 _INST_ENV_FULL_PATH="../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
 envsubst < ../templates/${CP4BA_INST_CR_TEMPLATE} > ${_INST_ENV_FULL_PATH}
 
@@ -181,6 +180,7 @@ if [ $? -gt 0 ]; then
 fi
 
 if [[ "${_WAIT_ONLY}" = "false" ]]; then
+  mkdir -p ../crs
   deployPreEnv
   deployEnvironment
   deployPostEnv
