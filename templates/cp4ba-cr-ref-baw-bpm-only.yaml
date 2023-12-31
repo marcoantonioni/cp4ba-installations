@@ -94,7 +94,7 @@ spec:
         db_cert_secret_name: ""
         type: "postgresql"
         server_name: "${CP4BA_INST_BAW_1_DB_HOST}"
-        port: "${CP4BA_INST_BAW_1_DB_PORT}"
+        port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_name: "${CP4BA_INST_BAW_1_DB_NAME}"
         secret_name: "${CP4BA_INST_BAW_1_DB_SECRET}"
         use_custom_jdbc_drivers: false

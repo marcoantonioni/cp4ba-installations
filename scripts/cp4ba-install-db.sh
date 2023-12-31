@@ -27,14 +27,33 @@ fi
 
 source ${_CFG}
 
-deployDBCluster () {
+resourceExist () {
+#    echo "namespace name: $1"
+#    echo "resource type: $2"
+#    echo "resource name: $3"
+  if [ $(oc get $2 -n $1 $3 2> /dev/null | grep $3 | wc -l) -lt 1 ];
+  then
+      return 0
+  fi
+  return 1
+}
+
+
+_deployDBCluster () {
+
+if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
+
+resourceExist $2 cluster $1
+if [ $? -eq 1 ]; then
+  oc delete cluster -n $2 $1 2>/dev/null 1>/dev/null
+fi
 
 cat <<EOF | oc create -f -
 apiVersion: postgresql.k8s.enterprisedb.io/v1
 kind: Cluster
 metadata:
-  name: ${CP4BA_INST_DB_CR_NAME}
-  namespace: ${CP4BA_INST_NAMESPACE}
+  name: $1
+  namespace: $2
 spec:
   logLevel: info
   startDelay: 30
@@ -97,20 +116,50 @@ spec:
   instances: 1
 EOF
 
+else
+  echo "ERROR: name or namespace empty"
+fi
+}
+
+deployDBCluster() {
+# $1: inst db
+# $2: CR name
+# $3: namespace
+  if [[ "$1" = "true" ]]; then
+    echo -e "${_CLR_BLUE}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_BLUE}' in '${_CLR_YELLOW}$3${_CLR_BLUE}' namespace${_CLR_NC}"
+    _deployDBCluster "$2" "$3"
+  else
+    echo -e "${_CLR_YELLOW}Skipping deployment of DB Cluster '${_CLR_GREEN}$1${_CLR_YELLOW}'${_CLR_NC}"
+  fi
+}
+
+deployDBClusters() {
+# $1: namespace
+
+  i=1
+  _IDX_END=$CP4BA_INST_DB_INSTANCES
+  while [[ $i -le $_IDX_END ]]
+  do
+    _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
+    if [[ ! -z "${!_INST_DB_CR_NAME}" ]]; then
+      deployDBCluster ${CP4BA_INST_DB} ${!_INST_DB_CR_NAME} $1
+    else
+      echo -e "${_CLR_RED}ERROR, env var '${_CLR_GREEN}${_INST_DB_CR_NAME}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES and CP4BA_INST_DB_* values.${_CLR_NC}"
+    fi
+    ((i = i + 1))
+  done  
 }
 
 #==================================
 
 echo -e "=============================================================="
-if [[ "${CP4BA_INST_DB}" = "true" ]]; then
-  echo -e "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}${_CLR_GREEN}' in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
-  deployDBCluster
-  # test if operator present in ns when different namespaces
-  if [[ "${CP4BA_INST_SUPPORT_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
-    if [ $(oc get -n ${CP4BA_INST_SUPPORT_NAMESPACE} csv --no-headers | grep "cloud-native-postgresql.v" | wc -l) -lt 1 ]; then
-      echo -e "${_CLR_GREEN}Remember to install 'EDB Postgres for Kubernetes' operator in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
-    fi
+echo -e "${_CLR_GREEN}Deploying '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' DB Clusters in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
+
+deployDBClusters ${CP4BA_INST_SUPPORT_NAMESPACE}
+
+# test if operator present in ns when different namespaces
+if [[ "${CP4BA_INST_SUPPORT_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
+  if [ $(oc get -n ${CP4BA_INST_SUPPORT_NAMESPACE} csv --no-headers | grep "cloud-native-postgresql.v" | wc -l) -lt 1 ]; then
+    echo -e "${_CLR_GREEN}Remember to install 'EDB Postgres for Kubernetes' operator in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
   fi
-else
-  echo -e "${_CLR_BLUE}Skipping deployment of DB Cluster${_CLR_NC}"
 fi

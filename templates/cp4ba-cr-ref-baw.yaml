@@ -89,7 +89,7 @@ spec:
     dc_icn_datasource:
       dc_database_type: "postgresql"
       dc_common_icn_datasource_name: "ECMClientDS"
-      database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
       database_port: "${CP4BA_INST_DB_SERVER_PORT}"
       database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_icn"
       database_ssl_secret_name: ""
@@ -103,7 +103,7 @@ spec:
       dc_database_type: "postgresql"
       dc_common_gcd_datasource_name: "FNGCDDS"
       dc_common_gcd_xa_datasource_name: "FNGCDDSXA"
-      database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
       database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_gcd"
       database_port: "${CP4BA_INST_DB_SERVER_PORT}"
       database_ssl_secret_name: ""
@@ -118,7 +118,7 @@ spec:
         dc_os_label: "${CP4BA_INST_DB_OS_LBL}"
         dc_common_os_datasource_name: "FNOS1DS"
         dc_common_os_xa_datasource_name: "FNOS1DSXA"
-        database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
         database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_os1"
         database_port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_ssl_secret_name: ""
@@ -132,7 +132,7 @@ spec:
         dc_os_label: "${CP4BA_INST_DB_BAWDOCS_LBL}"
         dc_common_os_datasource_name: "BAWINS1DOCS"
         dc_common_os_xa_datasource_name: "BAWINS1DOCSXA"
-        database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
         database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_bawdocs"
         database_port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_ssl_secret_name: ""
@@ -146,7 +146,7 @@ spec:
         dc_os_label: "${CP4BA_INST_DB_BAWDOS_LBL}"
         dc_common_os_datasource_name: "BAWINS1DOS"
         dc_common_os_xa_datasource_name: "BAWINS1DOSXA"
-        database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
         database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_bawdos"
         database_port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_ssl_secret_name: ""
@@ -161,7 +161,7 @@ spec:
         dc_os_label: "${CP4BA_INST_DB_BAWTOS_LBL}"
         dc_common_os_datasource_name: "BAWINS1TOS"
         dc_common_os_xa_datasource_name: "BAWINS1TOSXA"
-        database_servername: "${CP4BA_INST_DB_SERVER_NAME}"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
         database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_bawtos"
         database_port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_ssl_secret_name: ""
@@ -183,7 +183,6 @@ spec:
       encryption_key: "128"
     ic_obj_store_creation:
 
-      # do not set store_con.name
       object_stores:
 
         - oc_cpe_obj_store_display_name: "OS01"
@@ -231,11 +230,11 @@ spec:
           oc_cpe_obj_store_enable_workflow: true
           oc_cpe_obj_store_workflow_locale: en
           oc_cpe_obj_store_workflow_region_number: 1
-          oc_cpe_obj_store_workflow_region_name: TOSRegion1
-          oc_cpe_obj_store_workflow_date_time_mask: "mm/dd/yy hh:tt am"
-          oc_cpe_obj_store_workflow_data_tbl_space: "vwdata_ts"
-          oc_cpe_obj_store_workflow_blob_tbl_space: "vwblob_ts"
-          oc_cpe_obj_store_workflow_index_tbl_space: "vwindex_ts"
+          oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_DB_TOS_REGION_NAME}"
+          oc_cpe_obj_store_workflow_date_time_mask: "${CP4BA_INST_DB_TOS_DT_MASK}"
+          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
+          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
+          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "pe_conn_tos"
@@ -275,6 +274,7 @@ spec:
 
   # IBM Business Automation Workflow configuration
   baw_configuration:
+
     - name: ${CP4BA_INST_BAW_1_NAME} 
       capabilities: "workflow"
       host_federated_portal: true
@@ -284,7 +284,7 @@ spec:
         db_cert_secret_name: ""
         type: "postgresql"
         server_name: "${CP4BA_INST_BAW_1_DB_HOST}"
-        port: "${CP4BA_INST_BAW_1_DB_PORT}"
+        port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_name: "${CP4BA_INST_BAW_1_DB_NAME}"
         secret_name: "${CP4BA_INST_BAW_1_DB_SECRET}"
         use_custom_jdbc_drivers: false
@@ -396,14 +396,11 @@ spec:
           ## Navigator desktop name for Target Object Store.
           #desktop_id: "baw"
           ## Name of the target environment or project area to register with the case components and associate with an IBM Content Navigator desktop.
-
-          # ?? 
-          #target_environment_name: "target_env_my_tos"
-          
+          #target_environment_name: "target_env_my_tos"          
           ## Whether to use the Target Object Store as the default Target Object Store.
           ## If none of the Target Object Stores is set as default, the first one in the tos_list will be set as the default Target Object Store.
           #is_default: true
-      
+
         ## Persistent volume claim (PVC) name for case network shared directory.
         ## This parameter must be set to the same value as the Business Automation Navigator pvc_for_icn_pluginstore parameter.
         ## If navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore is not specified explicitly, the default value is icn-pluginstore.

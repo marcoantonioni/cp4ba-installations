@@ -56,16 +56,16 @@ checkPrepreqTools () {
 }
 
 #-------------------------------
-_MAX_CHECKS=10
-_checks=0
-checkSecrets () {
-  _FOUND=$(oc get secret --no-headers -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} 2>/dev/null | wc -l)
-  if [[ "${_FOUND}" = "0" ]] && [[ $_checks -lt $_MAX_CHECKS ]]; then
-    ((_checks=_checks+1))
-    ./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 60
-    checkSecrets
-  fi
-}
+#_MAX_CHECKS=10
+#_checks=0
+#checkSecrets () {
+#  _FOUND=$(oc get secret --no-headers -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} 2>/dev/null | wc -l)
+#  if [[ "${_FOUND}" = "0" ]] && [[ $_checks -lt $_MAX_CHECKS ]]; then
+#    ((_checks=_checks+1))
+#    ./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 60
+#    checkSecrets
+#  fi
+#}
 
 #-------------------------------
 deployPreEnv () {
@@ -80,18 +80,12 @@ deployPreEnv () {
 
   ./cp4ba-install-db.sh -c ${_CFG}
 
-  # no wait for db secrets
   ./cp4ba-create-secrets.sh -c ${_CFG} -s -t 0
 }
 
 #-------------------------------
 deployPostEnv () {
-  # wait for db secrets
-  ./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 300
-  
   ./cp4ba-create-databases.sh -c ${_CFG} -w
-
-  checkSecrets
 }
 
 #-------------------------------
@@ -132,10 +126,17 @@ else
 fi 
 
 oc apply -n ${CP4BA_INST_NAMESPACE} -f ${_INST_ENV_FULL_PATH}
+if [ $? -gt 0 ]; then
+  echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
+  echo -e "${_CLR_RED}Cannot deploy CP4BA CR '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}', use yq to troubleshot"
+  exit 1
+fi
 
 }
 
 waitDeploymentReadiness () {
+  echo "=============================================================="
+  echo -e "${_CLR_GREEN}Configuration and deployment complete for '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
   _seconds=0
   while [ true ]; 
   do   

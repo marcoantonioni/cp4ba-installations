@@ -33,11 +33,6 @@ fi
 
 source ${_CFG}
 
-if [[ ! -f "${CP4BA_INST_DB_TEMPLATE}" ]]; then
-  echo "SQL Statements file not found: "${CP4BA_INST_DB_TEMPLATE}
-  exit 1
-fi
-
 #-------------------------------
 resourceExist () {
 # namespace name: $1
@@ -51,7 +46,12 @@ resourceExist () {
 }
 
 #-------------------------------
-createDatabases () {
+_createDatabases () {
+# $1 CP4BA_INST_DB_CR_NAME
+# $2 CP4BA_INST_DB_TEMPLATE
+
+  _DB_CR_NAME=$1
+  _DB_TEMPLATE=$2
   _FOUND=0
   if [[ "${_WAIT}" = "false" ]]; then
     _MAX_WAIT=1
@@ -62,9 +62,9 @@ createDatabases () {
     _MAX_WAIT=600
     until [ $_seconds -gt $_MAX_WAIT ];
     do
-      resourceExist "${CP4BA_INST_SUPPORT_NAMESPACE}" "pod" "${CP4BA_INST_DB_CR_NAME}-1"
+      resourceExist "${CP4BA_INST_SUPPORT_NAMESPACE}" "pod" "${_DB_CR_NAME}-1"
       if [ $? -eq 0 ]; then
-        echo -e -n "${_CLR_GREEN}Wait for pod '${_CLR_YELLOW}"${CP4BA_INST_DB_CR_NAME}-1"${_CLR_GREEN}' created (may take minutes) [${_seconds}]${_CLR_NC}\033[0K\r"
+        echo -e -n "${_CLR_GREEN}Wait for pod '${_CLR_YELLOW}"${_DB_CR_NAME}-1"${_CLR_GREEN}' created (may take minutes) [${_seconds}]${_CLR_NC}\033[0K\r"
         sleep 1
         ((_seconds=_seconds+1))
       else
@@ -78,14 +78,14 @@ createDatabases () {
   _DONE=0
   if [[ "$_FOUND" = "1" ]]; then
     _MAX_WAIT_READY=180
-    echo -e "${_CLR_GREEN}Wait for pod '${_CLR_YELLOW}"${CP4BA_INST_DB_CR_NAME}-1"${_CLR_GREEN}' ready (may take minutes)${_CLR_NC}"
-    _RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${CP4BA_INST_DB_CR_NAME}-1 --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
+    echo -e "${_CLR_GREEN}Wait for pod '${_CLR_YELLOW}"${_DB_CR_NAME}-1"${_CLR_GREEN}' ready (may take minutes)${_CLR_NC}"
+    _RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${_DB_CR_NAME}-1 --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
     _IS_READY=$(echo $_RES | grep "condition met" | wc -l)
     if [ $_IS_READY -eq 1 ]; then
-      echo -e "${_CLR_GREEN}Database pod is ready, load and execute sql statements in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
+      echo -e "${_CLR_GREEN}Database pod is ready, load and execute sql statements in '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
       ENV_STATS="./env-statements.$RANDOM.sql"
 
-      cat ${CP4BA_INST_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' \
+      cat ${_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' \
         | sed 's/-/_/g' \
         | sed 's/§§dbBAWowner§§/'"${CP4BA_INST_DB_BAW_USER}"'/g' | sed 's/§§dbBAWowner_password§§/'"${CP4BA_INST_DB_BAW_PWD}"'/g' \
         | sed 's/§§dbBAWDOCSowner§§/'"${CP4BA_INST_DB_BAWDOCS_USER}"'/g' | sed 's/§§dbBAWDOCSowner_password§§/'"${CP4BA_INST_DB_BAWDOCS_PWD}"'/g' \
@@ -95,20 +95,20 @@ createDatabases () {
         | sed 's/§§dbGCDowner§§/'"${CP4BA_INST_DB_GCD_USER}"'/g' | sed 's/§§dbGCDowner_password§§/'"${CP4BA_INST_DB_GCD_PWD}"'/g' \
         | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' \
         | sed 's/§§dbAEowner§§/'"${CP4BA_INST_DB_AE_USER}"'/g' | sed 's/§§dbAEowner_password§§/'"${CP4BA_INST_DB_AE_PWD}"'/g' > ${ENV_STATS}
-
-      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
-      oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${CP4BA_INST_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
-      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${CP4BA_INST_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
+      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
+      oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
+      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
       _NUM_DB=$(cat ${ENV_STATS} | grep "CREATE DATABASE" | wc -l)
       echo -e "${_CLR_GREEN}Created '${_CLR_YELLOW}${_NUM_DB}${_CLR_GREEN}' databases.${_CLR_NC}"
-      rm ${ENV_STATS}
+      _T_NAME="${_DB_TEMPLATE##*/}"
+      mv ${ENV_STATS} "../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}.sql" 2>/dev/null
       _DONE=1
     fi
   fi
   if [[ "$_DONE" = "0" ]]; then
     echo ""
-    echo -e "${_CLR_RED}DBs NOT configured, check status of pod '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"
-    oc get pod -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_CR_NAME}-1 -o wide
+    echo -e "${_CLR_RED}DBs NOT configured, check status of pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"
+    oc get pod -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_DB_CR_NAME}-1 -o wide
     echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< DB configuration terminated."
     exit 1
     echo ""
@@ -116,9 +116,40 @@ createDatabases () {
 
 }
 
+createDatabases () {
+  i=1
+  _IDX_END=${CP4BA_INST_DB_INSTANCES}
+  while [[ $i -le $_IDX_END ]]
+  do
+    _INST_BAW="CP4BA_INST_BAW_$i"
+    _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
+    _INST_DB_1_TEMPLATE="CP4BA_INST_DB_"$i"_TEMPLATE"
+
+    if [[ ! -f "${!_INST_DB_1_TEMPLATE}" ]]; then
+      echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< SQL Statements file not found: "${!_INST_DB_1_TEMPLATE}
+      exit 1
+      echo ""
+    fi
+
+    if [[ "${!_INST_BAW}" = "true" ]]; then
+      if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_1_TEMPLATE}" ]]; then
+        _createDatabases ${!_INST_DB_CR_NAME} ${!_INST_DB_1_TEMPLATE}
+      else
+        echo -e "${_CLR_RED}ERROR, env var '${_CLR_GREEN}${_INST_DB_CR_NAME}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES value.${_CLR_NC}"
+        echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< env var '${_CLR_GREEN}${_INST_DB_CR_NAME}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES value.${_CLR_NC}"
+        exit 1
+        echo ""
+      fi
+    else
+      echo -e "${_CLR_YELLOW}Warning: DB '${_CLR_GREEN}${!_INST_DB_CR_NAME}${_CLR_YELLOW}' is disabled, skipping configuration${_CLR_NC}"
+    fi
+    ((i = i + 1))
+  done  
+}
+
 echo -e "=============================================================="
 if [[ "${CP4BA_INST_DB}" = "true" ]]; then
-  echo -e "${_CLR_GREEN}Creating databases in '${_CLR_YELLOW}${CP4BA_INST_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
+  echo -e "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers${_CLR_NC}"
   createDatabases
 else
   echo -e "${_CLR_BLUE}Skipping creation of databases${_CLR_NC}"

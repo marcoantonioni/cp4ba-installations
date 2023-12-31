@@ -2,61 +2,44 @@
 
 ## TBD
 
-- parametrizzare nomi schema in template sql
+- rimuovere se PVC non necessitate (deploy-env.sh) 
+    export CP4BA_INST_BAW_1_CFG_CONTENT=false
+    export CP4BA_INST_BAW_1_CFG_CASE=false
+
+- parametrizzare ../crs/cp4ba- e puntamenti a tools
+
+- rimuovere checkSecrets
 
 - se PFS aggiornare CR con
   sc_optional_components: 'elasticsearch'
 	
-- creare desktop baw in 'icn_desktop' ?
-
-- [TEST] creazione pvc da rivedere con configurazione automatica del navigator
 - TEST - verifica configurazione CR base se LDAP e DB preesistenti
-- creazione dinamica CR finale in base a sezioni configurate (CP4BA_INST_AE_1, CP4BA_INST_BAW_1)
-- aggiunta sezioni in CR templates
+
+- configurazione AE
+  secret per AE
+  aggiunta sezioni in CR templates: AE
   /home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/descriptors/patterns
+
 - creare CR scenario federazione 'elasticsearch'
-- rivedere script quando più di un BAW / FNCM
+  se ...BAW_FEDERATE=true
+    se presente PVS
+      legge hostname e ctx
+      patch della CR con sezione
+        process_federation_server:
+          hostname: "cpd-cp4ba-test1.apps.658a741397f3750011a5d9d4.cloud.techzone.ibm.com"
+          context_root_prefix: "/pfs"
 
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
-baw...
-    process_federation_server:
-      hostname: "cpd-cp4ba-test1.apps.658a741397f3750011a5d9d4.cloud.techzone.ibm.com"
-      context_root_prefix: "/pfs"
+        https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 
-cd .../cp4ba-installations/scripts
 
-caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
+## Asks to experts
 
-1. crea ns e installa operatori
-1.1 ./cp4ba-install-operators.sh -c ../configs/env1.properties -s ${caseManagerScriptsFolder}
+- icn_repos / icn_desktop, add baw ?
 
-2. source config files (strict order)
-2.1 source ../configs/_cfg-production-ldap-domain.properties
-2.2 source ../configs/_cfg-production-idp.properties
-2.3 source ../configs/env1.properties
-3. installa ldap (verificare LDAP_LDIF_NAME nel file di cfg)
-3.1 ../../cp4ba-idp-ldap/scripts/add-ldap.sh -p ../configs/_cfg-production-ldap-domain.properties
-4. installa db
-4.1 ./cp4ba-install-db.sh -c ../configs/env1.properties
-5. crea secrets
-5.1 ./cp4ba-create-secrets-pre.sh -c ../configs/env1.properties
-6. genera CR
-6.1 envsubst < ../templates/cp4ba-cr-ref.yaml > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
-6.2 more ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
-7. crea pvc
-7.1 ./cp4ba-create-pvc.sh -c ../configs/env1.properties
-8. test
-8.1 oc apply -n ${CP4BA_INST_NAMESPACE} --dry-run=server -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
-9. deploy
-9.1 oc apply -n ${CP4BA_INST_NAMESPACE} -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
-10 rerun secrets creation if errors
-10.1 ./cp4ba-create-secrets-pre.sh -c ../configs/env1.properties
-11. creazione db
-11. da pod postgres poi creare script
-12. onboard users from LDAP
-12.1 ../../cp4ba-idp-ldap/scripts/onboard-users.sh -p ../configs/_cfg-production-idp.properties -l ../configs/_cfg-production-ldap-domain.properties -n ${CP4BA_INST_SUPPORT_NAMESPACE} -s -o add
 
-#---------------
+
+## Memos of command
+
 ```
 
 # duration: +/- 9 minutes (TechZone - 16cpu x node)
@@ -71,24 +54,14 @@ CONFIG_FILE=../configs/env1.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsFolder}
 
-#------------------------------
-CONFIG_FILE=../configs/env2.properties
-caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsFolder}
-
-#------------------------------
-CONFIG_FILE=../configs/env3.properties
-caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsFolder}
-
-#------------------------------
-CONFIG_FILE=../configs/env1-baw-only.properties
-caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsFolder}
 
 
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-only.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+
+#------------------------------
+CONFIG_FILE=../configs/env1-baw-only-double.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
 #------------------------------
@@ -99,6 +72,9 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 CONFIG_FILE=../configs/env3-baw-only.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
+#------------------------------
+CONFIG_FILE=../configs/env1-baw-bpm-only.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
 
 #------------------------------
 CONFIG_FILE=../configs/env1-wfps-bawonly.properties
@@ -132,13 +108,6 @@ oc new-project ${TNS}
 ```
 # Notes
 
-- icp4adeploy-baw1-baw-db-init-job 
-  create tables in: test1_baw_1=# \dt+ postgres.*
-
-- icp4adeploy-workspace1-aae-ae-db-job
-  import toolkits AE
-
-  test1icn=# \dt+ icndb.*
 
 - SELECT spcname FROM pg_tablespace;
 
