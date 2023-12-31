@@ -1,3 +1,6 @@
-crs/**
+crs/*.yaml
+crs/*.sql
+crs/*.txt
+
 
 
