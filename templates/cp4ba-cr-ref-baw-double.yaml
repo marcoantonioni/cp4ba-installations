@@ -8,18 +8,23 @@
 ##disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 ##
 ###############################################################################
+##
+##============================================================================================
+## DISCLAIMER
+## These configurations are not indicated or intended to be valid for production environments.
+## The purpose is purely educational.
+##============================================================================================
+##
 ## DEPLOYMENT CONTENTS
-##
-## These configurations are not indicated or intended to be valid for production environments. The purpose is purely educational.
-##
-##  patterns: foundation,workflow
-##  BAW: 2 servers (baw1 is baw full, baw2 is bpm only)
-##  BAW 1 - content: yes
-##  BAW 1 - case: yes
-##  BAW 1 - navigator: yes
-##  BAW 2 - content: no
-##  BAW 2 - case: no
-##  BAW 2 - navigator: no
+## 
+## patterns: foundation,workflow
+## BAW: 2 servers (baw1 is baw full, baw2 is bpm only)
+## BAW 1 - content: yes
+## BAW 1 - case: yes
+## BAW 1 - navigator: yes
+## BAW 2 - content: no
+## BAW 2 - case: no
+## BAW 2 - navigator: no
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster

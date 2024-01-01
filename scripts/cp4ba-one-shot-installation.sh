@@ -222,19 +222,22 @@ else
   if [[ $_PENDING -gt 0 ]]; then
     echo -e "\x1B[1mPlease note\x1B[0m, some pods may be not yet ready. Check before using the system."
     oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
-    echo "For pod status run manually: oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending"
+    echo ""
+    echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_BLUE}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
+    echo ""
     if [[ $_CASE_INIT_ERRORS -gt 0 ]]; then
       echo -e "\x1B[1mPlease note\x1B[0m, some errors in Case initialization. May be a transient problem."
       echo ""
       oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception"
       echo ""
+    fi
     if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
-      echo "For Case initialization log/status/errors run manually:"
-      echo "  logs   : oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}')"
-      echo "  errors : oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}') | egrep \"SEVERE|Exception\""
-      echo "  success: oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}') | grep \"INFO: Configuration Completed\""
+      echo -e "${_CLR_GREEN}For Case initialization log/status/errors run manually:"
+      echo -e "  logs   : ${_CLR_BLUE}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
+      echo -e "  errors : ${_CLR_BLUE}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}') | egrep \"SEVERE|Exception\"${_CLR_GREEN}"
+      echo -e "  success: ${_CLR_BLUE}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}') | grep \"INFO: Configuration Completed\"${_CLR_GREEN}"
       echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
     fi
   fi

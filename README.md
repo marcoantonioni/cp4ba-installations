@@ -40,6 +40,16 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
+- se installato il cmgr dinamico create folder temporaneo con nome rnd e poi eliminare
+
+- verificare appVersion di cmgr con quello della configurazione
+
+- fase di prevalidazione su tag cr
+    content e bpmonly
+    nomi db
+    parametri mandatori
+    pfs e elasticsearch
+
 - verificare navigator_configuration.icn_production_setting
   schema e tablespace
 
