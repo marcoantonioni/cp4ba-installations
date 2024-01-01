@@ -161,6 +161,7 @@ createSecretBAW () {
 createSecrets () {
   createSecretLDAP
   createSecretBAN
+
   if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
     createSecretFNCM
   else

@@ -22,7 +22,7 @@ done
 
 if [[ -z "${_CFG}" ]]; then
   echo "usage: $_me -c path-of-config-file"
-  exit
+  exit 1
 fi
 
 source ${_CFG}
@@ -117,7 +117,8 @@ spec:
 EOF
 
 else
-  echo "ERROR: name or namespace empty"
+  echo -e "${_CLR_RED}[✗] ERROR: _deployDBCluster name or namespace empty${_CLR_NC}"
+  exit 1
 fi
 }
 

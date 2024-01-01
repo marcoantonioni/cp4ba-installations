@@ -49,7 +49,7 @@ usage () {
     -v(optional) case-package-manager-version [install latest version if not set, see 'cp4ba-casemanager-setup' repository for further options]
        (eg: '5.1.0') 
     -d(optional) full-path-to-target-folder-for-case-package-manager [mandatory if -m is set, created if not exists]
-       (eg: '/tmp/my-pckg-mgr')${_CLR_NC}"
+       (eg: '~/tmp-cmgr')${_CLR_NC}"
 }
 
 if [[ -z "${_CFG}" ]]; then
@@ -220,6 +220,7 @@ else
   if [[ $_PENDING -gt 0 ]]; then
     echo -e "\x1B[1mPlease note\x1B[0m, some pods may be not yet ready. Check before using the system."
     oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
+    echo "For pod status run manually: oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending"
   fi
   if [[ $_ERRORS -gt 0 ]]; then
     echo -e "\x1B[1mPlease note\x1B[0m, some errors in Case initialization. May be a transient problem."

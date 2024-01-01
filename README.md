@@ -5,13 +5,9 @@
 - verificare navigator_configuration.icn_production_setting
   schema e tablespace
 
-- rimuovere se PVC non necessitate (deploy-env.sh) 
-    export CP4BA_INST_BAW_1_CFG_CONTENT=false
-    export CP4BA_INST_BAW_1_CFG_CASE=false
-
 - parametrizzare ../crs/cp4ba- e puntamenti a tools
 
-- rimuovere checkSecrets
+- manca secret AE
 
 - se PFS aggiornare CR con
   sc_optional_components: 'elasticsearch'
@@ -44,6 +40,13 @@
 ## Memos of command
 
 ```
+su - user1
+
+_INST_ENV=AUTO-1
+PS1="[\u@ \033[0;31m(${_INST_ENV})\033[0m \W]> "
+
+cd ~/cp4ba-projects/cp4ba-installations/scripts
+
 
 # duration: +/- 9 minutes (TechZone - 16cpu x node)
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
@@ -59,32 +62,34 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsF
 
 
 
+
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-only.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-only-double.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-bpm-only.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
+
 
 #------------------------------
 CONFIG_FILE=../configs/env1-wfps-bawonly.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 
 
 
 #------------------------------
 CONFIG_FILE=../configs/env2-baw-only.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 #------------------------------
 CONFIG_FILE=../configs/env3-baw-only.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d /tmp/test -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 
 
@@ -129,26 +134,49 @@ oc new-project ${TNS}
 # References
 
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=bawraws-creating-required-databases-secrets-without-running-provided-scripts
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=navigator-creating-databases-without-running-provided-scripts
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-pattern-configuration
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/19.0.x?topic=piban-creating-volumes-folders-deployment-kubernetes
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scripts-creating-required-databases-in-postgresql
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-runtime-workstream-services
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployments-installing-cp4ba-process-federation-server-production-deployment
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-navigator
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=troubleshooting-navigator-initialization (pod name: icp4adeploy-navigator-deploy...)
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-authoring
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-initialization
+
+Navigator
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=foundation-configuring-navigator
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=cpbaf-business-automation-navigator
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-navigator
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=navigator-creating-databases-without-running-provided-scripts
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=troubleshooting-navigator-initialization (pod name: icp4adeploy-navigator-deploy...)
+
+Utilities
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=resource-validating-yaml-in-your-custom-file
 
 
 https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=vtpiicd-creating-postgresql-database-table-space-content-platform-engine-gcd
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=cfcmdswrps-creating-secrets-protect-sensitive-filenet-content-manager-configuration-data
 
-# Create production CR
+
+BASTUDIO
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=foundation-configuring-business-automation-studio
+
+# misc
 ```
 folder: /cert-kubernetes/descriptors/patterns
 
+
+#-------------------------------
+#_MAX_CHECKS=10
+#_checks=0
+#checkSecrets () {
+#  _FOUND=$(oc get secret --no-headers -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAW_1_DB_SECRET} 2>/dev/null | wc -l)
+#  if [[ "${_FOUND}" = "0" ]] && [[ $_checks -lt $_MAX_CHECKS ]]; then
+#    ((_checks=_checks+1))
+#    ./cp4ba-create-secrets.sh -c ${_CFG} -s -w -t 60
+#    checkSecrets
+#  fi
+#}
 
 
 

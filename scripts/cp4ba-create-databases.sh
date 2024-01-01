@@ -95,7 +95,9 @@ _createDatabases () {
         | sed 's/§§dbGCDowner§§/'"${CP4BA_INST_DB_GCD_USER}"'/g' | sed 's/§§dbGCDowner_password§§/'"${CP4BA_INST_DB_GCD_PWD}"'/g' \
         | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' \
         | sed 's/§§dbAEowner§§/'"${CP4BA_INST_DB_AE_USER}"'/g' | sed 's/§§dbAEowner_password§§/'"${CP4BA_INST_DB_AE_PWD}"'/g' > ${ENV_STATS}
-      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
+
+      # create f.s folder for tablespaces
+      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/icn /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
       oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
       oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
       _NUM_DB=$(cat ${ENV_STATS} | grep "CREATE DATABASE" | wc -l)
@@ -112,11 +114,11 @@ _createDatabases () {
   fi
   if [[ "$_DONE" = "0" ]]; then
     echo ""
-    echo -e "${_CLR_RED}DBs NOT configured, check status of pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"
+    echo -e "${_CLR_RED}[✗] DBs NOT configured, check status of pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"
     oc get pod -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_DB_CR_NAME}-1 -o wide
-    echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< DB configuration terminated."
-    exit 1
+    echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< DB configuration terminated in error."
     echo ""
+    exit 1
   fi
 
 }

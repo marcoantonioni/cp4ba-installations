@@ -27,6 +27,8 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_icn to §§dbICNowner§§;
 \c §§dbPrefix§§_icn;
 CREATE SCHEMA IF NOT EXISTS §§dbICNowner§§ AUTHORIZATION §§dbICNowner§§;
 GRANT ALL ON SCHEMA §§dbICNowner§§ to §§dbICNowner§§;
+CREATE TABLESPACE icndb owner §§dbICNowner§§ location '/run/tbs/icn';
+GRANT CREATE ON TABLESPACE icndb to §§dbICNowner§§; 
 
 /* GCD */
 CREATE DATABASE §§dbPrefix§§_gcd OWNER §§dbGCDowner§§ ENCODING UTF8;
