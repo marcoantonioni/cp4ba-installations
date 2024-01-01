@@ -1,6 +1,6 @@
-crs/*.yaml
-crs/*.sql
-crs/*.txt
+output/*.yaml
+output/*.sql
+output/*.txt
 
 
 
