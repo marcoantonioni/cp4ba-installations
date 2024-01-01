@@ -7,7 +7,7 @@
 **DISCLAIMER**
 
 
-The entire contents of this repository are not intended for production environments.
+<u>The entire contents of this repository are not intended for production environments.</u>
 
 The main purpose is self-education and for test or demo environments.
 No form of support or warranty is applicable.
@@ -22,9 +22,9 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 The configurations for CR .yaml deployment 
 
-<b>apiVersion: icp4a.ibm.com/v1
+    <b>apiVersion: icp4a.ibm.com/v1
 
-kind: ICP4ACluster</b>
+    kind: ICP4ACluster</b>
 
 are the property of IBM as per the official wording:
 
