@@ -61,7 +61,7 @@ checkPrepreqTools
 # verify logged in OCP
 oc project 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
-  echo -e "\x1B[1;31mNot logged in to OCP cluster. Please login to an OCP cluster and rerun this command. \x1B[0m" && exit 1
+  echo -e "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" && exit 1
 fi
 
 oc new-project ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null

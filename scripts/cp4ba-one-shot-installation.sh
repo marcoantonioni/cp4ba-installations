@@ -11,7 +11,7 @@ _CPAK_MGR=false
 _CPAK_MGR_VER=""
 _CPAK_MGR_FOLDER=""
 _CPAK_MGR_FOLDER_REMOVE=false
-
+_RELEASE_BASE=""
 _OK=0
 _ERR_PKG_MGR=0
 
@@ -24,7 +24,7 @@ _CLR_NC="\033[0m"
 
 # "\33[32m[✔] ${1}\33[0m"
 # "\33[33m[✗] ${1}\33[0m"
-# bold: echo -e "\x1B[1m${1}\x1B[0m\n"
+# bold: echo -e "\x1B[1m${1}${_CLR_NC}\n"
 
 #--------------------------------------------------------
 # read command line params
@@ -160,15 +160,29 @@ installAndVerifyCasePkgMgr () {
   fi
   if [[ $_ERR_PKG_MGR -eq 0 ]]; then
     if [[ ! -d "${_SCRIPTS}" ]]; then
-      echo "Scripts folder not found: "${_SCRIPTS}
+      echo -e "${_CLR_RED}Scripts folder not found: ${_SCRIPTS}${_CLR_NC}" 
       usage
       exit 1
     fi
     if [[ ! -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
-      echo "Script 'cp4a-clusteradmin-setup.sh' not found in folder: "${_SCRIPTS}
-      usage
+      echo -e "${_CLR_RED}Script 'cp4a-clusteradmin-setup.sh' not found in folder: ${_SCRIPTS}${_CLR_NC}" 
       exit 1
     fi
+    _COMMON_SCRIPT="${_SCRIPTS}/helper/common.sh"
+    if [[ ! -f "${_COMMON_SCRIPT}" ]]; then
+      echo -e "${_CLR_RED}Script '${_COMMON_SCRIPT}' not found in folder: ${_SCRIPTS}${_CLR_NC}" 
+      exit 1
+    fi
+    _RELEASE_BASE=$(grep "CP4BA_RELEASE_BASE=" ${_COMMON_SCRIPT} | sed 's/CP4BA_RELEASE_BASE="//g' | sed 's/"//g')
+    if [[ -z "${_RELEASE_BASE}" ]]; then
+      echo -e "${_CLR_RED}Error, cannot detect value of 'CP4BA_RELEASE_BASE' in file '${_COMMON_SCRIPT}'${_CLR_NC}" 
+      exit 1
+    fi
+    if [[ "${_RELEASE_BASE}" != "${CP4BA_INST_APPVER}" ]]; then
+      echo -e "${_CLR_RED}Error, CP4BA_RELEASE_BASE='${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_RED}' of installation package doesn't match your configuration CP4BA_INST_APPVER='${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_RED}'${_CLR_NC}" 
+      exit 1
+    fi
+
   fi
 }
 
@@ -183,12 +197,17 @@ checkPrepreqTools
 # verify logged in OCP
 oc project 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
-  echo -e "\x1B[1;31mNot logged in to OCP cluster. Please login to an OCP cluster and rerun this command. \x1B[0m" && exit 1
+  echo -e "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
+  exit 1
 fi
 
 START_SECONDS=$SECONDS
 
 installAndVerifyCasePkgMgr
+
+echo "_RELEASE_BASE="$_RELEASE_BASE
+exit
+
 if [[ $_ERR_PKG_MGR -eq 0 ]]; then
   ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
   if [[ $? -eq 0 ]]; then
@@ -232,14 +251,14 @@ else
     _CASE_INIT_ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') 2>/dev/null | egrep "SEVERE|Exception" | wc -l)
   fi
   if [[ $_PENDING -gt 0 ]]; then
-    echo -e "\x1B[1mPlease note\x1B[0m, some pods may be not yet ready. Check before using the system."
+    echo -e "\x1B[1mPlease note${_CLR_NC}, some pods may be not yet ready. Check before using the system."
     oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
     echo ""
     echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_BLUE}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
     if [[ $_CASE_INIT_ERRORS -gt 0 ]]; then
-      echo -e "\x1B[1mPlease note\x1B[0m, some errors in Case initialization. May be a transient problem."
+      echo -e "\x1B[1mPlease note${_CLR_NC}, some errors in Case initialization. May be a transient problem."
       echo ""
       oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception"
       echo ""
