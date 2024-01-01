@@ -40,11 +40,8 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- fase di prevalidazione su tag cr
-    content e bpmonly
-    nomi db
-    parametri mandatori
-    pfs e elasticsearch
+- commentare file configurazione e CR yaml di riferimento
+  aggiornare da primaria
 
 - verificare navigator_configuration.icn_production_setting
   schema e tablespace
@@ -52,8 +49,6 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 - se PFS aggiornare CR con
   sc_optional_components: 'elasticsearch'
 	
-- TEST - verifica configurazione CR base se LDAP e DB preesistenti
-
 - configurazione AE
   secret per AE
   aggiunta sezioni in CR templates: AE
@@ -69,6 +64,18 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
           context_root_prefix: "/pfs"
 
         https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
+
+- verifica se possibile usare valori differenti
+  export CP4BA_INST_RELEASE="23.0.2"
+  export CP4BA_INST_APPVER="${CP4BA_INST_RELEASE}"
+
+- fase di prevalidazione su tag cr
+    content e bpmonly
+    nomi db
+    parametri mandatori
+    pfs e elasticsearch
+
+- TEST - verifica configurazione CR base se LDAP e DB preesistenti
 
 
 ## Asks to experts
@@ -88,14 +95,8 @@ PS1="[\u@ \033[0;31m(${_INST_ENV})\033[0m \W]> "
 cd ~/cp4ba-projects/cp4ba-installations/scripts
 
 
-# duration: +/- 9 minutes (TechZone - 16cpu x node)
+#----------------------------
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
-time ./cp4ba-install-operators.sh -c ../configs/env1.properties -s ${caseManagerScriptsFolder}
-
-# duration: +/- ?? minutes
-time ./cp4ba-deploy-env.sh -c ../configs/env1.properties -l ../configs/_cfg-production-ldap-domain.properties -i ../configs/_cfg-production-idp.properties
-
-#------------------------------
 CONFIG_FILE=../configs/env1.properties
 caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts"
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsFolder}
@@ -104,38 +105,29 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsF
 
 
 #------------------------------
-CONFIG_FILE=../configs/env1-baw-only.properties
+CONFIG_FILE=../configs/env1-baw.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 #------------------------------
-CONFIG_FILE=../configs/env1-baw-only-double.properties
+CONFIG_FILE=../configs/env1-baw-double.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 #------------------------------
-CONFIG_FILE=../configs/env1-baw-bpm-only.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
-
-
-#------------------------------
-CONFIG_FILE=../configs/env1-wfps-bawonly.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
-
-
-
-
-#------------------------------
-CONFIG_FILE=../configs/env2-baw-only.properties
+CONFIG_FILE=../configs/env1-baw-bpmonly.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 #------------------------------
-CONFIG_FILE=../configs/env3-baw-only.properties
+CONFIG_FILE=../configs/env1-baw-bpmonly-es.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
+
+#------------------------------
+CONFIG_FILE=../configs/env1-baw-double-es-demo-wfps.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 
 
-
 #------------------------------
-TNS=cp4ba-test1-baw-bpm-only
+TNS=cp4ba-...
 oc logs -f -n $TNS $(oc get pods -n $TNS | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
 
 #------------------------------
