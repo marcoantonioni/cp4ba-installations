@@ -172,7 +172,6 @@ echo -e "${_CLR_YELLOW}*********************************************************
 echo -e "Install CP4BA complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
 echo -e "  started at ${_CLR_GREEN}"$(date)"${_CLR_YELLOW}"
 echo -e "***********************************************************************${_CLR_NC}"
-echo ""
 
 checkPrepreqTools
 
@@ -212,8 +211,11 @@ else
   TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
   TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
 
+  _CASE_INIT_ERRORS=0
   _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
-  _ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception" | wc -l)
+  if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
+    _CASE_INIT_ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception" | wc -l)
+  fi
   echo -e "${_CLR_YELLOW}***********************************************************************"
   echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
   echo -e "  terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
@@ -222,15 +224,19 @@ else
     oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
     echo "For pod status run manually: oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending"
   fi
-  if [[ $_ERRORS -gt 0 ]]; then
-    echo -e "\x1B[1mPlease note\x1B[0m, some errors in Case initialization. May be a transient problem."
-    echo ""
-    oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception"
-    echo ""
+  if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
+    if [[ $_CASE_INIT_ERRORS -gt 0 ]]; then
+      echo -e "\x1B[1mPlease note\x1B[0m, some errors in Case initialization. May be a transient problem."
+      echo ""
+      oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception"
+      echo ""
+    if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
+      echo "For Case initialization log/status/errors run manually:"
+      echo "  logs   : oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}')"
+      echo "  errors : oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}') | egrep \"SEVERE|Exception\""
+      echo "  success: oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}') | grep \"INFO: Configuration Completed\""
+      echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
+    fi
   fi
-  echo "For Case initialization log/status/errors run manually:"
-  echo "  logs   : oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}')"
-  echo "  errors : oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}') | egrep \"SEVERE|Exception\""
-  echo "  success: oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}') | grep \"INFO: Configuration Completed\""
-  echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
+
 fi

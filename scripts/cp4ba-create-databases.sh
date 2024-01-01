@@ -69,7 +69,9 @@ _createDatabases () {
         ((_seconds=_seconds+1))
       else
         _FOUND=1
-        echo ""
+        if [[ $_seconds -gt 0 ]]; then
+          echo ""
+        fi
         break
       fi
     done
@@ -107,7 +109,6 @@ _createDatabases () {
       _FULL_TARGET="../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
       mv ${ENV_STATS} ${_FULL_TARGET} 2>/dev/null
       echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
-
       _DONE=1
     fi
   fi
@@ -133,8 +134,8 @@ createDatabases () {
 
     if [[ ! -f "${!_INST_DB_1_TEMPLATE}" ]]; then
       echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< SQL Statements file not found: "${!_INST_DB_1_TEMPLATE}
-      exit 1
       echo ""
+      exit 1
     fi
 
     if [[ "${!_INST_BAW}" = "true" ]]; then
@@ -143,8 +144,8 @@ createDatabases () {
       else
         echo -e "${_CLR_RED}ERROR, env var '${_CLR_GREEN}${_INST_DB_CR_NAME}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES value.${_CLR_NC}"
         echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< env var '${_CLR_GREEN}${_INST_DB_CR_NAME}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES value.${_CLR_NC}"
-        exit 1
         echo ""
+        exit 1
       fi
     else
       echo -e "${_CLR_YELLOW}Warning: DB '${_CLR_GREEN}${!_INST_DB_CR_NAME}${_CLR_YELLOW}' is disabled, skipping configuration${_CLR_NC}"

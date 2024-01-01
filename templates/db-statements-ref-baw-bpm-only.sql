@@ -1,4 +1,12 @@
 /*
+===========================================================================================
+DISCLAIMER
+These configurations are not indicated or intended to be valid for production environments.
+The purpose is purely educational.
+===========================================================================================
+*/
+
+/*
 Create all roles
 */
 CREATE ROLE §§dbBAWowner§§ PASSWORD '§§dbBAWowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;

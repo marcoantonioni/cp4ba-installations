@@ -8,8 +8,16 @@
 ##disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 ##
 ###############################################################################
-## DEPL.TYPE
-##  patterns: foundation,workflow
+##
+##============================================================================================
+## DISCLAIMER
+## These configurations are not indicated or intended to be valid for production environments.
+## The purpose is purely educational.
+##============================================================================================
+##
+## DEPLOYMENT CONTENTS
+## 
+## patterns: foundation,workflow
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster

@@ -168,11 +168,9 @@ waitDeploymentReadiness () {
   done
 }
 
-echo ""
 echo -e "${_CLR_YELLOW}=============================================================="
 echo -e "${_CLR_YELLOW}Deploying CP4BA environment '${_CLR_GREEN}${CP4BA_INST_ENV}${_CLR_YELLOW}' in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'${_CLR_NC}"
 echo -e "==============================================================${_CLR_NC}"
-echo ""
 checkPrepreqTools
 
 # verify logged in OCP
@@ -190,6 +188,5 @@ if [[ "${_WAIT_ONLY}" = "false" ]]; then
 fi
 waitDeploymentReadiness
 
-echo ""
 echo -e "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
 exit 0

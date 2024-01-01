@@ -8,7 +8,10 @@
 ##disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 ##
 ###############################################################################
-## DEPL.TYPE
+## DEPLOYMENT CONTENTS
+##
+## These configurations are not indicated or intended to be valid for production environments. The purpose is purely educational.
+##
 ##  patterns: foundation,workflow
 ##  BAW: 2 servers (baw1 is baw full, baw2 is bpm only)
 ##  BAW 1 - content: yes
