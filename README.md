@@ -40,8 +40,6 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- verificare appVersion di cmgr con quello della configurazione
-
 - fase di prevalidazione su tag cr
     content e bpmonly
     nomi db

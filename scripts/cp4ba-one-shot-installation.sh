@@ -7,6 +7,7 @@ PARENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 _CFG=""
 _SCRIPTS=""
+_TEST_CFG=false
 _CPAK_MGR=false
 _CPAK_MGR_VER=""
 _CPAK_MGR_FOLDER=""
@@ -26,24 +27,12 @@ _CLR_NC="\033[0m"
 # "\33[33m[✗] ${1}\33[0m"
 # bold: echo -e "\x1B[1m${1}${_CLR_NC}\n"
 
-#--------------------------------------------------------
-# read command line params
-while getopts c:p:s:v:d:m flag
-do
-    case "${flag}" in
-        c) _CFG=${OPTARG};;
-        p) _SCRIPTS=${OPTARG};;
-        m) _CPAK_MGR=true;;
-        v) _CPAK_MGR_VER=${OPTARG};;
-        d) _CPAK_MGR_FOLDER=${OPTARG};;
-    esac
-done
-
 usage () {
   echo ""
   echo -e "${_CLR_GREEN}usage: $_me
     -c full-path-to-config-file
        (eg: '../configs/env1.properties')
+    -t [test the configuration and exit]
     -p cp4ba-case-pkg-scripts-folder [uses a previously installed CP4BA Case Manager, mutually exclusive with -m option]
        (eg: <full-path-to>/cert-kubernetes/scripts) 
     -m(optional flag) install-case-package-manager [if set install a fresh package manager]
@@ -53,12 +42,25 @@ usage () {
        (eg: '~/tmp-cmgr')${_CLR_NC}"
 }
 
-if [[ -z "${_CFG}" ]]; then
-  usage
-  exit 1
-fi
 
-if [[ "${_CPAK_MGR}" = "false" ]] && [[ -z "${_SCRIPTS}" ]]; then
+#--------------------------------------------------------
+# read command line params
+while getopts c:p:s:v:d:mt flag
+do
+    case "${flag}" in
+        c) _CFG=${OPTARG};;
+        p) _SCRIPTS=${OPTARG};;
+        m) _CPAK_MGR=true;;
+        v) _CPAK_MGR_VER=${OPTARG};;
+        d) _CPAK_MGR_FOLDER=${OPTARG};;
+        t) _TEST_CFG=true;;
+        \?) # Invalid option
+            usage
+            exit 1;;        
+    esac
+done
+
+if [[ -z "${_CFG}" ]]; then
   usage
   exit 1
 fi
@@ -70,6 +72,33 @@ if [[ ! -f "${_CFG}" ]]; then
 fi
 
 source ${_CFG}
+
+checkPrepreqTools () {
+  which jq &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
+    exit 1
+  fi
+  which openssl &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
+  fi
+}
+
+testConfiguration () {
+  echo "testConfiguration not yet implemented!"
+}
+
+if [[ "${_TEST_CFG}" = "true" ]]; then
+  checkPrepreqTools
+  testConfiguration
+  exit 0
+fi
+
+if [[ "${_CPAK_MGR}" = "false" ]] && [[ -z "${_SCRIPTS}" ]]; then
+  usage
+  exit 1
+fi
 
 if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
   if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
@@ -92,19 +121,6 @@ if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
     source ${CP4BA_INST_IDP_CFG_FILE}
   fi
 fi
-
-#-------------------------------
-checkPrepreqTools () {
-  which jq &>/dev/null
-  if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
-    exit 1
-  fi
-  which openssl &>/dev/null
-  if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
-  fi
-}
 
 onboardUsers () {
 
