@@ -140,7 +140,7 @@ onboardUsers () {
 installAndVerifyCasePkgMgr () {
   if [[ -z "${_CPAK_MGR_FOLDER}" ]]; then
     _CPAK_MGR_FOLDER_REMOVE=true
-    _CPAK_MGR_FOLDER="~/cp4ba-pkmgr-inst-$RANDOM"
+    _CPAK_MGR_FOLDER="/home/$USER/cp4ba-pkmgr-inst-$RANDOM"
   fi
   if [[ "${_CPAK_MGR}" = "true" ]] && [[ ! -z "${_CPAK_MGR_FOLDER}" ]]; then
     mkdir -p ${_CPAK_MGR_FOLDER}
@@ -188,8 +188,8 @@ installAndVerifyCasePkgMgr () {
 
 echo ""
 echo -e "${_CLR_YELLOW}***********************************************************************"
-echo -e "Install CP4BA complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
-echo -e "  started at ${_CLR_GREEN}"$(date)"${_CLR_YELLOW}"
+echo -e "Install CP4BA version '${_CLR_GREEN}${CP4BA_INST_APPVER}${_CLR_YELLOW}' complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
+echo -e "Started at ${_CLR_GREEN}"$(date)"${_CLR_YELLOW}"
 echo -e "***********************************************************************${_CLR_NC}"
 
 checkPrepreqTools
@@ -204,9 +204,6 @@ fi
 START_SECONDS=$SECONDS
 
 installAndVerifyCasePkgMgr
-
-echo "_RELEASE_BASE="$_RELEASE_BASE
-exit
 
 if [[ $_ERR_PKG_MGR -eq 0 ]]; then
   ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
@@ -242,7 +239,7 @@ else
 
   echo -e "${_CLR_YELLOW}***********************************************************************"
   echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
-  echo -e "  terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+  echo -e "Terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
 
   echo -e "${_CLR_BLUE}Verifying pod status and Case initialization logs...${_CLR_NC}"
   _CASE_INIT_ERRORS=0
