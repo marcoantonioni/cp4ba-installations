@@ -227,7 +227,10 @@ else
     echo ""
     oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception"
     echo ""
-    echo "For Case initialization log run manually: oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}')"
   fi
+  echo "For Case initialization log/status/errors run manually:"
+  echo "  logs   : oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}')"
+  echo "  errors : oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}') | egrep \"SEVERE|Exception\""
+  echo "  success: oc logs -n \${CP4BA_INST_NAMESPACE} \$(oc get pods -n \${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print \$1}') | grep \"INFO: Configuration Completed\""
   echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
 fi
