@@ -10,6 +10,7 @@ _SCRIPTS=""
 _CPAK_MGR=false
 _CPAK_MGR_VER=""
 _CPAK_MGR_FOLDER=""
+_CPAK_MGR_FOLDER_REMOVE=false
 
 _OK=0
 _ERR_PKG_MGR=0
@@ -137,13 +138,17 @@ onboardUsers () {
 }
 
 installAndVerifyCasePkgMgr () {
+  if [[ -z "${_CPAK_MGR_FOLDER}" ]]; then
+    _CPAK_MGR_FOLDER_REMOVE=true
+    _CPAK_MGR_FOLDER="~/cp4ba-pkmgr-inst-$RANDOM"
+  fi
   if [[ "${_CPAK_MGR}" = "true" ]] && [[ ! -z "${_CPAK_MGR_FOLDER}" ]]; then
     mkdir -p ${_CPAK_MGR_FOLDER}
     _USE_VER=""
     if [[ ! -z "${_CPAK_MGR_VER}" ]]; then
       _USE_VER=" -v ${_CPAK_MGR_VER}"
     fi
-    ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -r -d ${_CPAK_MGR_FOLDER} ${_USE_VER}
+    ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -d ${_CPAK_MGR_FOLDER} ${_USE_VER}
     if [[ $? -gt 0 ]]; then
       _ERR_PKG_MGR=1
     else
@@ -195,6 +200,11 @@ if [[ $_ERR_PKG_MGR -eq 0 ]]; then
       _OK=1
     fi
   fi
+  # if pckgmgr dinamico rm folder
+  if [[ "${_CPAK_MGR_FOLDER_REMOVE}" = "true" ]]; then
+    echo -e "Removing temporary folder: '${_CLR_GREEN}${_CPAK_MGR_FOLDER}${_CLR_NC}'"
+    rm -fR ${_CPAK_MGR_FOLDER}
+  fi
 fi
 
 STOP_SECONDS=$SECONDS
@@ -211,14 +221,16 @@ else
   TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
   TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
 
-  _CASE_INIT_ERRORS=0
-  _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
-  if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
-    _CASE_INIT_ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep "SEVERE|Exception" | wc -l)
-  fi
   echo -e "${_CLR_YELLOW}***********************************************************************"
   echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
   echo -e "  terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+
+  echo -e "${_CLR_BLUE}Verifying pod status and Case initialization logs...${_CLR_NC}"
+  _CASE_INIT_ERRORS=0
+  _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
+  if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
+    _CASE_INIT_ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') 2>/dev/null | egrep "SEVERE|Exception" | wc -l)
+  fi
   if [[ $_PENDING -gt 0 ]]; then
     echo -e "\x1B[1mPlease note\x1B[0m, some pods may be not yet ready. Check before using the system."
     oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
@@ -226,7 +238,6 @@ else
     echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_BLUE}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
-    echo ""
     if [[ $_CASE_INIT_ERRORS -gt 0 ]]; then
       echo -e "\x1B[1mPlease note\x1B[0m, some errors in Case initialization. May be a transient problem."
       echo ""

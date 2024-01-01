@@ -79,7 +79,7 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 - icn_repos / icn_desktop, add baw ?
 
-
+- navigator desktop quando più di un baw
 
 ## Memos of command
 
