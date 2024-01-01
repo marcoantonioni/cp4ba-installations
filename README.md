@@ -5,10 +5,6 @@
 - verificare navigator_configuration.icn_production_setting
   schema e tablespace
 
-- parametrizzare ../crs/cp4ba- e puntamenti a tools
-
-- manca secret AE
-
 - se PFS aggiornare CR con
   sc_optional_components: 'elasticsearch'
 	
@@ -113,11 +109,11 @@ oc new-project ${TNS}
 #../../cp4ba-idp-ldap/scripts/add-ldap.sh -p ../configs/_cfg-production-ldap-domain.properties
 #./cp4ba-install-db.sh -c ../configs/env1.properties
 #./cp4ba-create-secrets.sh -c ../configs/env1.properties
-#envsubst < ../templates/cp4ba-cr-ref.yaml > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
+#envsubst < ../templates/cp4ba-cr-ref.yaml > ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 #./cp4ba-create-pvc.sh -c ../configs/env1.properties
-#oc apply -n ${CP4BA_INST_NAMESPACE} --dry-run=server -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
+#oc apply -n ${CP4BA_INST_NAMESPACE} --dry-run=server -f ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 #
-#oc apply -n ${CP4BA_INST_NAMESPACE} -f ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
+#oc apply -n ${CP4BA_INST_NAMESPACE} -f ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml
 #
 #./cp4ba-create-secrets.sh -c ../configs/env1.properties -w
 #./cp4ba-create-databases.sh -c ../configs/env1.properties -w

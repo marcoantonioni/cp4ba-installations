@@ -96,7 +96,7 @@ deployPostEnv () {
 
 #-------------------------------
 deployEnvironment () {
-  _INST_ENV_FULL_PATH="../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
+  _INST_ENV_FULL_PATH="../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   envsubst < ../templates/${CP4BA_INST_CR_TEMPLATE} > ${_INST_ENV_FULL_PATH}
   if [[ $? -ne 0 ]]; then
     echo -e "${_CLR_RED}[✗] Error, CP4BA CR not generated.${_CLR_NC}"
@@ -150,15 +150,15 @@ waitDeploymentReadiness () {
     if [[ $_NUM -eq 1 ]]; then
       ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       NUM_KEYS=$(echo $ACC_INFO | jq length)
-      echo "" > ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+      echo "" > ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
       echo 
       for (( i=0; i<$NUM_KEYS; i++ ));
       do
         KEY=$(echo $ACC_INFO | jq keys[$i])
-        echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+        echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
       done
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
-      echo "See acces info urls in file ../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"     
+      echo "See acces info urls in file ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"     
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
       break;   
     fi;   
@@ -183,7 +183,7 @@ if [ $? -gt 0 ]; then
 fi
 
 if [[ "${_WAIT_ONLY}" = "false" ]]; then
-  mkdir -p ../crs
+  mkdir -p ../output
   deployPreEnv
   deployEnvironment
   deployPostEnv

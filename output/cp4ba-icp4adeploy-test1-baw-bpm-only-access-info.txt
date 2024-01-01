@@ -1,0 +1,12 @@
+
+Content Management Interoperability Services for CP4BA: https://cpd-cp4ba-test1-baw-bpm-only.apps.656d73e8eb178100111c14ac.cloud.techzone.ibm.com/cmis/openfncmis_wlp
+
+Content Services GraphQL: https://cpd-cp4ba-test1-baw-bpm-only.apps.656d73e8eb178100111c14ac.cloud.techzone.ibm.com/content-services-graphql/
+Business Automation Navigator for CP4BA: https://cpd-cp4ba-test1-baw-bpm-only.apps.656d73e8eb178100111c14ac.cloud.techzone.ibm.com/icn/navigator/
+(Note: Above URL is meant to be used when CP4BA capabilities such as ADP, BAA, BAW, etc are installed)
+Business Automation Workflow baw1 External base URL: https://cpd-cp4ba-test1-baw-bpm-only.apps.656d73e8eb178100111c14ac.cloud.techzone.ibm.com/baw-baw1/
+Business Automation Workflow baw1 Portal: https://cpd-cp4ba-test1-baw-bpm-only.apps.656d73e8eb178100111c14ac.cloud.techzone.ibm.com/baw-baw1/ProcessPortal
+Business Automation Workflow baw1 Workplace: https://cpd-cp4ba-test1-baw-bpm-only.apps.656d73e8eb178100111c14ac.cloud.techzone.ibm.com/baw-baw1/Workplace
+Business Automation Workflow baw1 Case Client: https://cpd-cp4ba-test1-baw-bpm-only.apps.656d73e8eb178100111c14ac.cloud.techzone.ibm.com/icn/navigator/?desktop=baw
+
+

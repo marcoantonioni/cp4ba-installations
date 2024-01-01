@@ -59,12 +59,12 @@ _createDatabases () {
   fi
   if [[ "${_WAIT}" = "true" ]]; then
     _seconds=0
-    _MAX_WAIT=600
+    _MAX_WAIT=1200
     until [ $_seconds -gt $_MAX_WAIT ];
     do
       resourceExist "${CP4BA_INST_SUPPORT_NAMESPACE}" "pod" "${_DB_CR_NAME}-1"
       if [ $? -eq 0 ]; then
-        echo -e -n "${_CLR_GREEN}Wait for pod '${_CLR_YELLOW}"${_DB_CR_NAME}-1"${_CLR_GREEN}' created (may take minutes) [${_seconds}]${_CLR_NC}\033[0K\r"
+        echo -e -n "${_CLR_GREEN}Wait for pod '${_CLR_YELLOW}"${_DB_CR_NAME}-1"${_CLR_GREEN}' created (may take minutes waiting for operators) [${_seconds}]${_CLR_NC}\033[0K\r"
         sleep 1
         ((_seconds=_seconds+1))
       else
@@ -77,7 +77,7 @@ _createDatabases () {
 
   _DONE=0
   if [[ "$_FOUND" = "1" ]]; then
-    _MAX_WAIT_READY=180
+    _MAX_WAIT_READY=600
     echo -e "${_CLR_GREEN}Wait for pod '${_CLR_YELLOW}"${_DB_CR_NAME}-1"${_CLR_GREEN}' ready (may take minutes)${_CLR_NC}"
     _RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${_DB_CR_NAME}-1 --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
     _IS_READY=$(echo $_RES | grep "condition met" | wc -l)
@@ -103,11 +103,10 @@ _createDatabases () {
       _NUM_DB=$(cat ${ENV_STATS} | grep "CREATE DATABASE" | wc -l)
       echo -e "${_CLR_GREEN}Created '${_CLR_YELLOW}${_NUM_DB}${_CLR_GREEN}' databases.${_CLR_NC}"
       _T_NAME="${_DB_TEMPLATE##*/}"
-      mkdir -p ../crs
-      _FULL_TARGET="../crs/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
+      mkdir -p ../output
+      _FULL_TARGET="../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
       mv ${ENV_STATS} ${_FULL_TARGET} 2>/dev/null
-      echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
-      echo -e "${_CLR_GREEN}saved in file '${_CLR_YELLOW}${_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
+      echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
 
       _DONE=1
     fi
