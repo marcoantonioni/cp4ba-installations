@@ -498,9 +498,9 @@ spec:
       timezone: Etc/UTC
       icn_jndids_name: ECMClientDS
 
-      # ??? tb verified
+      # ??? to be verified
       icn_schema: "${CP4BA_INST_DB_ICN_USER}"
-      icn_table_space: ICNDB
+      icn_table_space: "icndb"
 
       allow_remote_plugins_via_http: false
     monitor_enabled: false
