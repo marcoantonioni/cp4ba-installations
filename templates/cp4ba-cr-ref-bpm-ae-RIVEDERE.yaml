@@ -28,10 +28,10 @@ metadata:
     app.kubernetes.io/instance: ibm-dba
     app.kubernetes.io/managed-by: ibm-dba
     app.kubernetes.io/name: ibm-dba
-    release: ${CP4BA_INST_RELEASE}
+    release: ${CP4BA_INST_APPVER}
 spec:
 
-  appVersion: ${CP4BA_INST_RELEASE}
+  appVersion: ${CP4BA_INST_APPVER}
   ibm_license: accept
 
   shared_configuration:

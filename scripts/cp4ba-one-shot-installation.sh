@@ -195,11 +195,16 @@ installAndVerifyCasePkgMgr () {
       echo -e "${_CLR_RED}Error, cannot detect value of 'CP4BA_RELEASE_BASE' in file '${_COMMON_SCRIPT}'${_CLR_NC}" 
       exit 1
     fi
-    if [[ "${_RELEASE_BASE}" != "${CP4BA_INST_RELEASE}" ]]; then
-      echo -e "${_CLR_RED}Error, CP4BA_RELEASE_BASE='${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_RED}' of installation package doesn't match your configuration CP4BA_INST_RELEASE='${_CLR_YELLOW}${CP4BA_INST_RELEASE}${_CLR_RED}'${_CLR_NC}" 
-      exit 1
-    fi
 
+    if [[ -z "${CP4BA_INST_APPVER}" ]]; then
+      export CP4BA_INST_APPVER=${_RELEASE_BASE}
+    else
+      if [[ "${_RELEASE_BASE}" != "${CP4BA_INST_APPVER}" ]]; then
+        echo -e "${_CLR_RED}WARNING, CP4BA_RELEASE_BASE='${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_RED}' of installation package doesn't match your configuration CP4BA_INST_APPVER='${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_RED}'${_CLR_NC}" 
+        export CP4BA_INST_APPVER=${_RELEASE_BASE}
+        echo -e "${_CLR_GREEN}Continue the installation using version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}, update you configuration or set empty the var CP4BA_INST_APPVER=''${_CLR_NC}"
+      fi
+    fi
   fi
 }
 
@@ -258,7 +263,7 @@ else
   echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
   echo -e "Terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
 
-  echo -e "${_CLR_BLUE}Verifying pod status and Case initialization logs...${_CLR_NC}"
+  echo -e "${_CLR_GREEN}Verifying pod status and Case initialization logs...${_CLR_NC}"
   _CASE_INIT_ERRORS=0
   _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
   if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
@@ -268,7 +273,7 @@ else
     echo -e "\x1B[1mPlease note${_CLR_NC}, some pods may be not yet ready. Check before using the system."
     oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
     echo ""
-    echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_BLUE}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
+    echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_GREEN}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
     if [[ $_CASE_INIT_ERRORS -gt 0 ]]; then
@@ -279,9 +284,9 @@ else
     fi
     if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
       echo -e "${_CLR_GREEN}For Case initialization log/status/errors run manually:"
-      echo -e "  logs   : ${_CLR_BLUE}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
-      echo -e "  errors : ${_CLR_BLUE}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}') | egrep \"SEVERE|Exception\"${_CLR_GREEN}"
-      echo -e "  success: ${_CLR_BLUE}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}') | grep \"INFO: Configuration Completed\"${_CLR_GREEN}"
+      echo -e "  logs   : ${_CLR_GREEN}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
+      echo -e "  errors : ${_CLR_GREEN}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}') | egrep \"SEVERE|Exception\"${_CLR_GREEN}"
+      echo -e "  success: ${_CLR_GREEN}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}') | grep \"INFO: Configuration Completed\"${_CLR_GREEN}"
       echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
     fi
   fi

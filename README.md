@@ -40,6 +40,26 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
+- da commons.sh prelevare valori
+# Release/Patch version for CP4BA
+# CP4BA_RELEASE_BASE is for fetch content/foundation operator pod, only need to change for major release.
+CP4BA_RELEASE_BASE="23.0.2"
+CP4BA_PATCH_VERSION="GA"
+# CP4BA_CSV_VERSION is for checking CP4BA operator upgrade status, need to update for each IFIX
+CP4BA_CSV_VERSION="v23.2.0"
+# CS_OPERATOR_VERSION is for checking CPFS operator upgrade status, need to update for each IFIX
+CS_OPERATOR_VERSION="v4.2.0"
+# CS_CHANNEL_VERSION is for for CPFS script -c option, need to update for each IFIX
+CS_CHANNEL_VERSION="v4.2"
+# CS_CATALOG_VERSION is for CPFS script -s option, need to update for each IFIX
+CS_CATALOG_VERSION="opencloud-operators-v4-2"
+# ZEN_OPERATOR_VERSION is for checking ZenService operator upgrade status, need to update for each IFIX
+ZEN_OPERATOR_VERSION="v5.0.2"
+# REQUIREDVER_BTS is for checking bts operator upgrade status before run removal_iaf.sh, need to update for each IFIX
+REQUIREDVER_BTS="3.31.0"
+# REQUIREDVER_POSTGRESQL is for checking postgresql operator upgrade status before run removal_iaf.sh, need to update for each IFIX
+REQUIREDVER_POSTGRESQL="1.18.4"
+
 
 - commentare file configurazione e CR yaml di riferimento
   aggiornare da primaria
@@ -68,7 +88,7 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 - verifica se possibile usare valori differenti
   export CP4BA_INST_RELEASE="23.2.0"
-  ## eliminare export CP4BA_INST_APPVER="${CP4BA_INST_RELEASE}"
+  export CP4BA_INST_APPVER="${CP4BA_INST_RELEASE}"
 
 - fase di prevalidazione su tag cr
     content e bpmonly

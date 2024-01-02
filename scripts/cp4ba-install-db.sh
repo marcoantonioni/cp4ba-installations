@@ -127,7 +127,7 @@ deployDBCluster() {
 # $2: CR name
 # $3: namespace
   if [[ "$1" = "true" ]]; then
-    echo -e "${_CLR_BLUE}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_BLUE}' in '${_CLR_YELLOW}$3${_CLR_BLUE}' namespace${_CLR_NC}"
+    echo -e "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_GREEN}' in '${_CLR_YELLOW}$3${_CLR_GREEN}' namespace${_CLR_NC}"
     _deployDBCluster "$2" "$3"
   else
     echo -e "${_CLR_YELLOW}Skipping deployment of DB Cluster '${_CLR_GREEN}$1${_CLR_YELLOW}'${_CLR_NC}"

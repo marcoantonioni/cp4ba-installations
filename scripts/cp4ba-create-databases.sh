@@ -159,5 +159,5 @@ if [[ "${CP4BA_INST_DB}" = "true" ]]; then
   echo -e "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers${_CLR_NC}"
   createDatabases
 else
-  echo -e "${_CLR_BLUE}Skipping creation of databases${_CLR_NC}"
+  echo -e "${_CLR_GREEN}Skipping creation of databases${_CLR_NC}"
 fi

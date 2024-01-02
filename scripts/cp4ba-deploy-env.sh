@@ -217,7 +217,8 @@ waitDeploymentReadiness () {
 
 echo -e "${_CLR_YELLOW}=============================================================="
 echo -e "${_CLR_YELLOW}Deploying CP4BA environment '${_CLR_GREEN}${CP4BA_INST_ENV}${_CLR_YELLOW}' in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'${_CLR_NC}"
-echo -e "==============================================================${_CLR_NC}"
+echo -e "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
+echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
 checkPrepreqTools
 
 # verify logged in OCP
@@ -230,6 +231,11 @@ fi
 namespaceExist ${CP4BA_INST_NAMESPACE}
 if [ $? -eq 1 ]; then
 
+  if [[ -z "${CP4BA_INST_APPVER}" ]]; then
+    echo -e "${_CLR_RED}[✗] Error, var '${_CLR_YELLOW}CP4BA_INST_APPVER${_CLR_RED}' not set, cannot continue. ${_CLR_NC}"
+    exit 1
+  fi
+  
   if [[ "${_WAIT_ONLY}" = "false" ]]; then
     mkdir -p ../output
     deployPreEnv
