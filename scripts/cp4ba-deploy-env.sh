@@ -185,7 +185,7 @@ waitDeploymentReadiness () {
     if [ $_warning_interval -gt 10 ]; then
       _warning_interval=0
       _pending_pvc_count=$(oc get pvc -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null| grep Pending | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc" | wc -l)
-      _operator_failures=$(oc logs -n ${CP4BA_INST_NAMESPACE} -c operator $(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep cp4a-operator- | awk '{print $1}') 2>/dev/null | grep "FAIL" | wc -l)
+      _operator_failures=$(oc logs -n ${CP4BA_INST_NAMESPACE} -c operator $(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep cp4a-operator- | awk '{print $1}') 2>/dev/null | grep "FAIL" | uniq | wc -l)
       ((_total_warnings=_pending_pvc_count+_operator_failures))
       #echo "pvc:"$_pending_pvc_count" fails:"$_operator_failures" tot="$_total_warnings
       if [ $_total_warnings -gt 0 ]; then
@@ -206,8 +206,9 @@ waitDeploymentReadiness () {
     ELAPSED_SECONDS=$(( NOW_SECONDS - START_SECONDS ))
     TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+    TOT_HOURS=$(($TOT_MINUTES / 60))
 
-    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready [${_ROTOR_CHAR}]${_CLR_NC} ${_CLR_BLUE}warnings${_CLR_GREEN} [${_WARNING_PENDING}]${_CLR_NC} elapsed time $TOT_MINUTES:$TOT_SECONDS\033[0K\r"
+    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready [${_ROTOR_CHAR}]${_CLR_NC} ${_CLR_BLUE}warnings${_CLR_GREEN} [${_WARNING_PENDING}]${_CLR_GREEN} elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
     ((_seconds=_seconds+1))
     sleep 1
   done

@@ -40,8 +40,11 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
+
 - commentare file configurazione e CR yaml di riferimento
   aggiornare da primaria
+
+- deploy non prevede due CR in stesso ns (usa access info...)
 
 - verificare navigator_configuration.icn_production_setting
   schema e tablespace
@@ -120,9 +123,23 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 CONFIG_FILE=../configs/env1-baw-bpmonly-es.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
+
+
+
+#=======================================================================
 #------------------------------
-CONFIG_FILE=../configs/env1-baw-double-es-demo-wfps.properties
+CONFIG_FILE=../configs/env1-baw-es-demo-wfps-foundation.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+
+#------------------------------
+CONFIG_FILE=../configs/env1-baw-es-demo-wfps-baw.properties
+LDAP_CONFIG_FILE=../configs/_cfg-production-ldap-domain.properties
+time ./cp4ba-deploy-env.sh -c ${CONFIG_FILE} -l ${LDAP_CONFIG_FILE}
+#=======================================================================
+
+
+
+
 
 
 #CONFIG_FILE=../configs/env1-baw.properties
@@ -136,6 +153,9 @@ _operator_failures=$(oc logs -n $TNS -c operator $(oc get pods -n $TNS | grep cp
 oc get pvc -A | grep Pending | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc"
 _NUM_PENDING_PVC=$(oc get pvc -A | grep Pending | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc" | wc -l)
 
+
+cd cp4ba-utilities/remove-cp4ba/
+./cp4ba-remove-namespace.sh -n cp4ba-test1-baw && ./cp4ba-remove-namespace.sh -n cp4ba-test1-baw-double && ./cp4ba-remove-namespace.sh -n cp4ba-test1-baw-bpm-only
 
 #------------------------------
 TNS=cp4ba-test-db
@@ -174,6 +194,7 @@ oc new-project ${TNS}
 
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=bawraws-creating-required-databases-secrets-without-running-provided-scripts
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-pattern-configuration
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scp-shared-configuration
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/19.0.x?topic=piban-creating-volumes-folders-deployment-kubernetes
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scripts-creating-required-databases-in-postgresql
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-runtime-workstream-services
@@ -181,6 +202,7 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-authoring
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-initialization
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 
 Navigator
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=foundation-configuring-navigator
