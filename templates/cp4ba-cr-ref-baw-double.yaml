@@ -38,7 +38,7 @@ metadata:
     release: ${CP4BA_INST_RELEASE}
 spec:
 
-  appVersion: ${CP4BA_INST_APPVER}
+  appVersion: ${CP4BA_INST_RELEASE}
   ibm_license: accept
 
   shared_configuration:
@@ -369,7 +369,7 @@ spec:
           ## Image name for content integration container.
           repository: cp.icr.io/cp/cp4a/baw/iaws-ps-content-integration
           ## Image tag for content integration container.
-          tag: "${CP4BA_INST_APPVER}"
+          tag: "${CP4BA_INST_RELEASE}"
           ## Pull policy for content integration container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
           pull_policy: IfNotPresent
         ## Domain name for content integration. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
@@ -387,7 +387,7 @@ spec:
           ## Image name for CASE init job container.
           repository: cp.icr.io/cp/cp4a/baw/workflow-server-case-initialization
           ## Image tag for CASE init job container.
-          tag: "${CP4BA_INST_APPVER}"
+          tag: "${CP4BA_INST_RELEASE}"
           ## Pull policy for CASE init job container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
           pull_policy: IfNotPresent
       
@@ -557,7 +557,7 @@ spec:
     image:
       ## The default repository is the IBM Entitled Registry
       repository: cp.icr.io/cp/cp4a/ban/navigator
-      tag: "23.0.2"
+      tag: "23.2.0"
       pull_policy: IfNotPresent
     log:
       format: json

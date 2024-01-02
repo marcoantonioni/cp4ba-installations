@@ -162,10 +162,14 @@ createSecrets () {
   createSecretLDAP
   createSecretBAN
 
-  if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
-    createSecretFNCM
-  else
+  if [[ $CP4BA_INST_DB_INSTANCES -eq 0 ]]; then
     createSecretFNCMBpmOnly
+  else
+    if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
+      createSecretFNCM
+    else
+      createSecretFNCMBpmOnly
+    fi
   fi
 
   i=1

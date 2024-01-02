@@ -44,12 +44,10 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 - commentare file configurazione e CR yaml di riferimento
   aggiornare da primaria
 
-- deploy non prevede due CR in stesso ns (usa access info...)
-
 - verificare navigator_configuration.icn_production_setting
   schema e tablespace
 
-- se PFS aggiornare CR con
+- verificare conflitti foundation+workflow quando:
   sc_optional_components: 'elasticsearch'
 	
 - configurazione AE
@@ -69,8 +67,8 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
         https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 
 - verifica se possibile usare valori differenti
-  export CP4BA_INST_RELEASE="23.0.2"
-  export CP4BA_INST_APPVER="${CP4BA_INST_RELEASE}"
+  export CP4BA_INST_RELEASE="23.2.0"
+  ## eliminare export CP4BA_INST_APPVER="${CP4BA_INST_RELEASE}"
 
 - fase di prevalidazione su tag cr
     content e bpmonly
@@ -131,10 +129,42 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 CONFIG_FILE=../configs/env1-baw-es-demo-wfps-foundation.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
+oc logs -f -n cp4ba-pfs-wfps-baw-demo -c operator $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
+
+oc get ICP4ACluster -n cp4ba-pfs-wfps-baw-demo icp4adeploy-foundation -o jsonpath='{.status}' | jq .
+
+TNS=cp4ba-pfs-wfps-baw-demo
+_CR=icp4adeploy-foundation
+_CR_READY=$(oc get ICP4ACluster -n ${TNS} ${_CR} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
+echo $_CR_READY
+
+# anticipare qui creazione PFS quando per demo BAW federato
+
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-es-demo-wfps-baw.properties
 LDAP_CONFIG_FILE=../configs/_cfg-production-ldap-domain.properties
 time ./cp4ba-deploy-env.sh -c ${CONFIG_FILE} -l ${LDAP_CONFIG_FILE}
+
+oc logs -f -n cp4ba-pfs-wfps-baw-demo -c operator $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
+
+
+TNS=cp4ba-pfs-wfps-baw-demo
+_CR=icp4adeploy-baw
+_CR_READY=$(oc get ICP4ACluster -n ${TNS} ${_CR} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
+echo $_CR_READY
+
+#--------------------------
+cd /home/marco/cp4ba-projects/cp4ba-process-federation-server/scripts
+time ./pfs-deploy.sh -c ../configs/demo-wfps-baw.properties
+
+# dopo deploy wfps
+./pfs-show-federated.sh -c ../configs/pfs1.properties
+
+#--------------------------
+cd /home/marco/cp4ba-projects/cp4ba-wfps-utils/scripts
+time ./wfps-deploy.sh -c ./configs/wfps-pfs-demo.properties
+time ./wfps-install-application.sh -c ./configs/wfps-pfs-demo.properties -a ../apps/SimpleDemoWfPS.zip
+
 #=======================================================================
 
 

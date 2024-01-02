@@ -34,40 +34,40 @@ metadata:
     release: ${CP4BA_INST_RELEASE}
 spec:
 
-  appVersion: ${CP4BA_INST_APPVER}
+  appVersion: ${CP4BA_INST_RELEASE}
   ibm_license: accept
 
-  #shared_configuration:
-  #  sc_deployment_fncm_license: "non-production"
-  #  sc_deployment_baw_license: "non-production"
-  #  sc_deployment_license: "non-production"
-  #  sc_deployment_context: "CP4A"
-  #  sc_image_repository: cp.icr.io
-  #  root_ca_secret: icp4a-root-ca
-  #  sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
-  #  sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
-  #  sc_deployment_type: "Production"
-  #  sc_deployment_platform: "OCP"
-  #  sc_deployment_profile_size: "small"
-  #  sc_ingress_enable: false
-  #  trusted_certificate_list: []
-  #  storage_configuration:
-  #    sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-  #    sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-  #    sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-  #    sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
-  #  sc_iam:
-  #    default_admin_username: "${CP4BA_INST_IAM_ADMIN_USER}"
-  #  enable_fips: false
-  #  sc_egress_configuration:
-  #    sc_restricted_internet_access: false
-  #  sc_content_initialization: true
-  #  sc_content_verification: false
-  #  encryption_key_secret: ibm-iaws-shared-key-secret
-  #  image_pull_secrets:
-  #    - ibm-entitlement-key
-  #  no_log: false
-  #  show_sensitive_log: true
+  shared_configuration:
+    sc_deployment_fncm_license: "non-production"
+    sc_deployment_baw_license: "non-production"
+    sc_deployment_license: "non-production"
+    sc_deployment_context: "CP4A"
+    sc_image_repository: cp.icr.io
+    root_ca_secret: icp4a-root-ca
+    sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
+    sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
+    sc_deployment_type: "Production"
+    sc_deployment_platform: "OCP"
+    sc_deployment_profile_size: "small"
+    sc_ingress_enable: false
+    trusted_certificate_list: []
+    storage_configuration:
+      sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
+    sc_iam:
+      default_admin_username: "${CP4BA_INST_IAM_ADMIN_USER}"
+    enable_fips: false
+    sc_egress_configuration:
+      sc_restricted_internet_access: false
+    sc_content_initialization: true
+    sc_content_verification: false
+    encryption_key_secret: ibm-iaws-shared-key-secret
+    image_pull_secrets:
+      - ibm-entitlement-key
+    no_log: false
+    show_sensitive_log: true
 
   datasource_configuration:
     dc_ssl_enabled: false
@@ -343,7 +343,7 @@ spec:
           ## Image name for content integration container.
           repository: cp.icr.io/cp/cp4a/baw/iaws-ps-content-integration
           ## Image tag for content integration container.
-          tag: "${CP4BA_INST_APPVER}"
+          tag: "${CP4BA_INST_RELEASE}"
           ## Pull policy for content integration container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
           pull_policy: IfNotPresent
         ## Domain name for content integration. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
@@ -361,7 +361,7 @@ spec:
           ## Image name for CASE init job container.
           repository: cp.icr.io/cp/cp4a/baw/workflow-server-case-initialization
           ## Image tag for CASE init job container.
-          tag: "${CP4BA_INST_APPVER}"
+          tag: "${CP4BA_INST_RELEASE}"
           ## Pull policy for CASE init job container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
           pull_policy: IfNotPresent
       
@@ -455,7 +455,7 @@ spec:
     image:
       ## The default repository is the IBM Entitled Registry
       repository: cp.icr.io/cp/cp4a/ban/navigator
-      tag: "23.0.2"
+      tag: "23.2.0"
       pull_policy: IfNotPresent
     log:
       format: json

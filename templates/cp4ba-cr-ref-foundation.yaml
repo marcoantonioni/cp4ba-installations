@@ -34,7 +34,7 @@ metadata:
     release: ${CP4BA_INST_RELEASE}
 spec:
 
-  appVersion: ${CP4BA_INST_APPVER}
+  appVersion: ${CP4BA_INST_RELEASE}
   ibm_license: accept
 
   shared_configuration:

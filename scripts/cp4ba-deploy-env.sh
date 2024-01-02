@@ -163,8 +163,9 @@ waitDeploymentReadiness () {
 
   while [ true ]; 
   do   
-    _NUM=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null | grep access-info | wc -l) 
-    if [[ $_NUM -eq 1 ]]; then
+    _CR_READY=$(oc get ICP4ACluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
+    if [[ "${_CR_READY}" = "True" ]]; then
+      echo -e "${_CLR_GREEN}ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
       ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       NUM_KEYS=$(echo $ACC_INFO | jq length)
       echo "" > ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
@@ -197,7 +198,7 @@ waitDeploymentReadiness () {
       ((_warning_interval=_warning_interval+1))
     fi
     if [ $_total_warnings -gt 0 ]; then
-      _WARNING_PENDING="${_CLR_RED}\x1b[5m${_total_warnings:0:2}${_WARNING_PENDING:0:$((2 - ${#_total_warnings}))}\x1b[25m"
+      _WARNING_PENDING="${_total_warnings:0:2}${_WARNING_PENDING:0:$((2 - ${#_total_warnings}))}"
     fi
     _ROTOR_CHAR_OFF=$((_seconds % _ROTOR_LEN))
     _ROTOR_CHAR="${_ROTOR:_ROTOR_CHAR_OFF:1}"
@@ -208,7 +209,7 @@ waitDeploymentReadiness () {
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
     TOT_HOURS=$(($TOT_MINUTES / 60))
 
-    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready [${_ROTOR_CHAR}]${_CLR_NC} ${_CLR_BLUE}warnings${_CLR_GREEN} [${_WARNING_PENDING}]${_CLR_GREEN} elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
+    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready ${_CLR_YELLOW}(${_CLR_GREEN} ${_ROTOR_CHAR} ${_CLR_YELLOW})${_CLR_GREEN} ${_CLR_BLUE}warnings${_CLR_GREEN} [${_CLR_RED}${_WARNING_PENDING}${_CLR_GREEN}] elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
     ((_seconds=_seconds+1))
     sleep 1
   done
