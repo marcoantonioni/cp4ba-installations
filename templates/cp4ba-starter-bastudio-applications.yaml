@@ -1,0 +1,47 @@
+apiVersion: icp4a.ibm.com/v1
+kind: ICP4ACluster
+metadata:
+  name: icp4adeploy
+  namespace: cp4ba
+  labels:
+    app.kubernetes.io/instance: ibm-dba
+    app.kubernetes.io/managed-by: ibm-dba
+    app.kubernetes.io/name: ibm-dba
+    release: 23.0.2
+spec:
+  appVersion: 23.0.2
+  bai_configuration:
+    business_performance_center:
+      all_users_access: true
+  ibm_license: accept
+  shared_configuration:
+    enable_fips: false
+    sc_deployment_type: Starter
+    sc_optional_components: 'bai,baml,baw_authoring,case,content_integration,pfs,workstreams'
+    sc_iam:
+      default_admin_username: ''
+    sc_drivers_url: null
+    image_pull_secrets:
+      - ibm-entitlement-key
+    trusted_certificate_list: []
+    sc_deployment_patterns: 'application,workflow-workstreams'
+    sc_deployment_baw_license: non-production
+    storage_configuration:
+      sc_block_storage_classname: thin-csi
+      sc_dynamic_storage_classname: managed-nfs-storage
+      sc_fast_file_storage_classname: ''
+      sc_medium_file_storage_classname: ''
+      sc_slow_file_storage_classname: ''
+    root_ca_secret: '{{ meta.name }}-root-ca'
+    sc_content_initialization: true
+    sc_deployment_license: non-production
+    sc_egress_configuration:
+      sc_api_namespace: null
+      sc_api_port: null
+      sc_dns_namespace: null
+      sc_dns_port: null
+      sc_restricted_internet_access: true
+    sc_ingress_enable: false
+    sc_image_repository: cp.icr.io
+    sc_deployment_platform: OCP
+    sc_deployment_fncm_license: non-production

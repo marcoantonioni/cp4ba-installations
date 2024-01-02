@@ -106,29 +106,36 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsF
 
 #------------------------------
 CONFIG_FILE=../configs/env1-baw.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-double.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-bpmonly.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-bpmonly-es.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-double-es-demo-wfps.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 
+#CONFIG_FILE=../configs/env1-baw.properties
+#time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
 
 #------------------------------
 TNS=cp4ba-...
-oc logs -f -n $TNS $(oc get pods -n $TNS | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
+oc logs -f -n $TNS -c operator $(oc get pods -n $TNS | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
+_operator_failures=$(oc logs -n $TNS -c operator $(oc get pods -n $TNS | grep cp4a-operator- | awk '{print $1}') | grep "FAIL" | wc -l)
+
+oc get pvc -A | grep Pending | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc"
+_NUM_PENDING_PVC=$(oc get pvc -A | grep Pending | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc" | wc -l)
+
 
 #------------------------------
 TNS=cp4ba-test-db

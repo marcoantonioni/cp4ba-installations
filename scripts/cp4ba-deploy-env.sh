@@ -58,6 +58,16 @@ checkPrepreqTools () {
 }
 
 #-------------------------------
+namespaceExist () {
+# ns name: $1
+  if [ $(oc get ns $1 2> /dev/null | grep $1 | wc -l) -lt 1 ];
+  then
+      return 0
+  fi
+  return 1
+}
+
+#-------------------------------
 deployPreEnv () {
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     if [[ ! -z "${_LDAP}" ]]; then
@@ -144,6 +154,13 @@ waitDeploymentReadiness () {
   echo "=============================================================="
   echo -e "${_CLR_GREEN}Configuration and deployment complete for '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
   _seconds=0
+  _total_warnings=0
+  _warning_interval=10
+  _ROTOR="|/-\\|/-\\"
+  _ROTOR_LEN=${#_ROTOR}
+
+  START_SECONDS=$SECONDS
+
   while [ true ]; 
   do   
     _NUM=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null | grep access-info | wc -l) 
@@ -160,9 +177,37 @@ waitDeploymentReadiness () {
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
       echo "See acces info urls in file ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"     
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
-      break;   
-    fi;   
-    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready [$_seconds]${_CLR_NC}\033[0K\r"
+      break
+    fi
+    _pending_pvc_count=0
+    _operator_failures=0
+    _WARNING_PENDING=""
+    if [ $_warning_interval -gt 10 ]; then
+      _warning_interval=0
+      _pending_pvc_count=$(oc get pvc -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null| grep Pending | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc" | wc -l)
+      _operator_failures=$(oc logs -n ${CP4BA_INST_NAMESPACE} -c operator $(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep cp4a-operator- | awk '{print $1}') 2>/dev/null | grep "FAIL" | wc -l)
+      ((_total_warnings=_pending_pvc_count+_operator_failures))
+      #echo "pvc:"$_pending_pvc_count" fails:"$_operator_failures" tot="$_total_warnings
+      if [ $_total_warnings -gt 0 ]; then
+        if [ $_total_warnings -gt 99 ]; then
+          _pending_pv_total_warningsc_count=99
+        fi
+      fi
+    else
+      ((_warning_interval=_warning_interval+1))
+    fi
+    if [ $_total_warnings -gt 0 ]; then
+      _WARNING_PENDING="${_CLR_RED}\x1b[5m${_total_warnings:0:2}${_WARNING_PENDING:0:$((2 - ${#_total_warnings}))}\x1b[25m"
+    fi
+    _ROTOR_CHAR_OFF=$((_seconds % _ROTOR_LEN))
+    _ROTOR_CHAR="${_ROTOR:_ROTOR_CHAR_OFF:1}"
+
+    NOW_SECONDS=$SECONDS
+    ELAPSED_SECONDS=$(( NOW_SECONDS - START_SECONDS ))
+    TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
+    TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+
+    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready [${_ROTOR_CHAR}]${_CLR_NC} ${_CLR_BLUE}warnings${_CLR_GREEN} [${_WARNING_PENDING}]${_CLR_NC} elapsed time $TOT_MINUTES:$TOT_SECONDS\033[0K\r"
     ((_seconds=_seconds+1))
     sleep 1
   done
@@ -180,13 +225,21 @@ if [ $? -gt 0 ]; then
   exit 1
 fi
 
-if [[ "${_WAIT_ONLY}" = "false" ]]; then
-  mkdir -p ../output
-  deployPreEnv
-  deployEnvironment
-  deployPostEnv
-fi
-waitDeploymentReadiness
+namespaceExist ${CP4BA_INST_NAMESPACE}
+if [ $? -eq 1 ]; then
 
-echo -e "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
-exit 0
+  if [[ "${_WAIT_ONLY}" = "false" ]]; then
+    mkdir -p ../output
+    deployPreEnv
+    deployEnvironment
+    deployPostEnv
+  fi
+  waitDeploymentReadiness
+
+  echo -e "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
+  exit 0
+
+else
+  echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_RED}' doesn't exists. ${_CLR_NC}"
+  exit 1
+fi

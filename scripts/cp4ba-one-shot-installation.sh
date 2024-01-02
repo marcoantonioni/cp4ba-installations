@@ -156,7 +156,8 @@ onboardUsers () {
 installAndVerifyCasePkgMgr () {
   if [[ -z "${_CPAK_MGR_FOLDER}" ]]; then
     _CPAK_MGR_FOLDER_REMOVE=true
-    _CPAK_MGR_FOLDER="/home/$USER/cp4ba-pkmgr-inst-$RANDOM"
+    # _CPAK_MGR_FOLDER="/home/$USER/cp4ba-pkmgr-inst-$RANDOM"
+    _CPAK_MGR_FOLDER="/tmp/cp4ba-pkmgr-inst-$USER-$RANDOM"
   fi
   if [[ "${_CPAK_MGR}" = "true" ]] && [[ ! -z "${_CPAK_MGR_FOLDER}" ]]; then
     mkdir -p ${_CPAK_MGR_FOLDER}
