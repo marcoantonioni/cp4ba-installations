@@ -209,7 +209,7 @@ waitDeploymentReadiness () {
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
     TOT_HOURS=$(($TOT_MINUTES / 60))
 
-    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready ${_CLR_YELLOW}(${_CLR_GREEN} ${_ROTOR_CHAR} ${_CLR_YELLOW})${_CLR_GREEN} ${_CLR_BLUE}warnings${_CLR_GREEN} [${_CLR_RED}${_WARNING_PENDING}${_CLR_GREEN}] elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
+    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready ${_CLR_YELLOW}(${_CLR_GREEN} ${_ROTOR_CHAR} ${_CLR_YELLOW})${_CLR_GREEN} warnings [${_CLR_RED}${_WARNING_PENDING}${_CLR_GREEN}] elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
     ((_seconds=_seconds+1))
     sleep 1
   done
