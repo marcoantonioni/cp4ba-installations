@@ -137,7 +137,6 @@ createDatabases () {
       echo ""
       exit 1
     fi
-
     if [[ "${!_INST_BAW}" = "true" ]]; then
       if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_1_TEMPLATE}" ]]; then
         _createDatabases ${!_INST_DB_CR_NAME} ${!_INST_DB_1_TEMPLATE}

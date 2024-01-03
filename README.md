@@ -40,26 +40,10 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- da commons.sh prelevare valori
-# Release/Patch version for CP4BA
-# CP4BA_RELEASE_BASE is for fetch content/foundation operator pod, only need to change for major release.
-CP4BA_RELEASE_BASE="23.0.2"
-CP4BA_PATCH_VERSION="GA"
-# CP4BA_CSV_VERSION is for checking CP4BA operator upgrade status, need to update for each IFIX
-CP4BA_CSV_VERSION="v23.2.0"
-# CS_OPERATOR_VERSION is for checking CPFS operator upgrade status, need to update for each IFIX
-CS_OPERATOR_VERSION="v4.2.0"
-# CS_CHANNEL_VERSION is for for CPFS script -c option, need to update for each IFIX
-CS_CHANNEL_VERSION="v4.2"
-# CS_CATALOG_VERSION is for CPFS script -s option, need to update for each IFIX
-CS_CATALOG_VERSION="opencloud-operators-v4-2"
-# ZEN_OPERATOR_VERSION is for checking ZenService operator upgrade status, need to update for each IFIX
-ZEN_OPERATOR_VERSION="v5.0.2"
-# REQUIREDVER_BTS is for checking bts operator upgrade status before run removal_iaf.sh, need to update for each IFIX
-REQUIREDVER_BTS="3.31.0"
-# REQUIREDVER_POSTGRESQL is for checking postgresql operator upgrade status before run removal_iaf.sh, need to update for each IFIX
-REQUIREDVER_POSTGRESQL="1.18.4"
+- impostare check variabili su deploy-env
+  checkPrereqVars
 
+- verificare se in solo foundation il navigator è mandatorio
 
 - commentare file configurazione e CR yaml di riferimento
   aggiornare da primaria
@@ -123,6 +107,10 @@ caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsFolder}
 
 
+#------------------------------
+# TEST INSTALLER
+CONFIG_FILE=../configs/env-test-installer.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 
 #------------------------------
@@ -145,28 +133,14 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 
 #=======================================================================
-#------------------------------
-CONFIG_FILE=../configs/env1-baw-es-demo-wfps-foundation.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+# DEMP PFS WFPS BAW
 
-oc logs -f -n cp4ba-pfs-wfps-baw-demo -c operator $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
-
-oc get ICP4ACluster -n cp4ba-pfs-wfps-baw-demo icp4adeploy-foundation -o jsonpath='{.status}' | jq .
-
-TNS=cp4ba-pfs-wfps-baw-demo
-_CR=icp4adeploy-foundation
-_CR_READY=$(oc get ICP4ACluster -n ${TNS} ${_CR} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
-echo $_CR_READY
-
-# anticipare qui creazione PFS quando per demo BAW federato
 
 #------------------------------
 CONFIG_FILE=../configs/env1-baw-es-demo-wfps-baw.properties
-LDAP_CONFIG_FILE=../configs/_cfg-production-ldap-domain.properties
-time ./cp4ba-deploy-env.sh -c ${CONFIG_FILE} -l ${LDAP_CONFIG_FILE}
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 oc logs -f -n cp4ba-pfs-wfps-baw-demo -c operator $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
-
 
 TNS=cp4ba-pfs-wfps-baw-demo
 _CR=icp4adeploy-baw
@@ -186,14 +160,18 @@ time ./wfps-deploy.sh -c ./configs/wfps-pfs-demo.properties
 time ./wfps-install-application.sh -c ./configs/wfps-pfs-demo.properties -a ../apps/SimpleDemoWfPS.zip
 
 #=======================================================================
+???
+CONFIG_FILE=../configs/env1-baw-es-demo-wfps-foundation.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+#=======================================================================
 
 
 
 
-
+#-----------------------------
 
 #CONFIG_FILE=../configs/env1-baw.properties
-#time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -d ~/tmp-cmgr -v 5.1.0
+#time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 #------------------------------
 TNS=cp4ba-...
@@ -242,13 +220,14 @@ oc new-project ${TNS}
 
 # References
 
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-capability-patterns-production-deployments
+
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=bawraws-creating-required-databases-secrets-without-running-provided-scripts
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-pattern-configuration
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scp-shared-configuration
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/19.0.x?topic=piban-creating-volumes-folders-deployment-kubernetes
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scripts-creating-required-databases-in-postgresql
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-runtime-workstream-services
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployments-installing-cp4ba-process-federation-server-production-deployment
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-authoring
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-initialization
@@ -271,6 +250,11 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=cfcmdswrps
 
 BASTUDIO
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=foundation-configuring-business-automation-studio
+
+PFS
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployments-installing-cp4ba-process-federation-server-production-deployment
+
+
 
 # misc
 ```

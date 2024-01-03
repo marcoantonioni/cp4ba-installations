@@ -105,6 +105,32 @@ deployPostEnv () {
 }
 
 #-------------------------------
+deployPFS () {
+  if [[ "${CP4BA_INST_PFS}" = "true" ]]; then
+    _PFS_SCRIPT="${CP4BA_INST_PFS_TOOLS_FOLDER}/scripts/pfs-deploy-portable.sh"
+
+    if [[ -f "${_PFS_SCRIPT}" ]]; then
+
+      _PFS_PRAMS_FILE="/tmp/cp4ba-pfs-params-$USER-$RANDOM"
+
+      echo "CP4BA_INST_PFS_NAME=\"${CP4BA_INST_PFS_NAME}\"" > ${_PFS_PRAMS_FILE}
+      echo "CP4BA_INST_PFS_NAMESPACE=\"${CP4BA_INST_PFS_NAMESPACE}\"" >> ${_PFS_PRAMS_FILE}
+      echo "CP4BA_INST_PFS_STORAGE_CLASS=\"${CP4BA_INST_PFS_STORAGE_CLASS}\"" >> ${_PFS_PRAMS_FILE}
+      echo "CP4BA_INST_PFS_APP_VER=\"${CP4BA_INST_PFS_APP_VER}\"" >> ${_PFS_PRAMS_FILE}
+      echo "CP4BA_INST_PFS_ADMINUSER=\"${CP4BA_INST_PFS_ADMINUSER}\"" >> ${_PFS_PRAMS_FILE}
+
+      /bin/bash ${_PFS_SCRIPT} ${_PFS_PRAMS_FILE}
+
+      rm ${_PFS_PRAMS_FILE}
+    else
+      echo -e "${_CLR_RED}[✗] Error, PFS tool script not found (check var CP4BA_INST_PFS_TOOLS_FOLDER), PFS CR not generated.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+}
+
+#-------------------------------
 deployEnvironment () {
   _INST_ENV_FULL_PATH="../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   envsubst < ../templates/${CP4BA_INST_CR_TEMPLATE} > ${_INST_ENV_FULL_PATH}
@@ -151,8 +177,8 @@ deployEnvironment () {
 }
 
 waitDeploymentReadiness () {
-  echo "=============================================================="
   echo -e "${_CLR_GREEN}Configuration and deployment complete for '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
+
   _seconds=0
   _total_warnings=0
   _warning_interval=10
@@ -184,13 +210,14 @@ waitDeploymentReadiness () {
     _operator_failures=0
     _WARNING_PENDING=""
     if [ $_warning_interval -gt 10 ]; then
+      # check for failures and pending pvc (for pending items there are no immediate errors from operators)
       _warning_interval=0
       _pending_pvc_count=$(oc get pvc -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null| grep Pending | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc" | wc -l)
       _operator_failures=$(oc logs -n ${CP4BA_INST_NAMESPACE} -c operator $(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep cp4a-operator- | awk '{print $1}') 2>/dev/null | grep "FAIL" | uniq | wc -l)
       ((_total_warnings=_pending_pvc_count+_operator_failures))
-      #echo "pvc:"$_pending_pvc_count" fails:"$_operator_failures" tot="$_total_warnings
       if [ $_total_warnings -gt 0 ]; then
         if [ $_total_warnings -gt 99 ]; then
+          # limit the output to double digit
           _pending_pv_total_warningsc_count=99
         fi
       fi
@@ -198,18 +225,19 @@ waitDeploymentReadiness () {
       ((_warning_interval=_warning_interval+1))
     fi
     if [ $_total_warnings -gt 0 ]; then
+      # format the output
       _WARNING_PENDING="${_total_warnings:0:2}${_WARNING_PENDING:0:$((2 - ${#_total_warnings}))}"
     fi
     _ROTOR_CHAR_OFF=$((_seconds % _ROTOR_LEN))
     _ROTOR_CHAR="${_ROTOR:_ROTOR_CHAR_OFF:1}"
 
     NOW_SECONDS=$SECONDS
-    ELAPSED_SECONDS=$(( NOW_SECONDS - START_SECONDS ))
-    TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
+    ELAPSED_SECONDS=$(( $NOW_SECONDS - $START_SECONDS ))
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
-    TOT_HOURS=$(($TOT_MINUTES / 60))
+    TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
+    TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
 
-    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready ${_CLR_YELLOW}(${_CLR_GREEN} ${_ROTOR_CHAR} ${_CLR_YELLOW})${_CLR_GREEN} warnings [${_CLR_RED}${_WARNING_PENDING}${_CLR_GREEN}] elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
+    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready (${_CLR_YELLOW} ${_ROTOR_CHAR} ${_CLR_GREEN}) warnings [${_CLR_RED}${_WARNING_PENDING}${_CLR_GREEN}] elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
     ((_seconds=_seconds+1))
     sleep 1
   done
@@ -241,6 +269,7 @@ if [ $? -eq 1 ]; then
     deployPreEnv
     deployEnvironment
     deployPostEnv
+    deployPFS
   fi
   waitDeploymentReadiness
 

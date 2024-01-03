@@ -29,15 +29,7 @@ fi
 
 source ${_CFG}
 
-# !!!!!!!!
-export CP4BA_AUTO_CLUSTER_USER="IAM#marco_antonioni@it.ibm.com"
 
-export CP4BA_AUTO_PLATFORM="OCP"
-export CP4BA_AUTO_ALL_NAMESPACES="No"
-export CP4BA_AUTO_STORAGE_CLASS_FAST_ROKS="${CP4BA_INST_SC_FILE}"
-export CP4BA_AUTO_FIPS_CHECK=No
-export CP4BA_AUTO_PRIVATE_CATALOG=No
-export CP4BA_AUTO_DEPLOYMENT_TYPE="production"
 
 #-------------------------------
 checkPrepreqTools () {
@@ -52,11 +44,88 @@ checkPrepreqTools () {
   fi
 }
 
+#-------------------------------
+storageClassExist () {
+    if [ $(oc get sc $1 2>/dev/null | grep $1 | wc -l) -lt 1 ];
+    then
+        return 0
+    fi
+    return 1
+}
+
+checkPrereqVars () {
+  _OK_VARS=1
+  if [[ -z "${CP4BA_AUTO_CLUSTER_USER}" ]]; then
+    echo -e "${_CLR_RED}[✗] var CP4BA_AUTO_CLUSTER_USER not set, export it in your bash shell and rerun.${_CLR_NC}"
+    _OK_VARS=0
+  fi
+
+  if [[ -z "${CP4BA_AUTO_ENTITLEMENT_KEY}" ]]; then
+    echo -e "${_CLR_RED}[✗] var CP4BA_AUTO_ENTITLEMENT_KEY not set, export it in your bash shell and rerun.${_CLR_NC}"
+    _OK_VARS=0
+  fi
+
+  if [[ -z "${CP4BA_INST_TYPE}" ]]; then
+    echo -e "${_CLR_RED}[✗] var CP4BA_INST_TYPE not set, update your configuration file and rerun.${_CLR_NC}"
+    _OK_VARS=0
+  else
+    if [[ "${CP4BA_INST_TYPE}" != "starter" ]] && [[ "${CP4BA_INST_TYPE}" != "production" ]]; then
+      echo -e "${_CLR_RED}[✗] var CP4BA_INST_TYPE must be 'starter' or 'production', update your configuration file and rerun.${_CLR_NC}"
+      _OK_VARS=0
+    fi
+  fi
+
+  if [[ -z "${CP4BA_INST_PLATFORM}" ]]; then
+    echo -e "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM not set, update your configuration file and rerun.${_CLR_NC}"
+    _OK_VARS=0
+  else
+    if [[ "${CP4BA_INST_PLATFORM}" != "OCP" ]] && [[ "${CP4BA_INST_PLATFORM}" != "ROKS" ]]; then
+      echo -e "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM must be 'OCP' or 'ROKS', update your configuration file and rerun.${_CLR_NC}"
+      _OK_VARS=0
+    fi
+  fi
+
+  if [[ -z "${CP4BA_INST_SC_FILE}" ]]; then
+    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not found in your OCP cluster, update your configuration file and rerun.${_CLR_NC}"
+    _OK_VARS=0
+  fi
+
+  storageClassExist ${CP4BA_INST_SC_FILE}
+  if [ $? -eq 0 ]; then
+    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not present in your OCP cluster${_CLR_NC}"
+    _OK_VARS=0
+  fi
+
+  storageClassExist ${CP4BA_INST_SC_BLOCK}
+  if [ $? -eq 0 ]; then
+    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_BLOCK}' not present in your OCP cluster${_CLR_NC}"
+    _OK_VARS=0
+  fi
+
+
+  if [ $_OK_VARS -eq 0 ]; then
+    exit 1
+  fi
+
+
+  export CP4BA_AUTO_ALL_NAMESPACES="No"
+  export CP4BA_AUTO_PRIVATE_CATALOG=No
+  export CP4BA_AUTO_FIPS_CHECK=No
+
+  export CP4BA_AUTO_STORAGE_CLASS_FAST_ROKS="${CP4BA_INST_SC_FILE}"
+  export CP4BA_AUTO_STORAGE_CLASS_OCP="${CP4BA_INST_SC_FILE}"
+  export CP4BA_AUTO_DEPLOYMENT_TYPE="${CP4BA_INST_TYPE}"
+  export CP4BA_AUTO_PLATFORM="${CP4BA_INST_PLATFORM}"
+
+}
+
+
 echo -e "${_CLR_YELLOW}=============================================================="
 echo -e "Install CP4BA Operators in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
 echo -e "==============================================================${_CLR_NC}"
 
 checkPrepreqTools
+checkPrereqVars
 
 # verify logged in OCP
 oc project 2>/dev/null 1>/dev/null

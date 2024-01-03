@@ -190,6 +190,7 @@ installAndVerifyCasePkgMgr () {
       echo -e "${_CLR_RED}Script '${_COMMON_SCRIPT}' not found in folder: ${_SCRIPTS}${_CLR_NC}" 
       exit 1
     fi
+
     _RELEASE_BASE=$(grep "CP4BA_RELEASE_BASE=" ${_COMMON_SCRIPT} | sed 's/CP4BA_RELEASE_BASE="//g' | sed 's/"//g')
     if [[ -z "${_RELEASE_BASE}" ]]; then
       echo -e "${_CLR_RED}Error, cannot detect value of 'CP4BA_RELEASE_BASE' in file '${_COMMON_SCRIPT}'${_CLR_NC}" 
@@ -205,6 +206,45 @@ installAndVerifyCasePkgMgr () {
         echo -e "${_CLR_GREEN}Continue the installation using version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}, update you configuration or set empty the var CP4BA_INST_APPVER=''${_CLR_NC}"
       fi
     fi
+
+    #---------------------
+    # Show CP4BA release,version,channel, etc...
+    #---------------------
+    _GREP_WHAT="CP4BA_PATCH_VERSION"
+    _CP4BA_PATCH_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+
+    _GREP_WHAT="CP4BA_CSV_VERSION"
+    _CP4BA_CSV_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+
+    _GREP_WHAT="CS_OPERATOR_VERSION"
+    _CS_OPERATOR_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+
+    _GREP_WHAT="CS_CHANNEL_VERSION"
+    _CS_CHANNEL_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+
+    _GREP_WHAT="CS_CATALOG_VERSION"
+    _CS_CATALOG_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+
+    _GREP_WHAT="ZEN_OPERATOR_VERSION"
+    _ZEN_OPERATOR_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+
+    _GREP_WHAT="REQUIREDVER_BTS"
+    _REQUIREDVER_BTS=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+
+    _GREP_WHAT="REQUIREDVER_POSTGRESQL"
+    _REQUIREDVER_POSTGRESQL=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+
+    echo -e "${_CLR_GREEN}Using CP4BA Case Manager v${_CPAK_MGR_VER} (Release/Patch version)${_CLR_NC}"
+    echo -e "${_CLR_GREEN}Release base                     '${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_GREEN}'${_CLR_NC}"
+    echo -e "${_CLR_GREEN}CP4BA patch version              '${_CLR_YELLOW}${_CP4BA_PATCH_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    echo -e "${_CLR_GREEN}CP4BA CSV version                '${_CLR_YELLOW}${_CP4BA_CSV_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    echo -e "${_CLR_GREEN}Common services operator version '${_CLR_YELLOW}${_CS_OPERATOR_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    echo -e "${_CLR_GREEN}Common services channel version  '${_CLR_YELLOW}${_CS_CHANNEL_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    echo -e "${_CLR_GREEN}Common services catalog version  '${_CLR_YELLOW}${_CS_CATALOG_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    echo -e "${_CLR_GREEN}Zen operator version             '${_CLR_YELLOW}${_ZEN_OPERATOR_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    echo -e "${_CLR_GREEN}BTS required version             '${_CLR_YELLOW}${_REQUIREDVER_BTS}${_CLR_GREEN}'${_CLR_NC}"
+    echo -e "${_CLR_GREEN}PostgreSQL required version      '${_CLR_YELLOW}${_REQUIREDVER_POSTGRESQL}${_CLR_GREEN}'${_CLR_NC}"
+
   fi
 }
 
