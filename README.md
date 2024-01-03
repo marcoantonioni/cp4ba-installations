@@ -133,7 +133,7 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 
 #=======================================================================
-# DEMP PFS WFPS BAW
+# DEMO PFS WFPS BAW
 
 
 #------------------------------
@@ -142,29 +142,15 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 oc logs -f -n cp4ba-pfs-wfps-baw-demo -c operator $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
 
-TNS=cp4ba-pfs-wfps-baw-demo
-_CR=icp4adeploy-baw
-_CR_READY=$(oc get ICP4ACluster -n ${TNS} ${_CR} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
-echo $_CR_READY
+oc logs -f -n cp4ba-pfs-wfps-baw-demo $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep pfs-operator- | awk '{print $1}') | grep -i "FAIL"
 
-#--------------------------
-cd /home/marco/cp4ba-projects/cp4ba-process-federation-server/scripts
-time ./pfs-deploy.sh -c ../configs/demo-wfps-baw.properties
 
 # dopo deploy wfps
 ./pfs-show-federated.sh -c ../configs/pfs1.properties
 
 #--------------------------
 cd /home/marco/cp4ba-projects/cp4ba-wfps-utils/scripts
-time ./wfps-deploy.sh -c ./configs/wfps-pfs-demo.properties
 time ./wfps-install-application.sh -c ./configs/wfps-pfs-demo.properties -a ../apps/SimpleDemoWfPS.zip
-
-#=======================================================================
-???
-CONFIG_FILE=../configs/env1-baw-es-demo-wfps-foundation.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
-#=======================================================================
-
 
 
 
