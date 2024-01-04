@@ -244,9 +244,9 @@ spec:
           oc_cpe_obj_store_workflow_region_number: 1
           oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_DB_TOS_REGION_NAME}"
           oc_cpe_obj_store_workflow_date_time_mask: "${CP4BA_INST_DB_TOS_DT_MASK}"
-          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
-          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
-          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"
+          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
+          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
+          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"          
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "pe_conn_tos"
@@ -261,14 +261,6 @@ spec:
           add_repo_work_conn_pnt: "objectstore1_connection:1"
           add_repo_protocol: "FileNetP8WSI"
 
-        #- add_repo_id: "baw1_repo"
-        #  add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
-        #  add_repo_os_sym_name: "BAWINS1TOS"
-        #  add_repo_os_dis_name: "BAWINS1TOS"
-        #  add_repo_workflow_enable: false
-        #  add_repo_work_conn_pnt: "TOS_connection:1"
-        #  add_repo_protocol: "FileNetP8WSI"
-
       icn_desktop:
         - add_desktop_id: "my_demo"
           add_desktop_name: "icn_desktop"
@@ -276,13 +268,6 @@ spec:
           add_desktop_is_default: false
           add_desktop_repo_id: "my_demo_repo1"
           add_desktop_repo_workflow_enable: false
-
-        #- add_desktop_id: "baw"
-        #  add_desktop_name: "baw"
-        #  add_desktop_description: "BAW1 desktop"
-        #  add_desktop_is_default: true
-        #  add_desktop_repo_id: "baw1_repo"
-        #  add_desktop_repo_workflow_enable: true
 
   # IBM Business Automation Workflow configuration
   baw_configuration:
@@ -341,7 +326,14 @@ spec:
           memory: 512Mi
       logs:
         trace_specification: "${CP4BA_INST_BAW_1_LOGS_TRACE}"
-
+      jms:
+        storage:
+          use_dynamic_provisioning: true
+          storage_class: "${CP4BA_INST_SC_FILE}"
+      storage:
+        use_dynamic_provisioning: true
+        sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+        sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       tls:
         ## Workflow Server TLS secret that contains tls.key and tls.crt.
         ## If you want to use a customized Workflow Server TLS certificate, ensure it is signed by the CA in shared_configuration.root_ca_secret.
@@ -482,7 +474,7 @@ spec:
         db_cert_secret_name: ""
         type: "postgresql"
         server_name: "${CP4BA_INST_BAW_2_DB_HOST}"
-        port: "${CP4BA_INST_BAW_2_DB_PORT}"
+        port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_name: "${CP4BA_INST_BAW_2_DB_NAME}"
         secret_name: "${CP4BA_INST_BAW_2_DB_SECRET}"
         use_custom_jdbc_drivers: false
@@ -527,7 +519,14 @@ spec:
           memory: 512Mi
       logs:
         trace_specification: "${CP4BA_INST_BAW_2_LOGS_TRACE}"
-
+      jms:
+        storage:
+          use_dynamic_provisioning: true
+          storage_class: "${CP4BA_INST_SC_FILE}"
+      storage:
+        use_dynamic_provisioning: true
+        sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+        sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       tls:
         ## Workflow Server TLS secret that contains tls.key and tls.crt.
         ## If you want to use a customized Workflow Server TLS certificate, ensure it is signed by the CA in shared_configuration.root_ca_secret.
@@ -577,11 +576,8 @@ spec:
     icn_production_setting:
       timezone: Etc/UTC
       icn_jndids_name: ECMClientDS
-
-      # ??? to be verified
       icn_schema: "${CP4BA_INST_DB_ICN_USER}"
-      icn_table_space: "icndb"
-      
+      icn_table_space: "${CP4BA_INST_DB_ICN_USER}_icndb_tbs"
       allow_remote_plugins_via_http: false
     monitor_enabled: false
     logging_enabled: false

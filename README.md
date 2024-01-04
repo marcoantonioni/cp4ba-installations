@@ -40,15 +40,9 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- tablespaces 
-  parametrizzare
-    vwdata_ts
-    vwindex_ts
-    vwblob_ts
-  creare per AE
+- test jms e baw storage tags
 
-- studiare per Task prioritzation, Workforce Insights, JMS, Business Automation Workflow
-  https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=services-preparing-storage
+- navigator desktop quando più di un baw
 
 - verificare navigator_configuration.icn_production_setting
   schema e tablespace
@@ -61,8 +55,9 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 - commentare file configurazione e CR yaml di riferimento
   aggiornare da primaria
 
-- verificare conflitti foundation+workflow quando:
-  sc_optional_components: 'elasticsearch'
+- studiare per Task prioritzation, Workforce Insights
+    eseguito test: ??? JMS, Business Automation Workflow
+  https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=services-preparing-storage
 
 - my-postgres-1-for-cp4ba-superuser per pw db
 	
@@ -97,9 +92,11 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## Asks to experts
 
-- icn_repos / icn_desktop, add baw ?
+- icn_repos / icn_desktop, devono essere intesi come OS documentali come semplice FNET ? ?
 
-- navigator desktop quando più di un baw
+- tablespaces 
+    sono necessari anche per AE e i vari OS aggiuntivi ?
+
 
 ## Memos of command
 
@@ -119,10 +116,7 @@ caseManagerScriptsFolder="/home/$USER/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -p ${caseManagerScriptsFolder}
 
 
-#------------------------------
-# TEST INSTALLER
-CONFIG_FILE=../configs/env-test-installer.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+
 
 
 #------------------------------
@@ -141,6 +135,12 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 CONFIG_FILE=../configs/env1-baw-bpmonly-es.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
+
+
+#------------------------------
+# TEST INSTALLER
+CONFIG_FILE=../configs/env-test-installer.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 
 

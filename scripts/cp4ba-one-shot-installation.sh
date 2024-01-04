@@ -315,22 +315,23 @@ else
     echo ""
     echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_GREEN}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
   fi
+
   if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
     if [[ $_CASE_INIT_ERRORS -gt 0 ]]; then
       echo -e "\x1B[1mPlease note${_CLR_NC}, some errors in Case initialization. May be a transient problem."
       echo ""
-      oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep 'SEVERE|Exception'"
+      oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep 'SEVERE|Exception'
       echo ""
     fi
-    if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
-      echo -e "${_CLR_GREEN}PAY ATTENTION: The case completion job may take more time to complete${_CLR_NC}"
-      echo -e "${_CLR_GREEN}To verify the completion of Case subsys. installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
-      echo -e "${_CLR_GREEN}For Case initialization log/status/errors run manually:${_CLR_GREEN}"
-      echo -e "  logs   : ${_CLR_YELLOW}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
-      echo -e "  errors : ${_CLR_YELLOW}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}') | egrep \"SEVERE|Exception\"${_CLR_GREEN}"
-      echo -e "  success: ${_CLR_YELLOW}oc logs -n "${CP4BA_INST_NAMESPACE}" \$(oc get pods -n "${CP4BA_INST_NAMESPACE}" | grep case-init-job | awk '{print \$1}') | grep \"INFO: Configuration Completed\"${_CLR_GREEN}"
-      echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
-    fi
+
+    echo -e "${_CLR_GREEN}PAY ATTENTION: The case completion job may take more time to complete${_CLR_NC}"
+    echo -e "${_CLR_GREEN}To verify the completion of Case subsys. installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
+    echo -e "${_CLR_GREEN}For Case initialization log/status/errors run manually:${_CLR_GREEN}"
+    echo -e "  logs   : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
+    echo -e "  errors : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | egrep 'SEVERE|Exception'${_CLR_GREEN}"
+    echo -e "  success: ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | grep 'INFO: Configuration Completed'${_CLR_GREEN}"
+    echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
+
   fi
 
 fi
