@@ -42,6 +42,8 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 - test jms e baw storage tags
 
+- rivedere cp4ba-cr-ref-foundation.yaml per creare template di partenza
+
 - navigator desktop quando più di un baw
 
 - verificare navigator_configuration.icn_production_setting
