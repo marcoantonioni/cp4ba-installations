@@ -200,8 +200,58 @@ oc new-project ${TNS}
 ```
 # Notes
 
+## Local DB access
 
-- SELECT spcname FROM pg_tablespace;
+```
+_HOST_PORT=5432
+_DB_CR_NAME="my-postgres-1-for-cp4ba"
+_INST_ENV="pfs-wfps-baw-demo" 
+_DB_NAME="${_INST_ENV//-/_}_baw_1"
+_DB_USER="bawdocs"
+TNS="cp4ba-pfs-wfps-baw-demo"
+
+echo "Forwarding local port ${_HOST_PORT} to ${_DB_CR_NAME}-1 pod..."
+PSQL_POD_NAME=$(oc get pod -n ${TNS} | grep ${_DB_CR_NAME}-1 | grep Running | grep -v deploy | grep -v hook | awk '{print $1}')
+if [ ! -z ${PSQL_POD_NAME} ]; then 
+  oc port-forward -n ${TNS} ${PSQL_POD_NAME} ${_HOST_PORT}:${_HOST_PORT}; 
+fi 
+
+#superuser ???
+DB_USER=$(oc get secret -n ${TNS} ${_DB_CR_NAME}-app -o jsonpath='{.data.username}' | base64 -d)
+DB_PASSWORD=$(oc get secret -n ${TNS} ${_DB_CR_NAME}-app -o jsonpath='{.data.password}' | base64 -d)
+DB_PGPASS=$(oc get secret -n ${TNS} ${_DB_CR_NAME}-app -o jsonpath='{.data.pgpass}' | base64 -d)
+_PASSWD=$(echo $DB_PGPASS | sed 's/\(.*\):/\1REMOVEBEFORE/' | sed 's/.*REMOVEBEFORE//g')
+echo $DB_USER / $DB_PASSWORD / $DB_PGPASS
+
+export PGPASSFILE='/home/'$USER'/.pgpass'
+echo "${DB_PGPASS}" | sed 's/'${_DB_CR_NAME}'-rw:/localhost:/g' | sed 's/fake/'${_DB_NAME}'/g' | sed 's/:postgres:/:'${_DB_USER}':/g' | sed 's/'${_PASSWD}'/dem0s/g' >> ${PGPASSFILE}
+chmod 0600 ${PGPASSFILE}
+
+psql -h localhost -U ${_DB_USER} -d ${_DB_NAME}
+
+# when in psql
+
+  -- list databases
+  \l
+
+  -- connect to
+  \c <your-db-name>
+
+  -- list schemas
+  \dn+ 
+
+  -- list tables for baw db (schema bawadmin)
+  \dt+ bawadmin.*
+
+  -- list tablespaces
+  select spcname FROM pg_tablespace;
+
+  -- exit from psql
+  \q
+
+```
+
+## other
 
 - AE
   https://cpd-cp4ba-test1.apps.656d742d396eca001136ea72.cloud.techzone.ibm.com/ae-workspace1/v2/applications
