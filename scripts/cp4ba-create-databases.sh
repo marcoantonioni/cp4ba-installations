@@ -78,6 +78,7 @@ _createDatabases () {
   fi
 
   _DONE=0
+  _KO=0
   if [[ "$_FOUND" = "1" ]]; then
     _MAX_WAIT_READY=600
     echo -e "${_CLR_GREEN}Wait for pod '${_CLR_YELLOW}"${_DB_CR_NAME}-1"${_CLR_GREEN}' ready (may take minutes)${_CLR_NC}"
@@ -98,18 +99,56 @@ _createDatabases () {
         | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' \
         | sed 's/§§dbAEowner§§/'"${CP4BA_INST_DB_AE_USER}"'/g' | sed 's/§§dbAEowner_password§§/'"${CP4BA_INST_DB_AE_PWD}"'/g' > ${ENV_STATS}
 
-      # create f.s folder for tablespaces
-      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/icn /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
-      oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
-      oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
-      _NUM_DB=$(cat ${ENV_STATS} | grep "CREATE DATABASE" | wc -l)
-      echo -e "${_CLR_GREEN}Created '${_CLR_YELLOW}${_NUM_DB}${_CLR_GREEN}' databases.${_CLR_NC}"
-      _T_NAME="${_DB_TEMPLATE##*/}"
-      mkdir -p ../output
-      _FULL_TARGET="../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
-      mv ${ENV_STATS} ${_FULL_TARGET} 2>/dev/null
-      echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
-      _DONE=1
+      # wait for container ready
+      while [ true ]
+      do
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/setupdb
+        if [ $? -gt 0 ]; then
+          echo -e -n "${_CLR_GREEN}container '${_CLR_YELLOW}postgres${_CLR_GREEN}' not ready in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_GREEN}'\033[0K\r"
+          sleep 5
+          echo -e -n "                                                            \033[0K\r"
+        else
+          break
+        fi
+      done
+
+      if [ $_KO -eq 0 ]; then
+        # create f.s folder for tablespaces
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/icn /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
+        if [ $? -gt 0 ]; then
+          _KO=1
+          echo -e "${_CLR_RED}Error creating folders in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"        
+        fi
+      fi
+
+      if [ $_KO -eq 0 ]; then
+        # copy statement file into pod's f.s.
+        oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
+        if [ $? -gt 0 ]; then
+          _KO=1
+          echo -e "${_CLR_RED}Error copying SQL statements file if f.s. of pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"        
+        fi
+      fi
+
+      if [ $_KO -eq 0 ]; then
+        # esecute sql statements
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
+        if [ $? -gt 0 ]; then
+          _KO=1
+          echo -e "${_CLR_RED}Error executing SQL statements in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"        
+        fi
+      fi
+
+      if [ $_KO -eq 0 ]; then
+        _NUM_DB=$(cat ${ENV_STATS} | grep "CREATE DATABASE" | wc -l)
+        echo -e "${_CLR_GREEN}Created '${_CLR_YELLOW}${_NUM_DB}${_CLR_GREEN}' databases.${_CLR_NC}"
+        _T_NAME="${_DB_TEMPLATE##*/}"
+        mkdir -p ../output
+        _FULL_TARGET="../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
+        mv ${ENV_STATS} ${_FULL_TARGET} 2>/dev/null
+        echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
+        _DONE=1
+      fi
     fi
   fi
   if [[ "$_DONE" = "0" ]]; then

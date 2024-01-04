@@ -40,16 +40,26 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- impostare check variabili su deploy-env
-  checkPrereqVars
+- tablespaces 
+  parametrizzare
+    vwdata_ts
+    vwindex_ts
+    vwblob_ts
+  creare per AE
 
-- verificare se in solo foundation il navigator è mandatorio
-
-- commentare file configurazione e CR yaml di riferimento
-  aggiornare da primaria
+- studiare per Task prioritzation, Workforce Insights, JMS, Business Automation Workflow
+  https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=services-preparing-storage
 
 - verificare navigator_configuration.icn_production_setting
   schema e tablespace
+
+- impostare check variabili su deploy-env
+  checkPrereqVars
+
+- verificare se il navigator è sempre mandatorio (serve db)
+
+- commentare file configurazione e CR yaml di riferimento
+  aggiornare da primaria
 
 - verificare conflitti foundation+workflow quando:
   sc_optional_components: 'elasticsearch'
@@ -197,6 +207,11 @@ oc new-project ${TNS}
 #./cp4ba-create-secrets.sh -c ../configs/env1.properties -w
 #./cp4ba-create-databases.sh -c ../configs/env1.properties -w
 
+
+
+oc logs -n cp4ba-pfs-wfps-baw-demo $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep case-init-job | awk '{print $1}') | grep "INFO: Configuration Completed"
+
+
 ```
 # Notes
 
@@ -265,6 +280,7 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scp-shared-configuration
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/19.0.x?topic=piban-creating-volumes-folders-deployment-kubernetes
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scripts-creating-required-databases-in-postgresql
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=services-preparing-storage
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-runtime-workstream-services
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-authoring

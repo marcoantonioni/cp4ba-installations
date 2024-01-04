@@ -35,8 +35,8 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_icn to §§dbICNowner§§;
 \c §§dbPrefix§§_icn;
 CREATE SCHEMA IF NOT EXISTS §§dbICNowner§§ AUTHORIZATION §§dbICNowner§§;
 GRANT ALL ON SCHEMA §§dbICNowner§§ to §§dbICNowner§§;
-CREATE TABLESPACE icndb owner §§dbICNowner§§ location '/run/tbs/icn';
-GRANT CREATE ON TABLESPACE icndb to §§dbICNowner§§; 
+CREATE TABLESPACE §§dbPrefix§§_icndb_tbs owner §§dbICNowner§§ location '/run/tbs/icn';
+GRANT CREATE ON TABLESPACE §§dbPrefix§§_icndb_tbs to §§dbICNowner§§; 
 
 /* GCD */
 CREATE DATABASE §§dbPrefix§§_gcd OWNER §§dbGCDowner§§ ENCODING UTF8;
@@ -46,15 +46,6 @@ CREATE SCHEMA IF NOT EXISTS §§dbGCDowner§§ AUTHORIZATION §§dbGCDowner§§;
 GRANT ALL ON SCHEMA §§dbGCDowner§§ to §§dbGCDowner§§;
 CREATE TABLESPACE §§dbPrefix§§_gcd_tbs owner §§dbGCDowner§§ location '/run/tbs/gcd';
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_gcd_tbs to §§dbGCDowner§§; 
-
-/* OS1 */
-CREATE DATABASE §§dbPrefix§§_os1 OWNER §§dbOSowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_os1 to §§dbOSowner§§;
-\c §§dbPrefix§§_os1;
-CREATE SCHEMA IF NOT EXISTS §§dbOSowner§§ AUTHORIZATION §§dbOSowner§§;
-GRANT ALL ON SCHEMA §§dbOSowner§§ to §§dbOSowner§§;
-CREATE TABLESPACE §§dbPrefix§§_os1_tbs owner §§dbOSowner§§ location '/run/tbs/os1';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_os1_tbs to §§dbOSowner§§; 
 
 /* DOCS */
 CREATE DATABASE §§dbPrefix§§_bawdocs OWNER §§dbBAWDOCSowner§§ ENCODING UTF8;
@@ -93,4 +84,21 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_aedb_1 to §§dbAEowner§§;
 \c §§dbPrefix§§_aedb_1;
 CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
 GRANT ALL ON SCHEMA §§dbAEowner§§ to §§dbAEowner§§;
+
+/* OS1 */
+CREATE DATABASE §§dbPrefix§§_os1 OWNER §§dbOSowner§§ ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_os1 to §§dbOSowner§§;
+\c §§dbPrefix§§_os1;
+CREATE SCHEMA IF NOT EXISTS §§dbOSowner§§ AUTHORIZATION §§dbOSowner§§;
+GRANT ALL ON SCHEMA §§dbOSowner§§ to §§dbOSowner§§;
+--- CREATE TABLESPACE §§dbPrefix§§_os1_tbs owner §§dbOSowner§§ location '/run/tbs/os1';
+--- GRANT CREATE ON TABLESPACE §§dbPrefix§§_os1_tbs to §§dbOSowner§§; 
+
+/* OS2 */
+CREATE DATABASE §§dbPrefix§§_os2 OWNER §§dbOSowner§§ ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_os2 to §§dbOSowner§§;
+\c §§dbPrefix§§_os2;
+CREATE SCHEMA IF NOT EXISTS §§dbOSowner§§ AUTHORIZATION §§dbOSowner§§;
+GRANT ALL ON SCHEMA §§dbOSowner§§ to §§dbOSowner§§;
+
 
