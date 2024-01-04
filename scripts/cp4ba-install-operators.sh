@@ -107,7 +107,6 @@ checkPrereqVars () {
     exit 1
   fi
 
-
   export CP4BA_AUTO_ALL_NAMESPACES="No"
   export CP4BA_AUTO_PRIVATE_CATALOG=No
   export CP4BA_AUTO_FIPS_CHECK=No

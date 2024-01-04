@@ -47,26 +47,50 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 ## TBD
 
 
-- rivedere cp4ba-cr-ref-foundation.yaml per creare template di partenza
-
-- navigator desktop quando più di un baw
-
-- verificare navigator_configuration.icn_production_setting
-  schema e tablespace
-
 - impostare check variabili su deploy-env
-  checkPrereqVars
+  VERIFICARE checkPrereqVars
 
 - deploy applicazione case solution
 - deploy applicazione bpm
 
-
 - verificare se il navigator è sempre mandatorio (serve db)
 
-- commentare file configurazione e CR yaml di riferimento
-  aggiornare da primaria
+- aggiornare yaml demo da primaria
 
-- studiare per Task prioritzation, Workforce Insights
+- disattivare e rimuovere app Hiring (aprire case per mancanza flag forzatura in ProcessAdmin)
+
+      {
+        "container_name": "Hiring Sample",
+        "container": "HSS",
+        "id": "2066.9ab0d0c6-d92c-4355-9ed5-d8a05acdc4b0",
+        "description": "Hiring Sample",
+        "creation_date": "2024-01-04T13:27:34z",
+        "creator_user_id": "2048.1",
+        "creator_user_name": "Automation System Account",
+        "toolkit": false,
+        "archived": false
+      },
+
+      cercare api per ottenere versione: RHSV180
+
+      -- deactivate
+      curl -X 'POST' \
+        'https://cpd-cp4ba-test1-baw.apps.65800a760763df0011005ecb.cloud.techzone.ibm.com/baw-baw1/ops/std/bpm/containers/HSS/versions/RHSV180/deactivate?force=true&suspend_bpd_instances=true' \
+        -H 'accept: application/json' \
+        -H 'BPMCSRFToken: eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDQzODg2NzIsInN1YiI6ImNwNGFkbWluIn0.6_y3Hq6P_4Dvls35s8oPwXeGmi_OghqW1ocRb9z-g9A' \
+        -d ''
+
+      -- delete
+      curl -X 'DELETE' \
+        'https://cpd-cp4ba-test1-baw.apps.65800a760763df0011005ecb.cloud.techzone.ibm.com/baw-baw1/ops/std/bpm/containers/HSS/versions?versions=RHSV180&force=true' \
+        -H 'accept: application/json' \
+        -H 'BPMCSRFToken: eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDQzODg2NzIsInN1YiI6ImNwNGFkbWluIn0.6_y3Hq6P_4Dvls35s8oPwXeGmi_OghqW1ocRb9z-g9A'
+
+- rivedere cp4ba-cr-ref-foundation.yaml per creare template di partenza
+
+- navigator desktop quando più di un baw
+
+- studiare per Task prioritization, Workforce Insights
     eseguito test: ??? JMS, Business Automation Workflow
   https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=services-preparing-storage
 
@@ -88,9 +112,6 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
         https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 
-- verifica se possibile usare valori differenti
-  export CP4BA_INST_RELEASE="23.2.0"
-  export CP4BA_INST_APPVER="${CP4BA_INST_RELEASE}"
 
 - fase di prevalidazione su tag cr
     content e bpmonly
@@ -222,6 +243,8 @@ oc new-project ${TNS}
 
 oc logs -n cp4ba-pfs-wfps-baw-demo $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep case-init-job | awk '{print $1}') | grep "INFO: Configuration Completed"
 
+
+https://cpd-cp4ba-test1-baw.apps.65800a760763df0011005ecb.cloud.techzone.ibm.com/baw-baw1/ops/docs?tags=
 
 ```
 # Notes
