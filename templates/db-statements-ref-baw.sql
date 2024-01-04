@@ -91,8 +91,10 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_os1 to §§dbOSowner§§;
 \c §§dbPrefix§§_os1;
 CREATE SCHEMA IF NOT EXISTS §§dbOSowner§§ AUTHORIZATION §§dbOSowner§§;
 GRANT ALL ON SCHEMA §§dbOSowner§§ to §§dbOSowner§§;
---- CREATE TABLESPACE §§dbPrefix§§_os1_tbs owner §§dbOSowner§§ location '/run/tbs/os1';
---- GRANT CREATE ON TABLESPACE §§dbPrefix§§_os1_tbs to §§dbOSowner§§; 
+/*
+CREATE TABLESPACE §§dbPrefix§§_os1_tbs owner §§dbOSowner§§ location '/run/tbs/os1';
+GRANT CREATE ON TABLESPACE §§dbPrefix§§_os1_tbs to §§dbOSowner§§; 
+*/
 
 /* OS2 */
 CREATE DATABASE §§dbPrefix§§_os2 OWNER §§dbOSowner§§ ENCODING UTF8;
