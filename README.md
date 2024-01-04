@@ -53,6 +53,8 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 - verificare conflitti foundation+workflow quando:
   sc_optional_components: 'elasticsearch'
+
+- my-postgres-1-for-cp4ba-superuser per pw db
 	
 - configurazione AE
   secret per AE
