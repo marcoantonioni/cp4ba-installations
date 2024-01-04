@@ -3,6 +3,12 @@
 
 ...description of contents TBD
 
+... preprequisiti linux box, tools
+
+... prerequisiti cluster OCP
+
+... tempi medi per worker 16cpu 
+
 ---
 **DISCLAIMER**
 
@@ -40,7 +46,6 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- test jms e baw storage tags
 
 - rivedere cp4ba-cr-ref-foundation.yaml per creare template di partenza
 
@@ -51,6 +56,10 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 - impostare check variabili su deploy-env
   checkPrereqVars
+
+- deploy applicazione case solution
+- deploy applicazione bpm
+
 
 - verificare se il navigator è sempre mandatorio (serve db)
 
