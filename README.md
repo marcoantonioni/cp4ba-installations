@@ -46,16 +46,16 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-
-- impostare check variabili su deploy-env
-  VERIFICARE checkPrereqVars
+- aggiornare yaml demo da primaria
+  usare doppio baw con bpmonly federato
+  studiare configurazione automatica per url/context del PFS
+    pre deploy oppure nel loop wait cfg aggiungere test su PFS e lettura dapo con patch dei BAW che hanno cfg federazione
+    patch CR se pfs non pronto
 
 - deploy applicazione case solution
 - deploy applicazione bpm
 
 - verificare se il navigator è sempre mandatorio (serve db)
-
-- aggiornare yaml demo da primaria
 
 - disattivare e rimuovere app Hiring (aprire case per mancanza flag forzatura in ProcessAdmin)
 
