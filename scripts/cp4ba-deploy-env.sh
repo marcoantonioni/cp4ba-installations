@@ -5,6 +5,7 @@ _me=$(basename "$0")
 _CFG=""
 _LDAP=""
 _WAIT_ONLY=false
+_GENERATE_ONLY=false
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -15,17 +16,29 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:l:w flag
+while getopts c:l:wg flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         l) _LDAP=${OPTARG};;
         w) _WAIT_ONLY=true;;
+        g) _GENERATE_ONLY=true;;
     esac
 done
 
+usage () {
+  echo ""
+  echo -e "${_CLR_GREEN}usage: $_me
+    -c full-path-to-config-file
+       (eg: '../configs/env1.properties')
+    -l(optional) ldap-config-file
+       (eg: '../configs/_cfg-production-ldap-domain.properties')
+    -w(optional) wait only, skip deployment
+    -g(optional) generate yaml only, skip deployment${_CLR_NC}"
+}
+
 if [[ -z "${_CFG}" ]]; then
-  echo "usage: $_me -c path-of-config-file -l(optional) ldap-config-file"
+  usage
   exit 1
 fi
 
@@ -65,6 +78,15 @@ namespaceExist () {
       return 0
   fi
   return 1
+}
+
+#-------------------------------
+storageClassExist () {
+    if [ $(oc get sc $1 2>/dev/null | grep $1 | wc -l) -lt 1 ];
+    then
+        return 0
+    fi
+    return 1
 }
 
 checkPrereqVars () {
@@ -198,16 +220,13 @@ deployPFS () {
 }
 
 #-------------------------------
-deployEnvironment () {
-  _INST_ENV_FULL_PATH="../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
+generateCR () {
+  _INST_ENV_FULL_PATH="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   envsubst < ../templates/${CP4BA_INST_CR_TEMPLATE} > ${_INST_ENV_FULL_PATH}
   if [[ $? -ne 0 ]]; then
     echo -e "${_CLR_RED}[✗] Error, CP4BA CR not generated.${_CLR_NC}"
     exit 1
   fi
-
-  echo -e "=============================================================="
-  echo -e "${_CLR_GREEN}Deploying ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
   if [[ -f "${_INST_ENV_FULL_PATH}" ]]; then
     MISSED_TRANSFORMATIONS=$(cat ${_INST_ENV_FULL_PATH} | grep "\${" | wc -l)
@@ -231,15 +250,23 @@ deployEnvironment () {
     echo -e "${_CLR_GREEN}[✗] Error, file not found '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
     exit 1
   fi 
+  echo -e "${_CLR_GREEN}CR for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' saved\nin file '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_YELLOW}'${_CLR_NC}"
+}
 
+#-------------------------------
+deployEnvironment () {
+  generateCR
+
+  echo -e "=============================================================="
+  echo -e "${_CLR_GREEN}Deploying ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
+
+  _INST_ENV_FULL_PATH="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   oc apply -n ${CP4BA_INST_NAMESPACE} -f ${_INST_ENV_FULL_PATH}
   if [ $? -gt 0 ]; then
     echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
     echo -e "${_CLR_RED}[✗] Cannot deploy CP4BA CR '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}', use yq to verify"
     exit 1
   fi
-
-  echo -e "${_CLR_GREEN}CR for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' saved\nin file '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_YELLOW}'${_CLR_NC}"
 
 }
 
@@ -261,15 +288,15 @@ waitDeploymentReadiness () {
       echo -e "${_CLR_GREEN}ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
       ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       NUM_KEYS=$(echo $ACC_INFO | jq length)
-      echo "" > ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+      echo "" > ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
       echo 
       for (( i=0; i<$NUM_KEYS; i++ ));
       do
         KEY=$(echo $ACC_INFO | jq keys[$i])
-        echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+        echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
       done
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
-      echo "See acces info urls in file ../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"     
+      echo "See acces info urls in file ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"     
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
       break
     fi
@@ -317,6 +344,17 @@ echo -e "${_CLR_YELLOW}=========================================================
 checkPrepreqTools
 checkPrereqVars
 
+if [[ "${_GENERATE_ONLY}" = "true" ]]; then
+  generateCR
+  ./cp4ba-create-databases.sh -c ${_CFG} -g
+  if [[ -z "${_LDAP}" ]]; then
+    echo ""
+    echo -e "${_CLR_YELLOW}WARNING${_CLR_GREEN}: no LDAP data has been configured, update manually the generated CR.${_CLR_NC}" 
+  fi
+  echo -e "${_CLR_GREEN}If you intend to manually deploy the generated CR, remember to create/configure all the prerequisites (LDAP, DBs, secrets, etc...)${_CLR_NC}"
+  exit 0
+fi
+
 # verify logged in OCP
 oc project 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
@@ -333,7 +371,7 @@ if [ $? -eq 1 ]; then
   fi
   
   if [[ "${_WAIT_ONLY}" = "false" ]]; then
-    mkdir -p ../output
+    mkdir -p ${CP4BA_INST_OUTPUT_FOLDER}
     deployPreEnv
     deployEnvironment
     deployPostEnv

@@ -4,6 +4,7 @@ _me=$(basename "$0")
 
 _CFG=""
 _WAIT=false
+_GENERATE_SQL_ONLY=false
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -14,16 +15,17 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:w flag
+while getopts c:wg flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         w) _WAIT=true;;
+        g) _GENERATE_SQL_ONLY=true;;
     esac
 done
 
 if [[ -z "${_CFG}" ]]; then
-  echo "usage: $_me -c path-of-config-file"
+  echo "usage: $_me -c path-of-config-file -w(optional) wait db pod -g(optional) generate sql only"
   exit
 fi
 
@@ -46,6 +48,36 @@ resourceExist () {
 }
 
 #-------------------------------
+_generateSQL () {
+# $1 CP4BA_INST_DB_CR_NAME
+# $2 CP4BA_INST_DB_TEMPLATE
+
+  _DB_CR_NAME=$1
+  _DB_TEMPLATE=$2
+  ENV_STATS="${CP4BA_INST_OUTPUT_FOLDER}/env-statements.$RANDOM.sql"
+
+  cat ${_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' \
+    | sed 's/-\{2,\}/@@savecomment@@/g' \
+    | sed 's/-/_/g' \
+    | sed 's/@@savecomment@@/--/g' \
+    | sed 's/§§dbBAWowner§§/'"${CP4BA_INST_DB_BAW_USER}"'/g' | sed 's/§§dbBAWowner_password§§/'"${CP4BA_INST_DB_BAW_PWD}"'/g' \
+    | sed 's/§§dbBAWDOCSowner§§/'"${CP4BA_INST_DB_BAWDOCS_USER}"'/g' | sed 's/§§dbBAWDOCSowner_password§§/'"${CP4BA_INST_DB_BAWDOCS_PWD}"'/g' \
+    | sed 's/§§dbBAWDOSowner§§/'"${CP4BA_INST_DB_BAWDOS_USER}"'/g' | sed 's/§§dbBAWDOSowner_password§§/'"${CP4BA_INST_DB_BAWDOS_PWD}"'/g' \
+    | sed 's/§§dbBAWTOSowner§§/'"${CP4BA_INST_DB_BAWTOS_USER}"'/g' | sed 's/§§dbBAWTOSowner_password§§/'"${CP4BA_INST_DB_BAWTOS_PWD}"'/g' \
+    | sed 's/§§dbICNowner§§/'"${CP4BA_INST_DB_ICN_USER}"'/g' | sed 's/§§dbICNowner_password§§/'"${CP4BA_INST_DB_ICN_PWD}"'/g' \
+    | sed 's/§§dbGCDowner§§/'"${CP4BA_INST_DB_GCD_USER}"'/g' | sed 's/§§dbGCDowner_password§§/'"${CP4BA_INST_DB_GCD_PWD}"'/g' \
+    | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' \
+    | sed 's/§§dbAEowner§§/'"${CP4BA_INST_DB_AE_USER}"'/g' | sed 's/§§dbAEowner_password§§/'"${CP4BA_INST_DB_AE_PWD}"'/g' > ${ENV_STATS}
+
+  mkdir -p ${CP4BA_INST_OUTPUT_FOLDER}
+  _T_NAME="${_DB_TEMPLATE##*/}"
+  _SQL_FULL_TARGET="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
+  cp ${ENV_STATS} ${_SQL_FULL_TARGET} 2>/dev/null
+  rm ${ENV_STATS}
+  echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved\nin file '${_CLR_YELLOW}${_SQL_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
+}
+
+#-------------------------------
 _createDatabases () {
 # $1 CP4BA_INST_DB_CR_NAME
 # $2 CP4BA_INST_DB_TEMPLATE
@@ -53,6 +85,14 @@ _createDatabases () {
   _DB_CR_NAME=$1
   _DB_TEMPLATE=$2
   _FOUND=0
+
+  _generateSQL ${_DB_CR_NAME} ${_DB_TEMPLATE}
+  if [[ "${_GENERATE_SQL_ONLY}" = "true" ]]; then
+    return 0
+  fi
+
+  _FULL_TARGET="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
+
   if [[ "${_WAIT}" = "false" ]]; then
     _MAX_WAIT=1
     _WAIT=true
@@ -86,20 +126,6 @@ _createDatabases () {
     _IS_READY=$(echo $_RES | grep "condition met" | wc -l)
     if [ $_IS_READY -eq 1 ]; then
       echo -e "${_CLR_GREEN}Database pod is ready, load and execute sql statements in '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_GREEN}' db server${_CLR_NC}"
-      ENV_STATS="./env-statements.$RANDOM.sql"
-
-      cat ${_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' \
-        | sed 's/-\{2,\}/@@savecomment@@/g' \
-        | sed 's/-/_/g' \
-        | sed 's/@@savecomment@@/--/g' \
-        | sed 's/§§dbBAWowner§§/'"${CP4BA_INST_DB_BAW_USER}"'/g' | sed 's/§§dbBAWowner_password§§/'"${CP4BA_INST_DB_BAW_PWD}"'/g' \
-        | sed 's/§§dbBAWDOCSowner§§/'"${CP4BA_INST_DB_BAWDOCS_USER}"'/g' | sed 's/§§dbBAWDOCSowner_password§§/'"${CP4BA_INST_DB_BAWDOCS_PWD}"'/g' \
-        | sed 's/§§dbBAWDOSowner§§/'"${CP4BA_INST_DB_BAWDOS_USER}"'/g' | sed 's/§§dbBAWDOSowner_password§§/'"${CP4BA_INST_DB_BAWDOS_PWD}"'/g' \
-        | sed 's/§§dbBAWTOSowner§§/'"${CP4BA_INST_DB_BAWTOS_USER}"'/g' | sed 's/§§dbBAWTOSowner_password§§/'"${CP4BA_INST_DB_BAWTOS_PWD}"'/g' \
-        | sed 's/§§dbICNowner§§/'"${CP4BA_INST_DB_ICN_USER}"'/g' | sed 's/§§dbICNowner_password§§/'"${CP4BA_INST_DB_ICN_PWD}"'/g' \
-        | sed 's/§§dbGCDowner§§/'"${CP4BA_INST_DB_GCD_USER}"'/g' | sed 's/§§dbGCDowner_password§§/'"${CP4BA_INST_DB_GCD_PWD}"'/g' \
-        | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' \
-        | sed 's/§§dbAEowner§§/'"${CP4BA_INST_DB_AE_USER}"'/g' | sed 's/§§dbAEowner_password§§/'"${CP4BA_INST_DB_AE_PWD}"'/g' > ${ENV_STATS}
 
       # wait for container ready
       while [ true ]
@@ -115,7 +141,7 @@ _createDatabases () {
       done
 
       if [ $_KO -eq 0 ]; then
-        # create f.s folder for tablespaces
+        # create f.s. folder for tablespaces
         oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/icn /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
         if [ $? -gt 0 ]; then
           _KO=1
@@ -125,7 +151,7 @@ _createDatabases () {
 
       if [ $_KO -eq 0 ]; then
         # copy statement file into pod's f.s.
-        oc cp ${ENV_STATS} ${CP4BA_INST_SUPPORT_NAMESPACE}/${_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
+        oc cp ${_FULL_TARGET} ${CP4BA_INST_SUPPORT_NAMESPACE}/${_DB_CR_NAME}-1:/run/setupdb/db-statements.sql -c='postgres'
         if [ $? -gt 0 ]; then
           _KO=1
           echo -e "${_CLR_RED}Error copying SQL statements file if f.s. of pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"        
@@ -142,13 +168,8 @@ _createDatabases () {
       fi
 
       if [ $_KO -eq 0 ]; then
-        _NUM_DB=$(cat ${ENV_STATS} | grep "CREATE DATABASE" | wc -l)
+        _NUM_DB=$(cat ${_FULL_TARGET} | grep "CREATE DATABASE" | wc -l)
         echo -e "${_CLR_GREEN}Created '${_CLR_YELLOW}${_NUM_DB}${_CLR_GREEN}' databases.${_CLR_NC}"
-        _T_NAME="${_DB_TEMPLATE##*/}"
-        mkdir -p ../output
-        _FULL_TARGET="../output/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
-        mv ${ENV_STATS} ${_FULL_TARGET} 2>/dev/null
-        echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
         _DONE=1
       fi
     fi
@@ -194,9 +215,12 @@ createDatabases () {
   done  
 }
 
-echo -e "=============================================================="
+echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+
 if [[ "${CP4BA_INST_DB}" = "true" ]]; then
-  echo -e "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers${_CLR_NC}"
+  if [[ "${_GENERATE_SQL_ONLY}" = "false" ]]; then
+    echo -e "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers${_CLR_NC}"
+  fi
   createDatabases
 else
   echo -e "${_CLR_GREEN}Skipping creation of databases${_CLR_NC}"

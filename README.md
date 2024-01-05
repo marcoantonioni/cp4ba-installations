@@ -168,6 +168,16 @@ CONFIG_FILE=../configs/env1-baw-bpmonly-es.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 
+#------------------------------
+# Generate YAML & SQL only
+
+# generate only
+CONFIG_FILE=../configs/env1-baw.properties
+time ./cp4ba-deploy-env.sh -c ${CONFIG_FILE} -g
+
+CONFIG_FILE=../configs/env1-baw.properties
+LDAP_CONFIG_FILE=../configs/_cfg-production-ldap-domain.properties
+time ./cp4ba-deploy-env.sh -c ${CONFIG_FILE} -l ${LDAP_CONFIG_FILE} -g
 
 #------------------------------
 # TEST INSTALLER

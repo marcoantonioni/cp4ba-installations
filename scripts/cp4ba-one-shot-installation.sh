@@ -39,7 +39,7 @@ usage () {
     -v(optional) case-package-manager-version [install latest version if not set, see 'cp4ba-casemanager-setup' repository for further options]
        (eg: '5.1.0') 
     -d(optional) full-path-to-target-folder-for-case-package-manager [mandatory if -m is set, created if not exists]
-       (eg: '~/tmp-cmgr')${_CLR_NC}"
+       (eg: '/tmp/my-cmgr')${_CLR_NC}"
 }
 
 
