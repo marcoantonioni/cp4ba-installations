@@ -46,14 +46,38 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- aggiornare yaml demo da primaria
-  usare doppio baw con bpmonly federato
-  studiare configurazione automatica per url/context del PFS
+- creare file configurazione template base
+  partire da baw e aggiungere 
+    -# Process Federation Portal
+    export CP4BA_INST_PFS=true
+    export CP4BA_INST_PFS_NAME="pfs-demo"
+    export CP4BA_INST_PFS_NAMESPACE="${CP4BA_INST_NAMESPACE}"
+    export CP4BA_INST_PFS_STORAGE_CLASS="${CP4BA_INST_SC_FILE}"
+    export CP4BA_INST_PFS_APP_VER="${CP4BA_INST_APPVER}"
+    export CP4BA_INST_PFS_ADMINUSER="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    export CP4BA_INST_PFS_TOOLS_FOLDER="../../cp4ba-process-federation-server"
+
+
+- aggiungere versione file configurazione
+  verifica versione script con versione file configurazione in uso per deployment
+
+- studiare configurazione automatica per url/context del PFS
     pre deploy oppure nel loop wait cfg aggiungere test su PFS e lettura dapo con patch dei BAW che hanno cfg federazione
     patch CR se pfs non pronto
 
-- deploy applicazione case solution
-- deploy applicazione bpm
+    modificare script di deploy
+      se ...BAW_FEDERATE=true e presente e ready PFS
+        legge da PFS hostname e ctx
+        patch della CR sezione BAW con sezione
+          process_federation_server:
+            hostname: "cpd-cp4ba-test1.apps.658a741397f3750011a5d9d4.cloud.techzone.ibm.com"
+            context_root_prefix: "/pfs"
+
+          https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
+
+- sviluppo app demo case-solution e workflow
+- deploy automatizzato applicazione case solution
+- deploy automatizzato applicazione bpm
 
 - verificare se il navigator è sempre mandatorio (serve db)
 
@@ -86,7 +110,6 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
         -H 'accept: application/json' \
         -H 'BPMCSRFToken: eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDQzODg2NzIsInN1YiI6ImNwNGFkbWluIn0.6_y3Hq6P_4Dvls35s8oPwXeGmi_OghqW1ocRb9z-g9A'
 
-- rivedere cp4ba-cr-ref-foundation.yaml per creare template di partenza
 
 - navigator desktop quando più di un baw
 
@@ -100,17 +123,6 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
   secret per AE
   aggiunta sezioni in CR templates: AE
   /home/marco/CP4BA/fixes/ibm-cp-automation-5.1.0/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/descriptors/patterns
-
-- creare CR scenario federazione 'elasticsearch'
-  se ...BAW_FEDERATE=true
-    se presente PVS
-      legge hostname e ctx
-      patch della CR con sezione
-        process_federation_server:
-          hostname: "cpd-cp4ba-test1.apps.658a741397f3750011a5d9d4.cloud.techzone.ibm.com"
-          context_root_prefix: "/pfs"
-
-        https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 
 
 - fase di prevalidazione su tag cr
@@ -163,9 +175,6 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 CONFIG_FILE=../configs/env1-baw-bpmonly.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
-#------------------------------
-CONFIG_FILE=../configs/env1-baw-bpmonly-es.properties
-time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 
 #------------------------------
@@ -191,14 +200,14 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 
 #------------------------------
-CONFIG_FILE=../configs/env1-baw-es-demo-wfps-baw.properties
+CONFIG_FILE=../configs/env1-baw-demo-wfps-baw.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
-oc logs -f -n cp4ba-pfs-wfps-baw-demo -c operator $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
+oc logs -f -n cp4ba-wfps-baw-pfs-demo -c operator $(oc get pods -n cp4ba-wfps-baw-pfs-demo | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
 
-oc logs -f -n cp4ba-pfs-wfps-baw-demo $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep pfs-operator- | awk '{print $1}') | grep -i "FAIL"
+oc logs -f -n cp4ba-wfps-baw-pfs-demo $(oc get pods -n cp4ba-wfps-baw-pfs-demo | grep pfs-operator- | awk '{print $1}') | grep -i "FAIL"
 
-
+# !!!! rivedere copia configurazione con ns allineati per demo
 # dopo deploy wfps
 ./pfs-show-federated.sh -c ../configs/pfs1.properties
 
@@ -251,7 +260,7 @@ oc new-project ${TNS}
 
 
 
-oc logs -n cp4ba-pfs-wfps-baw-demo $(oc get pods -n cp4ba-pfs-wfps-baw-demo | grep case-init-job | awk '{print $1}') | grep "INFO: Configuration Completed"
+oc logs -n cp4ba-wfps-baw-pfs-demo $(oc get pods -n cp4ba-wfps-baw-pfs-demo | grep case-init-job | awk '{print $1}') | grep "INFO: Configuration Completed"
 
 
 https://cpd-cp4ba-test1-baw.apps.65800a760763df0011005ecb.cloud.techzone.ibm.com/baw-baw1/ops/docs?tags=
@@ -264,10 +273,10 @@ https://cpd-cp4ba-test1-baw.apps.65800a760763df0011005ecb.cloud.techzone.ibm.com
 ```
 _HOST_PORT=5432
 _DB_CR_NAME="my-postgres-1-for-cp4ba"
-_INST_ENV="pfs-wfps-baw-demo" 
+_INST_ENV="wfps-baw-pfs-demo" 
 _DB_NAME="${_INST_ENV//-/_}_baw_1"
 _DB_USER="bawdocs"
-TNS="cp4ba-pfs-wfps-baw-demo"
+TNS="cp4ba-wfps-baw-pfs-demo"
 
 echo "Forwarding local port ${_HOST_PORT} to ${_DB_CR_NAME}-1 pod..."
 PSQL_POD_NAME=$(oc get pod -n ${TNS} | grep ${_DB_CR_NAME}-1 | grep Running | grep -v deploy | grep -v hook | awk '{print $1}')
