@@ -380,7 +380,12 @@ folder: /cert-kubernetes/descriptors/patterns
 #  fi
 #}
 
-
+cd /home/marco/cp4ba-projects/cp4ba-utilities/remove-cp4ba
+./cp4ba-remove-namespace.sh -n cp4ba-test1-baw 2>/dev/null 1>/dev/null &
+./cp4ba-remove-namespace.sh -n cp4ba-test1-baw-bis 2>/dev/null 1>/dev/null &
+./cp4ba-remove-namespace.sh -n cp4ba-test1-baw-double 2>/dev/null 1>/dev/null &
+./cp4ba-remove-namespace.sh -n cp4ba-test1-bpm-only 2>/dev/null 1>/dev/null &
+./cp4ba-remove-namespace.sh -n cp4ba-test-installer 2>/dev/null 1>/dev/null &
 
 ```
 
