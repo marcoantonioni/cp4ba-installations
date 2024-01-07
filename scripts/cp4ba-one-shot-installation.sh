@@ -23,10 +23,6 @@ _CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
-# "\33[32m[✔] ${1}\33[0m"
-# "\33[33m[✗] ${1}\33[0m"
-# bold: echo -e "\x1B[1m${1}${_CLR_NC}\n"
-
 usage () {
   echo ""
   echo -e "${_CLR_GREEN}usage: $_me

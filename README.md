@@ -1,11 +1,16 @@
 # cp4ba-installations
 
+- un file .md per ogni item
 
-...description of contents TBD
+... description of contents TBD
 
 ... preprequisiti linux box, tools
 
 ... prerequisiti cluster OCP
+
+... descrizione template .properties
+
+... esempi di installazione
 
 ... tempi medi per worker 16cpu 
 
@@ -46,17 +51,6 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- creare file configurazione template base
-  partire da baw e aggiungere 
-    -# Process Federation Portal
-    export CP4BA_INST_PFS=true
-    export CP4BA_INST_PFS_NAME="pfs-demo"
-    export CP4BA_INST_PFS_NAMESPACE="${CP4BA_INST_NAMESPACE}"
-    export CP4BA_INST_PFS_STORAGE_CLASS="${CP4BA_INST_SC_FILE}"
-    export CP4BA_INST_PFS_APP_VER="${CP4BA_INST_APPVER}"
-    export CP4BA_INST_PFS_ADMINUSER="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    export CP4BA_INST_PFS_TOOLS_FOLDER="../../cp4ba-process-federation-server"
-
 
 - aggiungere versione file configurazione
   verifica versione script con versione file configurazione in uso per deployment
@@ -70,10 +64,42 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
         legge da PFS hostname e ctx
         patch della CR sezione BAW con sezione
           process_federation_server:
-            hostname: "cpd-cp4ba-test1.apps.658a741397f3750011a5d9d4.cloud.techzone.ibm.com"
-            context_root_prefix: "/pfs"
+            hostname: "${_PFS_HOST}"
+            context_root_prefix: "/${_PFS_CTX}"
 
           https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
+
+TNS=cp4ba-wfps-baw-pfs-demo
+_PFS_URI=$(oc get pfs -n $TNS --no-headers | awk '{print $1}' | xargs oc get pfs -n $TNS -o jsonpath='{.status.endpoints}' | jq '.[] | select(.scope == "Internal")' | jq .uri | sed 's/"//g')
+_PFS_HOST=$(echo ${_PFS_URI} | sed 's/https:\/\///g')
+_PFS_HOST=$(echo ${_PFS_HOST} | sed 's/\/.*//g')
+_PFS_CTX=$(echo ${_PFS_URI} | sed 's/.*\///g')
+echo $_PFS_HOST
+echo $_PFS_CTX
+cat <<EOF
+          process_federation_server:
+            hostname: "${_PFS_HOST}"
+            context_root_prefix: "/${_PFS_CTX}"
+EOF
+
+_PFS_EXT_URI=$(oc get pfs -n $TNS --no-headers | awk '{print $1}' | xargs oc get pfs -n $TNS -o jsonpath='{.status.endpoints}' | jq '.[] | select(.scope == "External")' | jq .uri | sed 's/"//g')
+_PFS_SYSTEMS_URL=${_PFS_EXT_URI}/rest/bpm/federated/v1/systems
+ADMIN_USERNAME=$(oc get secret platform-auth-idp-credentials -n ${TNS} -o jsonpath='{.data.admin_username}' | base64 -d)
+ADMIN_PASSW=$(oc get secret platform-auth-idp-credentials -n ${TNS} -o jsonpath='{.data.admin_password}' | base64 -d)
+echo $ADMIN_USERNAME / $ADMIN_PASSW
+
+CONSOLE_HOST="https://"$(oc get route -n $TNS cp-console -o jsonpath="{.spec.host}")
+PAK_HOST="https://"$(oc get route -n $TNS cpd -o jsonpath="{.spec.host}")
+IAM_ACCESS_TK=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" \
+      -d "grant_type=password&username=${ADMIN_USERNAME}&password=${ADMIN_PASSW}&scope=openid" \
+      ${CONSOLE_HOST}/idprovider/v1/auth/identitytoken | jq -r .access_token)
+ZEN_TK=$(curl -sk "${PAK_HOST}/v1/preauth/validateAuth" -H "username:${ADMIN_USERNAME}" -H "iam-token: ${IAM_ACCESS_TK}" | jq -r .accessToken)
+curl -sk -H "Authorization: Bearer ${ZEN_TK}" -H 'accept: application/json'  -X GET "${_PFS_SYSTEMS_URL}" | jq .
+
+
+
+
+
 
 - sviluppo app demo case-solution e workflow
 - deploy automatizzato applicazione case solution
@@ -212,7 +238,7 @@ oc logs -f -n cp4ba-wfps-baw-pfs-demo $(oc get pods -n cp4ba-wfps-baw-pfs-demo |
 ./pfs-show-federated.sh -c ../configs/pfs1.properties
 
 #--------------------------
-cd /home/marco/cp4ba-projects/cp4ba-wfps-utils/scripts
+cd /home/marco/cp4ba-projects/cp4ba-wfps/scripts
 time ./wfps-install-application.sh -c ./configs/wfps-pfs-demo.properties -a ../apps/SimpleDemoWfPS.zip
 
 
