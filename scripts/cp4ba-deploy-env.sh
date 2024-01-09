@@ -138,6 +138,12 @@ checkPrereqVars () {
     _OK_VARS=0
   fi
 
+  if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+    if [[ -z "${CP4BA_INST_LDAP_SECRET}" ]]; then
+      echo -e "${_CLR_RED}[✗] var CP4BA_INST_LDAP_SECRET not set, must be set when CP4BA_INST_LDAP=true, update your configuration file and rerun.${_CLR_NC}"
+    fi
+  fi
+
 
   if [ $_OK_VARS -eq 0 ]; then
     exit 1

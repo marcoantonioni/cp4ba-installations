@@ -27,6 +27,12 @@ if [[ -z "${_CFG}" ]]; then
   exit
 fi
 
+if [[ ! -f "${_CFG}" ]]; then
+  echo "Configuration file not found: "${_CFG}
+  usage
+  exit 1
+fi
+
 source ${_CFG}
 
 

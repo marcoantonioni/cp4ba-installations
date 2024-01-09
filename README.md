@@ -51,6 +51,12 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
+- verificare creazione secret LDAP se non crea ldap
+
+- rinominare script one-shot per baw
+  i prossimi per ads, etc...
+
+- verificare navigator desktop quando più di un baw full
 
 - aggiungere versione file configurazione
   verifica versione script con versione file configurazione in uso per deployment
@@ -69,6 +75,7 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
           https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 
+- possibile automazione
 TNS=cp4ba-wfps-baw-pfs-demo
 _PFS_URI=$(oc get pfs -n $TNS --no-headers | awk '{print $1}' | xargs oc get pfs -n $TNS -o jsonpath='{.status.endpoints}' | jq '.[] | select(.scope == "Internal")' | jq .uri | sed 's/"//g')
 _PFS_HOST=$(echo ${_PFS_URI} | sed 's/https:\/\///g')
@@ -96,16 +103,9 @@ IAM_ACCESS_TK=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlenc
 ZEN_TK=$(curl -sk "${PAK_HOST}/v1/preauth/validateAuth" -H "username:${ADMIN_USERNAME}" -H "iam-token: ${IAM_ACCESS_TK}" | jq -r .accessToken)
 curl -sk -H "Authorization: Bearer ${ZEN_TK}" -H 'accept: application/json'  -X GET "${_PFS_SYSTEMS_URL}" | jq .
 
-
-
-
-
-
 - sviluppo app demo case-solution e workflow
 - deploy automatizzato applicazione case solution
 - deploy automatizzato applicazione bpm
-
-- verificare se il navigator è sempre mandatorio (serve db)
 
 - disattivare e rimuovere app Hiring (aprire case per mancanza flag forzatura in ProcessAdmin)
 
@@ -136,9 +136,6 @@ curl -sk -H "Authorization: Bearer ${ZEN_TK}" -H 'accept: application/json'  -X 
         -H 'accept: application/json' \
         -H 'BPMCSRFToken: eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDQzODg2NzIsInN1YiI6ImNwNGFkbWluIn0.6_y3Hq6P_4Dvls35s8oPwXeGmi_OghqW1ocRb9z-g9A'
 
-
-- navigator desktop quando più di un baw
-
 - studiare per Task prioritization, Workforce Insights
     eseguito test: ??? JMS, Business Automation Workflow
   https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=services-preparing-storage
@@ -159,13 +156,6 @@ curl -sk -H "Authorization: Bearer ${ZEN_TK}" -H 'accept: application/json'  -X 
 
 - TEST - verifica configurazione CR base se LDAP e DB preesistenti
 
-
-## Asks to experts
-
-- icn_repos / icn_desktop, devono essere intesi come OS documentali come semplice FNET ? ?
-
-- tablespaces 
-    sono necessari anche per AE e i vari OS aggiuntivi ?
 
 
 ## Memos of command

@@ -159,7 +159,9 @@ createSecretBAW () {
 
 #-------------------------------
 createSecrets () {
-  createSecretLDAP
+  if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+    createSecretLDAP
+  fi
   createSecretBAN
 
   if [[ $CP4BA_INST_DB_INSTANCES -eq 0 ]]; then
