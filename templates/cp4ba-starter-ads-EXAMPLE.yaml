@@ -1,0 +1,116 @@
+###############################################################################
+#
+# Licensed Materials - Property of IBM
+#
+# (C) Copyright IBM Corp. 2021, 2023. All Rights Reserved.
+#
+# US Government Users Restricted Rights - Use, duplication or
+# disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+###############################################################################
+apiVersion: icp4a.ibm.com/v1
+kind: ICP4ACluster
+metadata:
+  name: icp4adeploy
+  labels:
+    app.kubernetes.io/instance: ibm-dba
+    app.kubernetes.io/managed-by: ibm-dba
+    app.kubernetes.io/name: ibm-dba
+    release: 23.0.2
+spec:
+  ## CP4A application version
+  appVersion: 23.0.2
+  ## MUST exist, used to accept ibm license, valid value only can be "accept" 
+  ibm_license: accept
+  shared_configuration:
+    ## FileNet Content Manager (FNCM) license and possible values are: user, non-production, and production.
+    ## This value could be different from the other licenses in the CR.
+    sc_deployment_fncm_license: non-production
+    ## Business Automation Workflow (BAW) license and possible values are: user, non-production, and production.
+    ## This value could be different from the other licenses in the CR.
+    sc_deployment_baw_license: non-production
+    ## Use this parameter to specify the license for the CP4A deployment and
+    ## the possible values are: non-production and production and if not set, the license will
+    ## be defaulted to production.  This value could be different from the other licenses in the CR.
+    sc_deployment_license: non-production
+    ## CP4A patterns or capabilities to be deployed.  The base pattern is "foundation pattern", which includes BAN (Navigator) and RR.
+    sc_deployment_patterns: "foundation,decisions_ads"
+    ## The optional component for 'decisions_ads' are 'ads_designer' and 'ads_runtime'. If 'ads_runtime' is here, it is possible to also add 'bai'.
+    # In starter mode, both are always installed and set in 'sc_optional_components' list by the user installation script.
+    sc_optional_components: "ads_designer,ads_runtime,bai"
+    ## This is the deployment type and the possible values are: starter and production.
+    sc_deployment_type: "Starter"
+    ## This is the version of the OCP/ROKS platform and the possible values are: 4.4, 4.5 and 4.6.  This is usually set by the User script and it is
+    ## used by the Operator to determine the version to perform the pre-requisites in order to deploy Db2.
+    sc_deployment_platform: "OCP"
+    ## This is the deployment hostname suffix, this is optional and the default hostname suffix will be used as {meta.namespace}.router-canonicalhostname
+    # sc_deployment_hostname_suffix: {{ meta.name }}
+
+    ## All CP4A components must use/share the same docker image repository.  For example, if IBM Entitled Registry is used, then
+    ## it should be "cp.icr.io".  Otherwise, it will be a local docker registry.
+    sc_image_repository: cp.icr.io
+    ## For ROKS, this is used to enable the creation of ingresses. The default value is "false", which routes will be created.
+    sc_ingress_enable: false
+    ## If the root certificate authority (CA) key of the external service is not signed by the operator root CA key, provide the TLS certificate of
+    ## the external service to the component's truststore.
+    trusted_certificate_list: []
+    ## This is the deployment hostname suffix, this is optional and the default hostname suffix will be used as {meta.namespace}.router-canonicalhostname
+    # sc_deployment_hostname_suffix:
+    storage_configuration:
+      ## For 4.4 or Later, the storage class will be provided by the user
+      ## during the execution of the User script (cp4a-deployment.sh)
+      sc_dynamic_storage_classname: "managed-nfs-storage"
+      sc_block_storage_classname: "thin-csi"
+      ## For ROKS (v3.x or v4.x), the Admin script creates the storage classes with the following names: cp4a-file-retain-bronze-gid, cp4a-file-retain-silver-gid,
+      ## and cp4a-file-retain-gold-gid
+      sc_slow_file_storage_classname: ""
+      sc_medium_file_storage_classname: ""
+      sc_fast_file_storage_classname: ""
+    # sc_common_service:
+    #   ## common service operator namespace for CS4.0
+    #   operator_namespace: ""
+    #   ## common service service namespace for CS4.0
+    #   services_namespace: ""
+    ## IAM Settings
+    sc_iam:
+      ## Provide non default admin user for IAM in case you do not want to use cpadmin
+      default_admin_username: ""
+    # Enable/disable FIPS mode for the deployment (default value is "false")
+    enable_fips: false
+    # For starter deployment, always set sc_restricted_internet_access as true
+    sc_egress_configuration:
+      ## Required. Enable or disable egress access to external systems.
+      ## If "sc_restricted_internet_access" is defined and has no value set, then default will be "true". 
+      ## If "sc_restricted_internet_access" is not defined (e.g., in the case of upgrade, the existing CR will not have sc_restricted_internet_access), then "sc_restricted_internet_access" will be "false"
+      sc_restricted_internet_access: true
+      ## Optional.  Kubernetes API server namespace(s) (comma separated) to be used for egress network policy when `sc_restricted_internet_access: true` and `sc_deployment_platform: "OCP"
+      ## "{}" can also be used as a value.  It is equivalent to all namespaces (eg: namespaceSelector:{})
+      ## Default are "openshift-kube-apiserver", "openshift-apiserver" for OCP and ROKS.
+      sc_api_namespace:
+      ## Optional.  Kubernetes API server port(s) (comma separated) to be used for egress network policy when `sc_restricted_internet_access: true` and `sc_deployment_platform: "OCP"
+      ## Default are 443,6443 for OCP and ROKS
+      sc_api_port:
+      ## Optional.  Kubernetes DNS service namespace(s) (comma separated) to be used for egress network policy when `sc_restricted_internet_access: true` and `sc_deployment_platform: "OCP"
+      ## "{}" can also be used as a value.  It is equivalent to all namespaces (eg: namespaceSelector:{})
+      ## Default is "openshift-dns" for OCP and ROKS
+      sc_dns_namespace:
+      ## Optional.  Kubernetes DNS service port(s) (comma separated) to be used for egress network policy when `sc_restricted_internet_access: true` and `sc_deployment_platform: "OCP"
+      ## Default are 53,5353 for OCP and ROKS
+      sc_dns_port:
+    image_pull_secrets:
+    - ibm-entitlement-key
+    sc_drivers_url:
+  ########################################################################
+  ########      IBM Business Automation Insights configuration    ########
+  ########################################################################
+  bai_configuration:
+    business_performance_center:
+      all_users_access: true
+  ########################################################################
+  ########   IBM Business Automation Decision Services            ########
+  ########################################################################
+  ads_configuration:
+    decision_designer:
+      enabled: true
+    decision_runtime:
+      enabled: true

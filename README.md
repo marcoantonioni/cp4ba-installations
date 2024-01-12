@@ -377,6 +377,32 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=foundation
 PFS
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployments-installing-cp4ba-process-federation-server-production-deployment
 
+Administering and operating IBM Process Federation Server Containers
+https://github.com/icp4a/process-federation-server-containers
+
+
+TOOLS
+
+Openshift CLI
+[https://docs.openshift.com/container-platform/4.14/cli_reference/openshift_cli/getting-started-cli.html](https://docs.openshift.com/container-platform/4.14/cli_reference/openshift_cli/getting-started-cli.html)
+
+JQ
+[https://jqlang.github.io/jq](https://jqlang.github.io/jq)
+
+YQ
+[https://github.com/mikefarah/yq](https://github.com/mikefarah/yq)
+You may find a portable version of 'yq' in folder './scripts/helper/yq/' of CP4BA Case Installation tool.
+
+Openssl
+[https://www.openssl.org/](https://www.openssl.org/)
+
+Home of CP4BA Case Installation tool
+https://github.com/IBM/cloud-pak/tree/master/repo/case/ibm-cp-automation
+
+CP4BA Silent installation
+[https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=o2isdbrs-option-2b-setting-up-cluster-in-silent-mode](https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=o2isdbrs-option-2b-setting-up-cluster-in-silent-mode)
+
+[https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=reference-environment-variables-silent-mode-installation](https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=reference-environment-variables-silent-mode-installation)
 
 
 # misc

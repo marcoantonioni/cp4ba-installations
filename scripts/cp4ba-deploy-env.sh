@@ -200,7 +200,7 @@ deployPostEnv () {
 #-------------------------------
 deployPFS () {
   if [[ "${CP4BA_INST_PFS}" = "true" ]]; then
-    _PFS_SCRIPT="${CP4BA_INST_PFS_TOOLS_FOLDER}/scripts/pfs-deploy-portable.sh"
+    _PFS_SCRIPT="${CP4BA_INST_PFS_TOOLS_FOLDER}/scripts/pfs-deploy.sh"
 
     if [[ -f "${_PFS_SCRIPT}" ]]; then
 
