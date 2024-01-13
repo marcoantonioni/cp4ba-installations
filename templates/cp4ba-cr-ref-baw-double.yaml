@@ -56,6 +56,7 @@ spec:
     sc_ingress_enable: false
     trusted_certificate_list: []
     storage_configuration:
+      sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"

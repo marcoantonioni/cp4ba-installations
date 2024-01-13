@@ -309,7 +309,7 @@ else
     echo -e "\x1B[1mPlease note${_CLR_NC}, some pods may be not yet ready. Check before using the system."
     oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
     echo ""
-    echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_GREEN}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
+    echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_YELLOW}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
   fi
 
   if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then

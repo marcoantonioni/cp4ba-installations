@@ -105,6 +105,7 @@ checkPrereqVars () {
     echo -e "${_CLR_RED}[✗] var CP4BA_INST_TYPE not set, update your configuration file and rerun.${_CLR_NC}"
     _OK_VARS=0
   else
+    CP4BA_INST_TYPE=$(echo "${CP4BA_INST_TYPE}" | tr '[:upper:]' '[:lower:]')
     if [[ "${CP4BA_INST_TYPE}" != "starter" ]] && [[ "${CP4BA_INST_TYPE}" != "production" ]]; then
       echo -e "${_CLR_RED}[✗] var CP4BA_INST_TYPE must be 'starter' or 'production', update your configuration file and rerun.${_CLR_NC}"
       _OK_VARS=0
@@ -175,25 +176,31 @@ deployPreEnv () {
     fi
   fi
 
-  ./cp4ba-install-db.sh -c ${_CFG}
-  if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
-    exit 1
+  if [[ "${CP4BA_INST_DB}" = "true" ]]; then
+    ./cp4ba-install-db.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
+      exit 1
+    fi
   fi
 
-  ./cp4ba-create-secrets.sh -c ${_CFG} -s -t 0
-  if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, secrets not configured.${_CLR_NC}"
-    exit 1
+  if [[ "${CP4BA_INST_TYPE}" != "starter" ]]; then
+    ./cp4ba-create-secrets.sh -c ${_CFG} -s -t 0
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_RED}[✗] Error, secrets not configured.${_CLR_NC}"
+      exit 1
+    fi
   fi
 }
 
 #-------------------------------
 deployPostEnv () {
-  ./cp4ba-create-databases.sh -c ${_CFG} -w
-  if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, databases not created.${_CLR_NC}"
-    exit 1
+  if [[ "${CP4BA_INST_DB}" = "true" ]]; then
+    ./cp4ba-create-databases.sh -c ${_CFG} -w
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_RED}[✗] Error, databases not created.${_CLR_NC}"
+      exit 1
+    fi
   fi
 }
 
@@ -353,7 +360,7 @@ checkPrereqVars
 if [[ "${_GENERATE_ONLY}" = "true" ]]; then
   generateCR
   ./cp4ba-create-databases.sh -c ${_CFG} -g
-  if [[ -z "${_LDAP}" ]]; then
+  if [[ -z "${_LDAP}" ]] && [[ "${CP4BA_INST_TYPE}" = "production" ]]; then
     echo ""
     echo -e "${_CLR_YELLOW}WARNING${_CLR_GREEN}: no LDAP data has been configured, update manually the generated CR.${_CLR_NC}" 
   fi

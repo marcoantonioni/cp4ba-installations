@@ -51,7 +51,8 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- verificare creazione secret LDAP se non crea ldap
+- creare template e configurazione per ambiente starter
+  eseguire test
 
 - rinominare script one-shot per baw
   i prossimi per ads, etc...
@@ -61,6 +62,7 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 - aggiungere versione file configurazione
   verifica versione script con versione file configurazione in uso per deployment
 
+- aggiungere parametro BAW per configurazione PFS, anche su template
 - studiare configurazione automatica per url/context del PFS
     pre deploy oppure nel loop wait cfg aggiungere test su PFS e lettura dapo con patch dei BAW che hanno cfg federazione
     patch CR se pfs non pronto
@@ -191,6 +193,10 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 CONFIG_FILE=../configs/env1-baw-bpmonly.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
+#------------------------------
+CONFIG_FILE=../configs/env1-starter-authoring-baw-applications.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+
 
 
 #------------------------------
@@ -202,6 +208,9 @@ time ./cp4ba-deploy-env.sh -c ${CONFIG_FILE} -g
 
 CONFIG_FILE=../configs/env1-baw.properties
 LDAP_CONFIG_FILE=../configs/_cfg-production-ldap-domain.properties
+time ./cp4ba-deploy-env.sh -c ${CONFIG_FILE} -l ${LDAP_CONFIG_FILE} -g
+
+CONFIG_FILE=../configs/env1-starter-authoring-baw-applications.properties
 time ./cp4ba-deploy-env.sh -c ${CONFIG_FILE} -l ${LDAP_CONFIG_FILE} -g
 
 #------------------------------
@@ -216,7 +225,7 @@ time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 
 #------------------------------
-CONFIG_FILE=../configs/env1-baw-demo-wfps-baw.properties
+CONFIG_FILE=../configs/env1-demo-wfps-pfs-baw.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 oc logs -f -n cp4ba-wfps-baw-pfs-demo -c operator $(oc get pods -n cp4ba-wfps-baw-pfs-demo | grep cp4a-operator- | awk '{print $1}') | grep "FAIL"
