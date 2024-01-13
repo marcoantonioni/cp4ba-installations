@@ -1,0 +1,74 @@
+###############################################################################
+##
+##Licensed Materials - Property of IBM
+##
+##(C) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+##
+##US Government Users Restricted Rights - Use, duplication or
+##disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+##
+###############################################################################
+##
+##============================================================================================
+## DISCLAIMER
+## These configurations are not indicated or intended to be valid for production environments.
+## The purpose is purely educational.
+##============================================================================================
+##
+## DEPLOYMENT CONTENTS
+## 
+## patterns: starter, foundation,decisions_ads
+###############################################################################
+apiVersion: icp4a.ibm.com/v1
+kind: ICP4ACluster
+metadata:
+  name: ${CP4BA_INST_CR_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+  labels:
+    app.kubernetes.io/instance: ibm-dba
+    app.kubernetes.io/managed-by: ibm-dba
+    app.kubernetes.io/name: ibm-dba
+    release: ${CP4BA_INST_APPVER}
+spec:
+
+  appVersion: ${CP4BA_INST_APPVER}
+  ibm_license: accept
+  shared_configuration:
+    sc_deployment_fncm_license: non-production
+    sc_deployment_baw_license: non-production
+    sc_deployment_license: non-production
+    sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
+    sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
+    sc_deployment_type: "Starter"
+    sc_deployment_platform: "OCP"
+    sc_image_repository: cp.icr.io
+    sc_ingress_enable: false
+    trusted_certificate_list: []
+    storage_configuration:
+      sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
+      sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+    sc_iam:
+      default_admin_username: ""
+    enable_fips: false
+    sc_egress_configuration:
+      sc_restricted_internet_access: false
+      sc_api_namespace:
+      sc_api_port:
+      sc_dns_namespace:
+      sc_dns_port:
+    image_pull_secrets:
+    - ibm-entitlement-key
+    sc_drivers_url:
+
+  bai_configuration:
+    business_performance_center:
+      all_users_access: true
+
+  ads_configuration:
+    decision_designer:
+      enabled: true
+    decision_runtime:
+      enabled: true
