@@ -198,6 +198,10 @@ CONFIG_FILE=../configs/env1-starter-authoring-baw-applications.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
 #------------------------------
+CONFIG_FILE=../configs/env1-starter-all-but-adp.properties
+time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+
+#------------------------------
 CONFIG_FILE=../configs/env1-starter-authoring-ads.properties
 time ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
 
