@@ -4,6 +4,8 @@
 
 ... description of contents TBD
 
+... v23.0.2 e successive compatibili
+
 ... preprequisiti linux box, tools
 
 ... prerequisiti cluster OCP
@@ -50,6 +52,8 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 
 ## TBD
+
+- aggiungere su template metadata.annotations.documentation con var in properties
 
 - creare template e configurazione per ambiente starter
   eseguire test
@@ -359,64 +363,85 @@ psql -h localhost -U ${_DB_USER} -d ${_DB_NAME}
 
 # References
 
+## Production Deployments
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-capability-patterns-production-deployments
 
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=bawraws-creating-required-databases-secrets-without-running-provided-scripts
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-pattern-configuration
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scp-shared-configuration
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/19.0.x?topic=piban-creating-volumes-folders-deployment-kubernetes
+## Databases - Postgres
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scripts-creating-required-databases-in-postgresql
+
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=services-preparing-storage
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-runtime-workstream-services
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-authoring
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-initialization
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
 
-Navigator
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=foundation-configuring-navigator
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=cpbaf-business-automation-navigator
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-navigator
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=navigator-creating-databases-without-running-provided-scripts
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=troubleshooting-navigator-initialization (pod name: icp4adeploy-navigator-deploy...)
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=bawraws-creating-required-databases-secrets-without-running-provided-scripts
 
-Utilities
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=resource-validating-yaml-in-your-custom-file
-
-
+### Databases - Postgres - FNET
 https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=vtpiicd-creating-postgresql-database-table-space-content-platform-engine-gcd
+
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=cfcmdswrps-creating-secrets-protect-sensitive-filenet-content-manager-configuration-data
 
+## Configuration parameters
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-pattern-configuration
 
-BASTUDIO
-https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=foundation-configuring-business-automation-studio
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-initialization
 
-PFS
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=scp-shared-configuration
+
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/19.0.x?topic=piban-creating-volumes-folders-deployment-kubernetes
+
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-runtime-workstream-services
+
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-authoring
+
+## Federate capabilities
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployments-installing-cp4ba-process-federation-server-production-deployment
 
-Administering and operating IBM Process Federation Server Containers
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
+
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-federating-business-automation-workflow-containers
+
+### Administering and operating IBM Process Federation Server Containers
 https://github.com/icp4a/process-federation-server-containers
 
+## Navigator
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=foundation-configuring-navigator
 
-TOOLS
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=cpbaf-business-automation-navigator
 
-Openshift CLI
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-navigator
+
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=navigator-creating-databases-without-running-provided-scripts
+
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=troubleshooting-navigator-initialization 
+
+## Utilities
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=resource-validating-yaml-in-your-custom-file
+
+## BAStudio
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=foundation-configuring-business-automation-studio
+
+
+## Detailed system requirements for a specific product
+
+https://www.ibm.com/software/reports/compatibility/clarity/softwareReqsForProduct.html
+
+## Tools
+
+### Openshift CLI
 [https://docs.openshift.com/container-platform/4.14/cli_reference/openshift_cli/getting-started-cli.html](https://docs.openshift.com/container-platform/4.14/cli_reference/openshift_cli/getting-started-cli.html)
 
-JQ
+### JQ
 [https://jqlang.github.io/jq](https://jqlang.github.io/jq)
 
-YQ
+### YQ
 [https://github.com/mikefarah/yq](https://github.com/mikefarah/yq)
 You may find a portable version of 'yq' in folder './scripts/helper/yq/' of CP4BA Case Installation tool.
 
-Openssl
+### Openssl
 [https://www.openssl.org/](https://www.openssl.org/)
 
-Home of CP4BA Case Installation tool
+### Home of CP4BA Case Installation tool
 https://github.com/IBM/cloud-pak/tree/master/repo/case/ibm-cp-automation
 
-CP4BA Silent installation
+## CP4BA Silent installation
 [https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=o2isdbrs-option-2b-setting-up-cluster-in-silent-mode](https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=o2isdbrs-option-2b-setting-up-cluster-in-silent-mode)
 
 [https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=reference-environment-variables-silent-mode-installation](https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=reference-environment-variables-silent-mode-installation)

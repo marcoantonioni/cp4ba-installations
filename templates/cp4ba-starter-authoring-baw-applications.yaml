@@ -29,6 +29,8 @@ metadata:
     app.kubernetes.io/managed-by: ibm-dba
     app.kubernetes.io/name: ibm-dba
     release: ${CP4BA_INST_APPVER}
+  annotations:
+    kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
 spec:
 
   appVersion: ${CP4BA_INST_APPVER}
@@ -37,6 +39,17 @@ spec:
   bai_configuration:
     business_performance_center:
       all_users_access: true
+
+  bastudio_configuration:
+    database:
+      cm_max_pool_size: ${CP4BA_INST_BASTUDIO_DB_MIN_POOL}
+      cm_min_pool_size: ${CP4BA_INST_BASTUDIO_DB_MAX_POOL}
+    resources:
+      bastudio:
+        limits:          
+          cpu: '${CP4BA_INST_BASTUDIO_LIMITS_CPU}'
+          memory: ${CP4BA_INST_BASTUDIO_LIMITS_MEM}
+
   shared_configuration:
     enable_fips: false
     sc_deployment_type: Starter

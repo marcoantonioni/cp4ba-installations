@@ -36,6 +36,8 @@ metadata:
     app.kubernetes.io/managed-by: ibm-dba
     app.kubernetes.io/name: ibm-dba
     release: ${CP4BA_INST_APPVER}
+  annotations:
+    kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
 spec:
 
   appVersion: ${CP4BA_INST_APPVER}
