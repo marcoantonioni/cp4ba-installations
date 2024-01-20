@@ -8,6 +8,7 @@ The contents must be understood as examples of training on the topic of IT Opera
 
 This repository can be useful for professionals who create disposable environments dedicated to demonstrations/tests of the CP4BA product (IBMers, IBM Partners and Customers with active license to access to IBM Container Registry).
 
+Please read the DISCLAIMER section carefully.
 
 ## Compatibility with CP4BA versions
 
@@ -110,8 +111,6 @@ metadata:
 ```
 
 These files can be further customized in compliance with the structure allowed by the CP4BA operators of the version in use.
-
-
 
 
 
