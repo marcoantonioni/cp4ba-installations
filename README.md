@@ -53,20 +53,11 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 ## TBD
 
-- aggiungere su template metadata.annotations.documentation con var in properties
+- check navigator desktop when more than one baw full
 
-- creare template e configurazione per ambiente starter
-  eseguire test
+- add config version variable (must match with yaml template)
+-- add runtime verification
 
-- rinominare script one-shot per baw
-  i prossimi per ads, etc...
-
-- verificare navigator desktop quando più di un baw full
-
-- aggiungere versione file configurazione
-  verifica versione script con versione file configurazione in uso per deployment
-
-- aggiungere parametro BAW per configurazione PFS, anche su template
 - studiare configurazione automatica per url/context del PFS
     pre deploy oppure nel loop wait cfg aggiungere test su PFS e lettura dapo con patch dei BAW che hanno cfg federazione
     patch CR se pfs non pronto

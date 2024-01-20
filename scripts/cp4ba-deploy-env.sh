@@ -89,6 +89,36 @@ storageClassExist () {
     return 1
 }
 
+#-------------------------------
+resourceExist () {
+#    echo "namespace name: $1"
+#    echo "resource type: $2"
+#    echo "resource name: $3"
+  if [ $(oc get $2 -n $1 $3 2> /dev/null | grep $3 | wc -l) -lt 1 ];
+  then
+      return 0
+  fi
+  return 1
+}
+
+#-------------------------------
+waitForResourceCreated () {
+#    echo "namespace name: $1"
+#    echo "resource type: $2"
+#    echo "resource name: $3"
+#    echo "time to wait: $4"
+
+  while [ true ]
+  do
+      resourceExist $1 $2 $3
+      if [ $? -eq 0 ]; then
+          sleep $4
+      else
+          break
+      fi
+  done
+}
+
 checkPrereqVars () {
   _OK_VARS=1
   if [[ -z "${CP4BA_AUTO_CLUSTER_USER}" ]]; then
@@ -283,6 +313,107 @@ deployEnvironment () {
 
 }
 
+#-------------------------------
+waitForPfsReady () {
+#    echo "namespace name: $1"
+#    echo "resource name: $2"
+#    echo "time to wait: $3"
+
+    while [ true ]
+    do
+      _PFS_COMPONENTS=$(oc get pfs -n $1 $2 -o jsonpath='{.status.components.pfs}')
+      _pfsDeployment=$(echo $_PFS_COMPONENTS | jq .pfsDeployment | sed 's/"//g' )
+      _pfsService=$(echo $_PFS_COMPONENTS | jq .pfsService | sed 's/"//g' )
+      _pfsZenIntegration=$(echo $_PFS_COMPONENTS | jq .pfsZenIntegration | sed 's/"//g' )
+      if [[ "${_pfsDeployment}" = "Ready" ]] && [[ "${_pfsService}" = "Ready" ]] && [[ "${_pfsZenIntegration}" = "Ready" ]]; then
+          return 1
+      else
+          sleep $3
+      fi
+    done
+    return 0
+}
+
+#-------------------------------
+federateBaw () {
+  _BAW_NAME=$1
+
+  echo -e "${_CLR_GREEN}Federating BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+
+  if [[ -z "${_BAW_NAME}" ]]; then
+    echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
+    echo -e "${_CLR_RED}[✗] Cannot federate BAW '${_CLR_YELLOW}${_BAW_NAME}${_CLR_RED}', name not found in configuration.${_CLR_NC}"
+    exit 1
+  fi
+
+  _PFS_CR_NAME=""
+  if [[ "${CP4BA_INST_PFS}" = "true" ]]; then
+    _PFS_CR_NAME=${CP4BA_INST_PFS_NAME}
+  else
+    _PFS_CR_NAME=$(oc get pfs --no-headers | awk '{print $1}')
+  fi
+
+  waitForResourceCreated ${CP4BA_INST_NAMESPACE} "pfs" ${_PFS_CR_NAME} 5
+
+  if [[ ! -z "${_PFS_CR_NAME}" ]]; then
+    waitForPfsReady ${CP4BA_INST_NAMESPACE} ${_PFS_CR_NAME} 5
+
+    _RND_PART=$RANDOM
+    _FILE_ORIG="/tmp/icp4-${_PFS_CR_NAME}-${_RND_PART}.json.orig"
+    _FILE_BAW_FEDERATED="/tmp/icp4-baw-federated-${_RND_PART}.json"
+    _FILE_ALL_BUT_BAW_FEDERATED="/tmp/icp4-all-but-baw-federated-${_RND_PART}.json"
+    _FILE_FINAL="/tmp/icp4-${_PFS_CR_NAME}-final-${_RND_PART}.json"
+
+    _PFS_FULL_URL=$(oc get pfs -n ${CP4BA_INST_NAMESPACE} ${_PFS_CR_NAME} -o jsonpath='{.status.endpoints}' | jq '.[] | select(.scope == "External")' | jq .uri | sed 's/"//g' | sed 's/https:\/\///g')
+
+    _PFS_CTX="/"$(echo ${_PFS_FULL_URL} | sed 's/.*\///g')
+    _PFS_HOST=$(echo ${_PFS_FULL_URL} | sed 's/\/.*//g')
+
+    if [[ -z "${_PFS_HOST}" ]] || [[ -z "${_PFS_CTX}" ]]; then
+        echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
+        echo -e "${_CLR_RED}[✗] Cannot federate BAW '${_CLR_YELLOW}${_BAW_NAME}${_CLR_RED}', PFS host/ctx not found in endpoints.${_CLR_NC}"
+        exit 1
+    fi
+
+    _patched=0
+    _tryPatch=0
+    _maxTryPatch=10
+    _patchInterval=3
+    while [[ $_tryPatch -le $_maxTryPatch ]]
+    do
+      oc get icp4acluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o json > ${_FILE_ORIG}
+      # extract and update baw section 
+      jq '.spec.baw_configuration[] | select(.name=="'${_BAW_NAME}'") | .host_federated_portal=true | .process_federation_server.hostname="'${_PFS_HOST}'" | .process_federation_server.context_root_prefix="'${_PFS_CTX}'"' ${_FILE_ORIG} > ${_FILE_BAW_FEDERATED}
+      # remove old baw section from CR
+      jq '. | del(.spec.baw_configuration[] | select(.name=="'${_BAW_NAME}'"))' ${_FILE_ORIG} > ${_FILE_ALL_BUT_BAW_FEDERATED}
+      # add new baw section in CR
+      jq --argjson p "$(<${_FILE_BAW_FEDERATED})" '.spec.baw_configuration += [$p]' ${_FILE_ALL_BUT_BAW_FEDERATED} > ${_FILE_FINAL}
+      # update CR
+      oc apply -f ${_FILE_FINAL} 1>/dev/null
+      _ERR=$?
+      if [[ $_ERR -gt 0 ]]; then
+        ((_tryPatch = _tryPatch + 1))
+        sleep ${_patchInterval}
+      else
+        _patched=1
+        break
+      fi
+    done
+    rm ${_FILE_ORIG} 2>/dev/null
+    rm ${_FILE_BAW_FEDERATED} 2>/dev/null
+    rm ${_FILE_ALL_BUT_BAW_FEDERATED} 2>/dev/null
+    rm ${_FILE_FINAL} 2>/dev/null
+
+    if [[ $_patched -eq 0 ]]; then
+      echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
+      echo -e "${_CLR_RED}[✗] Unable to patch CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_RED}${_CLR_NC}'"
+      exit 1
+    fi
+  else
+    echo -e "${_CLR_YELLOW}WARNING: PFS instance not found, federation ignored for BAWs in'${_CLR_GREEN}${CP4BA_INST_CR_NAME}${_CLR_YELLOW}'${_CLR_NC}"
+  fi
+}
+
 waitDeploymentReadiness () {
   echo -e "${_CLR_GREEN}Configuration and deployment complete for '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
@@ -350,6 +481,22 @@ waitDeploymentReadiness () {
   done
 }
 
+federateBawsInDeployment () {
+  sleep 10 # PFS creation
+  i=1
+  _MAX_BAW=10
+  while [[ $i -le $_MAX_BAW ]]
+  do
+    __BAW_INST="CP4BA_INST_BAW_${i}"
+    __BAW_NAME="CP4BA_INST_BAW_${i}_NAME"
+    __BAW_FEDERATE="CP4BA_INST_BAW_${i}_HOST_FEDERATED_PORTAL"
+    if [[ "${!__BAW_INST}" = "true" ]] && [[ "${!__BAW_FEDERATE}" = "true" ]]; then
+      federateBaw "${!__BAW_NAME}"
+    fi
+    ((i=i+1))
+  done
+}
+
 echo -e "${_CLR_YELLOW}=============================================================="
 echo -e "${_CLR_YELLOW}Deploying CP4BA environment '${_CLR_GREEN}${CP4BA_INST_ENV}${_CLR_YELLOW}' in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'${_CLR_NC}"
 echo -e "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
@@ -389,6 +536,7 @@ if [ $? -eq 1 ]; then
     deployEnvironment
     deployPostEnv
     deployPFS
+    federateBawsInDeployment
   fi
   waitDeploymentReadiness
 

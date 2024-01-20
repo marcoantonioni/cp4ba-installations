@@ -129,6 +129,8 @@ echo -e "${_CLR_YELLOW}=========================================================
 echo -e "Install CP4BA Operators in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
 echo -e "==============================================================${_CLR_NC}"
 
+START_SECONDS=$SECONDS
+
 checkPrepreqTools
 checkPrereqVars
 
@@ -140,7 +142,7 @@ fi
 
 oc new-project ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
 
-cat << EOF | oc create -n ${CP4BA_INST_NAMESPACE} -f -
+cat << EOF | oc create -n ${CP4BA_INST_NAMESPACE} -f - 2>/dev/null 1>/dev/null
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -149,7 +151,7 @@ imagePullSecrets:
 - name: 'ibm-entitlement-key'
 EOF
 
-oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_NAMESPACE}
+oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
 
 _OK=false
 if [[ ! -z "${_SCRIPTS}" ]]; then
@@ -171,9 +173,17 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
     fi
   fi
 fi
+
 if [[ "${_OK}" = "false" ]]; then
   echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
   echo "CP4BA Operators not installed."
   exit 1
 fi
+
+STOP_SECONDS=$SECONDS
+ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
+TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
+TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+echo -e "CP4BA Operators installed at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+
 exit 0
