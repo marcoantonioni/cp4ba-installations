@@ -250,7 +250,7 @@ deployPFS () {
       echo "CP4BA_INST_PFS_ADMINUSER=\"${CP4BA_INST_PFS_ADMINUSER}\"" >> ${_PFS_PRAMS_FILE}
 
       echo -e "${_CLR_GREEN}Wait for PFS deployment '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' to complete${_CLR_NC}"
-      /bin/bash ${_PFS_SCRIPT} -f -c ${_PFS_PRAMS_FILE} 1>/dev/null
+      /bin/bash ${_PFS_SCRIPT} -c ${_PFS_PRAMS_FILE} 1>/dev/null
       echo -e "${_CLR_GREEN}PFS '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' deployment complete${_CLR_NC}"
 
       rm ${_PFS_PRAMS_FILE}
