@@ -337,6 +337,7 @@ waitForPfsReady () {
 #-------------------------------
 federateBaw () {
   _BAW_NAME=$1
+  _HOST_FED_PORTAL=$2
 
   if [[ -z "${_BAW_NAME}" ]]; then
     echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
@@ -382,7 +383,7 @@ federateBaw () {
     do
       oc get icp4acluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o json > ${_FILE_ORIG}
       # extract and update baw section 
-      jq '.spec.baw_configuration[] | select(.name=="'${_BAW_NAME}'") | .host_federated_portal=true | .process_federation_server.hostname="'${_PFS_HOST}'" | .process_federation_server.context_root_prefix="'${_PFS_CTX}'"' ${_FILE_ORIG} > ${_FILE_BAW_FEDERATED}
+      jq '.spec.baw_configuration[] | select(.name=="'${_BAW_NAME}'") | .host_federated_portal='${_HOST_FED_PORTAL}' | .process_federation_server.hostname="'${_PFS_HOST}'" | .process_federation_server.context_root_prefix="'${_PFS_CTX}'"' ${_FILE_ORIG} > ${_FILE_BAW_FEDERATED}
       # remove old baw section from CR
       jq '. | del(.spec.baw_configuration[] | select(.name=="'${_BAW_NAME}'"))' ${_FILE_ORIG} > ${_FILE_ALL_BUT_BAW_FEDERATED}
       # add new baw section in CR
@@ -488,9 +489,11 @@ federateBawsInDeployment () {
   do
     __BAW_INST="CP4BA_INST_BAW_${i}"
     __BAW_NAME="CP4BA_INST_BAW_${i}_NAME"
-    __BAW_FEDERATE="CP4BA_INST_BAW_${i}_HOST_FEDERATED_PORTAL"
+    __BAW_FEDERATE="CP4BA_INST_BAW_${i}_FEDERATED"
+    __BAW_HOST_FED_PORTAL="CP4BA_INST_BAW_${i}_HOST_FEDERATED_PORTAL"
+
     if [[ "${!__BAW_INST}" = "true" ]] && [[ "${!__BAW_FEDERATE}" = "true" ]]; then
-      federateBaw "${!__BAW_NAME}"
+      federateBaw "${!__BAW_NAME}" "${!__BAW_HOST_FED_PORTAL}"
     else
       echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
     fi
