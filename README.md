@@ -318,10 +318,12 @@ For the first installation example we will use a ready and configured properties
 
 Once the installation is complete you will find the deployment within the 'cp4ba-test1-baw' namespace.
 If you want to change the namespace name, change the value of the 'CP4BA_INST_NAMESPACE' variable.
-And we'll use the simplest method, we'll tell a shell script:
-- a '-c' parameter to indicate the configuration file (.properties) that will guide the installation
-- a '-m' parameter that requires an online download of the IBM CP4BA Case Package Manager (download in a temporary directory then removed)
-- a '-v' parameter indicating the version of the IBM CP4BA Case Package Manager to use
+
+We'll use the simplest method, we'll run a single shell script named 'cp4ba-one-shot-installation.sh' with following parameters:
+
+- '-c' parameter to indicate the configuration file (.properties) that will guide the installation
+- '-m' parameter that requires an online download of the IBM CP4BA Case Package Manager (download in a temporary directory then removed)
+- '-v' parameter indicating the version of the IBM CP4BA Case Package Manager to use
 
 Note: Version 5.1.0 corresponds to CP4BA version v23.0.2
 
