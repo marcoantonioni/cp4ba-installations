@@ -492,10 +492,17 @@ federateBawsInDeployment () {
     __BAW_FEDERATE="CP4BA_INST_BAW_${i}_FEDERATED"
     __BAW_HOST_FED_PORTAL="CP4BA_INST_BAW_${i}_HOST_FEDERATED_PORTAL"
 
-    if [[ "${!__BAW_INST}" = "true" ]] && [[ "${!__BAW_FEDERATE}" = "true" ]]; then
-      federateBaw "${!__BAW_NAME}" "${!__BAW_HOST_FED_PORTAL}"
+    _INST="${!__BAW_INST}"
+    _FEDERATE="${!__BAW_FEDERATE}"
+    _NAME="${!__BAW_NAME}"
+    _HFP="${!__BAW_HOST_FED_PORTAL}"
+    if [[ "${_INST}" = "true" ]] && [[ "${_FEDERATE}" = "true" ]]; then
+      federateBaw "${_NAME}" "${_HFP}"
+      _NAME=""
     else
-      echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+      if [[ ! -z "${_NAME}" ]]; then
+        echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+      fi 
     fi
     ((i=i+1))
   done
