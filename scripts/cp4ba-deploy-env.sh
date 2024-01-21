@@ -338,13 +338,12 @@ waitForPfsReady () {
 federateBaw () {
   _BAW_NAME=$1
 
-  echo -e "${_CLR_GREEN}Federating BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
-
   if [[ -z "${_BAW_NAME}" ]]; then
     echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
     echo -e "${_CLR_RED}[✗] Cannot federate BAW '${_CLR_YELLOW}${_BAW_NAME}${_CLR_RED}', name not found in configuration.${_CLR_NC}"
     exit 1
   fi
+  echo -e "${_CLR_GREEN}PFS - Federating BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
 
   _PFS_CR_NAME=""
   if [[ "${CP4BA_INST_PFS}" = "true" ]]; then
@@ -492,6 +491,8 @@ federateBawsInDeployment () {
     __BAW_FEDERATE="CP4BA_INST_BAW_${i}_HOST_FEDERATED_PORTAL"
     if [[ "${!__BAW_INST}" = "true" ]] && [[ "${!__BAW_FEDERATE}" = "true" ]]; then
       federateBaw "${!__BAW_NAME}"
+    else
+      echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
     fi
     ((i=i+1))
   done
@@ -516,7 +517,7 @@ if [[ "${_GENERATE_ONLY}" = "true" ]]; then
 fi
 
 # verify logged in OCP
-oc project 2>/dev/null 1>/dev/null
+oc whoami 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
   echo -e "${_CLR_RED}[✗] Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}"
   exit 1

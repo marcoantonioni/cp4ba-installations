@@ -135,7 +135,7 @@ checkPrepreqTools
 checkPrereqVars
 
 # verify logged in OCP
-oc project 2>/dev/null 1>/dev/null
+oc whoami 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
   echo -e "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" && exit 1
 fi
