@@ -216,7 +216,7 @@ Please ignore 'cp4ba-testinstaller-*' (used only to test the scripts)
 For further information on the various tags and attributes specific to each capability you can consult the '...ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/descriptors/patterns' folder relating to the CP4BA Case Package manager.
 
 
-## prerequisiti per la installazione
+## Prerequisites for installation
 
 variabili env con key per creazione ibm-entitlement-key
 
@@ -277,6 +277,9 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
 
 # References
+
+## Installing
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=automation-installing
 
 ## Production Deployments
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-capability-patterns-production-deployments
