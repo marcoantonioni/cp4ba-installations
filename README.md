@@ -273,7 +273,6 @@ This is an example of cloned folders
 └── cp4ba-wfps
 ```
 
-
 ## Installation examples
 
 Before begin an installation
@@ -297,6 +296,14 @@ now from parent of cloned folders move into installation folder 'scripts'
 ```
 cd ./cp4ba-installations/scripts
 ```
+
+<b><u>Note: The Openshift user you use to perform the installations must have the necessary grants as per IBM documentation</u></b>
+
+[https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=sucioc-installing-cloud-pak-catalogs-operators](https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=sucioc-installing-cloud-pak-catalogs-operators)
+
+If you do not have a full-grants user, ask your administrator to provide you with the necessary information to install operator catalogs and create new namespaces.
+
+If this is not possible and you necessarily have to delegate the administrator to create the catalogs and a namespace for which you will still have the namespace administration grants, you can follow the instructions for deploying an environment in an already created namespace and operators already installed (see '5. Deployment in already created namespace').
 
 Note: You can run installations of different configurations in parallel in different shells, each temporary file is created with random naming and does not create interference.
 
@@ -450,6 +457,19 @@ _CMGR_FOLDER="/tmp/mycmgr-22.0.2"
 mkdir -p ${_CMGR_FOLDER}
 ./cp4ba-casemgr-install.sh -d ${_CMGR_FOLDER} -n -r -v "4.1.6+20230713.011847"
 ```
+
+### 5. Deployment in already created namespace
+
+If you have a namespace in which you have already installed the CP4BA operators and have locally installed IBM CP4BA Case Manager package, you can manually execute the following commands
+```
+_CFG=../configs/env1-baw.properties
+_LDAP_CFG_FILE=../configs/_cfg-production-ldap-domain.properties
+_SCRIPTS=/tmp/mycmgr/ibm-cp-automation-5.1.0/...../crs/cert-kubernetes/scripts
+
+./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
+./cp4ba-deploy-env.sh -c ${_CFG} -l ${_LDAP_CFG_FILE}
+```
+This is not the best solution but it still works without users onboarding in IAM (must be done manually via web console or using script 'onboard-users.sh' in repo 'cp4ba-idp-ldap').
 
 ---
 **DISCLAIMER**
