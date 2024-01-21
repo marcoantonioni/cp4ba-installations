@@ -20,7 +20,7 @@ Even if the installations as per the IBM user manual are relatively simple, they
 
 Some activities, such as the installation of the operators (the first step) are extremely simple, while the second activity can be complex and difficult to implement if you do not have a good knowledge of the capability you intend to deploy.
 
-The scripts available in the CP4BA Case Manager package are extremely powerful and should be your primary choice for professional installations and configurations where for example the various databases and LDAP servers are external to the Openshift cluster, and the configurations are made in advance of the deployment phase of CR ICP4Cluster.
+The scripts available in the CP4BA Case Manager package are extremely powerful and should be your primary choice for professional installations and configurations where for example the various databases and LDAP servers are external to the Openshift cluster, and the configurations are made in advance of the deployment phase of CR ICP4ACluster.
 
 The main objective of this repository is the further simplification and automation of the activities required by the official manuals.
 
@@ -30,7 +30,7 @@ I hope it can help you and make CP4BA adoption even easier for novices.
 
 One day I was bored with having to repeat the same sequence of activities often and I asked myself: "what if I automate everything?"
 
-Thinking: Maybe I could use a simple properties file, a predefined template for various scenarios, and a single command that creates the configuration by merging the template and properties and then creating a containerized LDAP server, one or more containerized PostgreSQL instances and finally the deployment of CR ICP4Cluster...and also execute the onboarding of LDAP users into Pak IDP.
+Thinking: Maybe I could use a simple properties file, a predefined template for various scenarios, and a single command that creates the configuration by merging the template and properties and then creating a containerized LDAP server, one or more containerized PostgreSQL instances and finally the deployment of CR ICP4ACluster...and also execute the onboarding of LDAP users into Pak IDP.
 Maybe to exaggerate even more I could also add a Portal Federation Server and configure the federation of the various BAW and WfPS instances defined in the template.
 
 In the end I created this repository and since my role in IBM is that of presales I decided to make it public to help customers, business partners and also my IBM colleagues.
@@ -124,7 +124,7 @@ With this command guided by one of your .properties files, in addition to the de
 
 ### Folder: templates
 
-The 'templates' folder contains a series of yaml files that respect the configuration structure of the CR ICP4Cluster with the values area containing the '${..key..}' placeholders which will be replaced by the values of the properties file used for deployment .
+The 'templates' folder contains a series of yaml files that respect the configuration structure of the CR ICP4ACluster with the values area containing the '${..key..}' placeholders which will be replaced by the values of the properties file used for deployment .
 
 ```
 apiVersion: icp4a.ibm.com/v1
