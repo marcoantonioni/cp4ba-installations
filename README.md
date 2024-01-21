@@ -201,7 +201,7 @@ For example, the Service name ```icp4adeploy-baw-double-baw1-baw-service-headles
 
 In the next versions I will also add configurations and scripts to perform the 'Production' type deployment for ADS and FNET capabilities.
 
-At the moment, all the capabilities except ADP are present in the 'Starter' example configurations.
+At the moment, all the capabilities except ADP are defined in the 'Starter' example configurations.
 
 ## Description of files '.yaml' ('kind: ICP4ACluster', in folder 'templates')
 
@@ -356,7 +356,7 @@ At the end of installation you will find into <b>output</b> folder three files (
 
 Once the installation is complete, in the .txt file you will find all the URLs of the consoles of the various products installed.
 
-To log in you can use the users/credentials that are defined in the .ldif file present in the 'configs' folder.
+To log in you can use the users/credentials that are defined in the .ldif file in the 'configs' folder.
 
 The administration user, if you have not made any changes, is 'cp4admin' and the password (for all users) is 'dem0s', it's a ZERO.
 
@@ -429,7 +429,7 @@ export CP4BA_INST_OPT_COMPONENTS="<other-components>,decisionCenter,decisionRunn
 
 ### 4. Local Case Manager package installation for sample CR consultation
 
-If you want to install IBM CP4BA Case Package Manager on your desktop even just to consult the possible configuration options (present in patterns) you can use the command 'cp4ba-casemgr-install.sh' in repository 'cp4ba-casemanager-setup'.
+If you want to install IBM CP4BA Case Package Manager on your desktop even just to consult the possible configuration options (in patterns folder of package) you can use the command 'cp4ba-casemgr-install.sh' in repository 'cp4ba-casemanager-setup'.
 
 Use following parameters:
 ```
