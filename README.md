@@ -2,6 +2,8 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
+<i>Last update: 2024-01-21</i> use '<b>1.0.0-stable</b>'
+
 ## Description of the contents of this repository
 
 In this repository a series of procedures are available for the fully automated 'silent' installation of IBM Cloud Pak for Business Automation environments in Openshift clusters.
