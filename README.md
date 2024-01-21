@@ -1,8 +1,10 @@
 # cp4ba-installations
 
+Utilities for IBM Cloud Pak® for Business Automation
+
 ## Description of the contents of this repository
 
-In this repository a series of procedures are available for the fully automated installation of IBM Cloud Pak for Business Automation environments in Openshift clusters.
+In this repository a series of procedures are available for the fully automated 'silent' installation of IBM Cloud Pak for Business Automation environments in Openshift clusters.
 
 The contents must be understood as examples of training on the topic of CP4BA IT Operations. 
 
@@ -22,6 +24,8 @@ The scripts available in the CP4BA Case Manager package are extremely powerful a
 
 The main objective of this repository is the further simplification and automation of the activities required by the official manuals.
 
+I hope it can help you and make CP4BA adoption even easier for novices.
+
 ## How this idea was born
 
 One day I was bored with having to repeat the same sequence of activities often and I asked myself: "what if I automate everything?"
@@ -30,6 +34,8 @@ Thinking: Maybe I could use a simple properties file, a predefined template for 
 Maybe to exaggerate even more I could also add a Portal Federation Server and configure the federation of the various BAW and WfPS instances defined in the template.
 
 In the end I created this repository and since my role in IBM is that of presales I decided to make it public to help customers, business partners and also my IBM colleagues.
+
+I cannot exclude that in some time I will try to define some 'Skills' in <b>IBM watsonx Orchestrate</b> to simplify these activities even more ;)
 
 ## Compatibility with CP4BA versions
 
@@ -218,20 +224,232 @@ For further information on the various tags and attributes specific to each capa
 
 ## Prerequisites for installation
 
-variabili env con key per creazione ibm-entitlement-key
+You must export in your bash shell the entitlement key with its value
 
-repository a supporto
+```
+export CP4BA_AUTO_ENTITLEMENT_KEY="...your-key..." # begins with 'ey'
+```
+For entitlement key see link 'Entitlement keys' in References section.
+
+For a complete overview see link 'Environment variables for silent mode installation' in References section.
+
+For ROKS based installations export 'CP4BA_AUTO_CLUSTER_USER' var with your account id value.
+```
+export CP4BA_AUTO_CLUSTER_USER="IAM#...your-id..."
+```
+
+## List of supporting 'cp4ba-*' repositories
+
+For the autonomous completion of all installation tasks you need other supporting repositories.
+To ease your first run use pre-existing configurations. 
+Clone the following repositories within a parent folder.
+
+```
+# --> cd <your-parent-folder>
+
+# mandatory
+git clone https://github.com/marcoantonioni/cp4ba-installations.git
+git clone https://github.com/marcoantonioni/cp4ba-casemanager-setup.git
+git clone https://github.com/marcoantonioni/cp4ba-idp-ldap.git
+
+# mandatory only if PFS in configuration
+git clone https://github.com/marcoantonioni/cp4ba-process-federation-server.git
+
+# for Workflow Process Service installation (not automated using 'cp4ba-installations')
+git clone https://github.com/marcoantonioni/cp4ba-wfps.git
+
+# Useful for application deployment and other utilities
+git clone https://github.com/marcoantonioni/cp4ba-utilities.git
+```
+
+This is an example of cloned folders
+
+```
+├── cp4ba-casemanager-setup
+├── cp4ba-idp-ldap
+├── cp4ba-installations
+├── cp4ba-process-federation-server
+├── cp4ba-utilities
+└── cp4ba-wfps
+```
 
 
-## ... esempi di installazione
+## Installation examples
 
-For the deployment of Process Federation Server and Workflow Process Service, refer to my other git repositories of the cp4ba-* family
+Before begin an installation
 
-### ... scenario WfPS, PFS, BAW
+1. Login to your cluster
+```
+oc login https://<cluster-ip>:<port> -u <cluster-admin> -p <password>
+```
+or with token
+```
+oc login --token=sha256~...your-token-data.... --server=https://api...your-hostname....com:6443
+```
 
-### esempio di installazione case package in locale per consultazione CR di esempio.
+2. Export entitlement key and optionally if ROKS the cluster user id 
+```
+export CP4BA_AUTO_ENTITLEMENT_KEY="...your-key..." # begins with 'ey'
+export CP4BA_AUTO_CLUSTER_USER="IAM#...your-id..."
+```
 
-## ... tempi medi per worker 16cpu 
+now from parent of cloned folders move into installation folder 'scripts'
+```
+cd ./cp4ba-installations/scripts
+```
+
+Note: You can run installations of different configurations in parallel in different shells, each temporary file is created with random naming and does not create interference.
+
+### 1. Production deployment - LDAP/DB/BAW
+
+For the first installation example we will use a ready and configured properties file, this configuration deploys the 'Production' type with:
+
+- Foundation components
+- 1 LDAP local to this installation namespace + users IAM onboarding
+- 1 DB Server
+- 1 BAW full (Case+BPM)
+
+Once the installation is complete you will find the deployment within the 'cp4ba-test1-baw' namespace.
+If you want to change the namespace name, change the value of the 'CP4BA_INST_NAMESPACE' variable.
+And we'll use the simplest method, we'll tell a shell script:
+- a '-c' parameter to indicate the configuration file (.properties) that will guide the installation
+- a '-m' parameter that requires an online download of the IBM CP4BA Case Package Manager (download in a temporary directory then removed)
+- a '-v' parameter indicating the version of the IBM CP4BA Case Package Manager to use
+
+Note: Version 5.1.0 corresponds to CP4BA version v23.0.2
+
+Ready to begin ? <i>GO !!!</i>
+```
+# set your configuration file
+CONFIG_FILE=../configs/env1-baw.properties
+
+# run the real 'one-shot' CP4BA installation command
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+```
+
+Well, now you have to... no... you don't have to do anything more, just wait for the procedure to finish.
+
+The estimated time for an environment with worker nodes with 16 CPUs and 64 GB is approximately 70/80 minutes.
+
+As you will notice by taking a look at the creation of the various pods, first of all the set of functions of the Foundation layer is installed and only subsequently will the various Operators start the creation of the capabilities defined in the ICP4ACluster CR.
+
+You will notice that some pods remain in 'Pending' state or perform restarts. No alarms because in this scenario the installation and configuration of the databases and object stores to support the BAW are performed by specific Jobs which may not find all the necessary prerequisites and then attempt subsequent processing until successful completion. This is the philosophy of Kubernetes.
+
+At the end of installation you will find into <b>output</b> folder three files (.yaml, .sql, .txt) as described before.
+
+```
+./cp4ba-installations/
+├── configs
+├── output <<--- .yaml, .sql, .txt
+├── scripts
+└── templates
+```
+
+Once the installation is complete, in the .txt file you will find all the URLs of the consoles of the various products installed.
+
+To log in you can use the users/credentials that are defined in the .ldif file present in the 'configs' folder.
+
+The administration user, if you have not made any changes, is 'cp4admin' and the password (for all users) is 'dem0s', it's a ZERO.
+
+Pay attention: even if the operators are all in the 'Ready' state, some configurations trigger a restart of various pods and these could cause errors (usually 500) when accessing the web consoles or on REST calls.
+Usually after a short time (2/3 minutes, also depends on the 'limits.cpu' set) all the features are ready for use.
+
+To access the CP4BA console you can use the URL composed of the following sections:
+
+```
+https://cpd-<your-namespace>.apps.<your-target-domain>/
+```
+
+this is a complete example
+```
+https://cpd-cp4ba-baw-double-pfs.apps.656d73e8eb178100111c14ac.cloud.techzone.ibm.com
+```
+
+### 2. Production deployment - LDAP/DB/2-BAWs/PFS
+
+For the second installation example we will use a ready and configured properties file, this configuration deploys the 'Production' type with:
+
+- Foundation components
+- 1 LDAP local to this installation namespace + users IAM onboarding
+- 1 DB Server
+- 1 BAW full (Case+BPM)
+- 1 BAW Workflow only (BPM)
+- 1 PFS
+
+Note: 'Baw full' is federated only, 'BAW Workflow' is federated and host federated ProcessPortal dashboard.
+
+```
+# set your configuration file
+CONFIG_FILE=../configs/env1-baw-double-pfs.properties
+
+# run the real 'one-shot' CP4BA installation command
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+```
+
+The average time for an installation of this type varies between 90/100 minutes.
+
+### 3. Starter deployment - Authoring environment all but ADP/ODM
+
+In this third example we install an Authoring environment for all capabilities except ADP and ODM.
+This is the list of components:
+
+* ads_designer
+* ads_runtime
+* bai
+* baml
+* baw_authoring
+* case
+* cmis
+* content_integration
+* css
+* ier
+* pfs
+* tm
+* workstreams
+
+Note: For 'Starter' type deployments the LDAP and databases are installed by the Operators. The user names/passwords can be obtained from secret 'cp4adeploy-openldap-customldif', the Pak consoles URL from config map '
+icp4adeploy-cp4ba-access-info'.
+
+If you also want to add ODM to the Authoring environment you must add 'decisions' in 'CP4BA_INST_DEPL_PATTERNS' and 'decisionCenter,decisionRunner,decisionServerRuntime' in 'CP4BA_INST_OPT_COMPONENTS'.
+
+for example
+```
+export CP4BA_INST_DEPL_PATTERNS="<other-patterns>,decisions"
+export CP4BA_INST_OPT_COMPONENTS="<other-components>,decisionCenter,decisionRunner,decisionServerRuntime"
+```
+
+### 4. Local Case Manager package installation for sample CR consultation
+
+If you want to install IBM CP4BA Case Package Manager on your desktop even just to consult the possible configuration options (present in patterns) you can use the command 'cp4ba-casemgr-install.sh' in repository 'cp4ba-casemanager-setup'.
+
+Use following parameters:
+```
+-d target-directory
+-v(optional) package-version
+-n(optional) move-to-scripts-folder
+-r(optional) remove-tar-file
+-s(optional) show-available-versions
+```
+
+Show available versions
+```
+./cp4ba-casemgr-install.sh -s
+```
+Note: Jan 2024, for v5.1.0 is reported in 'appVersion' a value of '23.2.0', must be intended as '23.0.2'
+
+Install latest package version into folder, remove .tar file then move shell to 'scripts' folder
+```
+_CMGR_FOLDER="/tmp/mycmgr"
+mkdir -p ${_CMGR_FOLDER}
+./cp4ba-casemgr-install.sh -d ${_CMGR_FOLDER} -n -r
+```
+
+Install package version '4.1.6+20230713.011847' for CP4BA version '22.0.2-IF006LA01'
+```
+_CMGR_FOLDER="/tmp/mycmgr-22.0.2"
+mkdir -p ${_CMGR_FOLDER}
+./cp4ba-casemgr-install.sh -d ${_CMGR_FOLDER} -n -r -v "4.1.6+20230713.011847"
+```
 
 ---
 **DISCLAIMER**
@@ -268,18 +486,19 @@ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 ---
 
 
-## TBD
-
-- check navigator desktop when more than one baw full
-
-- add config version variable (must match with yaml template)
--- add runtime verification
-
-
 # References
 
 ## Installing
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=automation-installing
+
+## Quick reference Q&A for online deployments
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-quick-reference-qa-online-deployments
+
+## Entitlement keys - MyIBM Container Software Library
+https://myibm.ibm.com/products-services/containerlibrary
+
+## Environment variables for silent mode installation
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=reference-environment-variables-silent-mode-installation
 
 ## Production Deployments
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-capability-patterns-production-deployments
