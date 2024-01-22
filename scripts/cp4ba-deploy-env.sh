@@ -6,6 +6,7 @@ _CFG=""
 _LDAP=""
 _WAIT_ONLY=false
 _GENERATE_ONLY=false
+_FEDERATE_ONLY=false
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -16,13 +17,14 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:l:wg flag
+while getopts c:l:wgf flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         l) _LDAP=${OPTARG};;
         w) _WAIT_ONLY=true;;
         g) _GENERATE_ONLY=true;;
+        f) _FEDERATE_ONLY=true;;
     esac
 done
 
@@ -34,7 +36,8 @@ usage () {
     -l(optional) ldap-config-file
        (eg: '../configs/_cfg-production-ldap-domain.properties')
     -w(optional) wait only, skip deployment
-    -g(optional) generate yaml only, skip deployment${_CLR_NC}"
+    -g(optional) generate yaml only, skip deployment
+    -f(optional) federate only, skip deployment${_CLR_NC}"
 }
 
 if [[ -z "${_CFG}" ]]; then
@@ -174,7 +177,6 @@ checkPrereqVars () {
       echo -e "${_CLR_RED}[✗] var CP4BA_INST_LDAP_SECRET not set, must be set when CP4BA_INST_LDAP=true, update your configuration file and rerun.${_CLR_NC}"
     fi
   fi
-
 
   if [ $_OK_VARS -eq 0 ]; then
     exit 1
@@ -345,7 +347,11 @@ federateBaw () {
     echo -e "${_CLR_RED}[✗] Cannot federate BAW '${_CLR_YELLOW}${_BAW_NAME}${_CLR_RED}', name not found in configuration.${_CLR_NC}"
     exit 1
   fi
-  echo -e "${_CLR_GREEN}PFS - Federating BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+  _hfpIcon="✗"
+  if [[ "${_HOST_FED_PORTAL}" = "true" ]]; then
+    _hfpIcon="\xE2\x9C\x94"
+  fi
+  echo -e "${_CLR_GREEN}PFS - Federating BAW: '${_CLR_YELLOW}${_BAW_NAME}${_CLR_GREEN}', host federated portal [${_CLR_YELLOW}${_hfpIcon}${_CLR_GREEN}]${_CLR_NC}"
 
   _PFS_CR_NAME=""
   if [[ "${CP4BA_INST_PFS}" = "true" ]]; then
@@ -467,14 +473,14 @@ waitDeploymentReadiness () {
   _PFS_READY=1
   while [ true ]; 
   do   
-    if [[ "${CP4BA_INST_PFS}" = "true" ]]; then
+    if [[ "${CP4BA_INST_PFS}" = "true" ]] || [[ "${_FEDERATE_ONLY}" = "true" ]]; then
       waitForPfsReady
       _PFS_READY=$?
     fi
     _CR_READY=$(oc get ICP4ACluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
     if [[ "${_CR_READY}" = "True" ]] && [[ ${_PFS_READY} -eq 1 ]]; then
 
-      if [[ "${_WAIT_ONLY}" = "false" ]]; then
+      if [[ "${_WAIT_ONLY}" = "false" ]] || [[ "${_FEDERATE_ONLY}" = "true" ]]; then
         resourceExist ${CP4BA_INST_NAMESPACE} "pfs" ${CP4BA_INST_PFS_NAME}
         if [ $? -eq 1 ]; then
           federateBawsInDeployment
@@ -559,6 +565,10 @@ if [ $? -gt 0 ]; then
   exit 1
 fi
 
+if [[ "${_FEDERATE_ONLY}" = "true" ]]; then
+  _WAIT_ONLY=true
+fi
+
 namespaceExist ${CP4BA_INST_NAMESPACE}
 if [ $? -eq 1 ]; then
 
@@ -567,8 +577,8 @@ if [ $? -eq 1 ]; then
     exit 1
   fi
   
+  mkdir -p ${CP4BA_INST_OUTPUT_FOLDER}
   if [[ "${_WAIT_ONLY}" = "false" ]]; then
-    mkdir -p ${CP4BA_INST_OUTPUT_FOLDER}
     deployPreEnv
     deployEnvironment
     deployPostEnv
