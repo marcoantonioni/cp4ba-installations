@@ -140,6 +140,8 @@ waitForClustersPostgresCRD () {
   do
     if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
       sleep 2
+    else
+      break
     fi
   done
 }
