@@ -1,6 +1,21 @@
 
 # Change Log
   
+## [1.0.2] - 2024-...to be released in next branch
+
+Minimal adjustments
+
+### Added
+n/a
+
+### Changed
+cp4ba-deploy-env.sh
+* deployPFS: launch pfs-deployment in embedded mode  
+* waitDeploymentReadiness: added PFS readiness check
+
+### Fixed
+n/a
+ 
 ## [1.0.1] - 2024-01-19
   
 Minor fixes
