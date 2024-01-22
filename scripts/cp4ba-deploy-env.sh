@@ -250,7 +250,8 @@ deployPFS () {
       echo "CP4BA_INST_PFS_ADMINUSER=\"${CP4BA_INST_PFS_ADMINUSER}\"" >> ${_PFS_PRAMS_FILE}
 
       echo -e "${_CLR_GREEN}Wait for PFS deployment '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' to complete${_CLR_NC}"
-      /bin/bash ${_PFS_SCRIPT} -c ${_PFS_PRAMS_FILE} 1>/dev/null
+      # launch in embedded mode, no wait
+      /bin/bash ${_PFS_SCRIPT} -c ${_PFS_PRAMS_FILE} -e 1>/dev/null
       echo -e "${_CLR_GREEN}PFS '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' deployment complete${_CLR_NC}"
 
       rm ${_PFS_PRAMS_FILE}
@@ -414,6 +415,17 @@ federateBaw () {
   fi
 }
 
+waitForPfsReady () {
+  _PFS_COMPONENTS=$(oc get pfs -n ${CP4BA_INST_PFS_NAMESPACE} ${CP4BA_INST_PFS_NAME} -o jsonpath='{.status.components.pfs}')
+  _pfsDeployment=$(echo $_PFS_COMPONENTS | jq .pfsDeployment 2>/dev/null | sed 's/"//g' )
+  _pfsService=$(echo $_PFS_COMPONENTS | jq .pfsService 2>/dev/null | sed 's/"//g' )
+  _pfsZenIntegration=$(echo $_PFS_COMPONENTS | jq .pfsZenIntegration 2>/dev/null | sed 's/"//g' )
+  if [[ "${_pfsDeployment}" = "Ready" ]] && [[ "${_pfsService}" = "Ready" ]] && [[ "${_pfsZenIntegration}" = "Ready" ]]; then
+      return 1
+  fi
+  return 0
+}
+
 waitDeploymentReadiness () {
   echo -e "${_CLR_GREEN}Configuration and deployment complete for '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
@@ -425,10 +437,15 @@ waitDeploymentReadiness () {
 
   START_SECONDS=$SECONDS
 
+  _PFS_READY=1
   while [ true ]; 
   do   
+    if [[ "${CP4BA_INST_PFS}" = "true" ]]; then
+      waitForPfsReady
+      _PFS_READY=$?
+    fi
     _CR_READY=$(oc get ICP4ACluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
-    if [[ "${_CR_READY}" = "True" ]]; then
+    if [[ "${_CR_READY}" = "True" ]] && [[ ${_PFS_READY} -eq 1 ]]; then
       echo -e "${_CLR_GREEN}ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
       ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       NUM_KEYS=$(echo $ACC_INFO | jq length)
