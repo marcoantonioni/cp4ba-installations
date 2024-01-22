@@ -474,9 +474,11 @@ waitDeploymentReadiness () {
     _CR_READY=$(oc get ICP4ACluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
     if [[ "${_CR_READY}" = "True" ]] && [[ ${_PFS_READY} -eq 1 ]]; then
 
-      resourceExist ${CP4BA_INST_NAMESPACE} "pfs" ${_PFS_CR_NAME}
-      if [ $? -eq 1 ]; then
-        federateBawsInDeployment
+      if [[ "${_WAIT_ONLY}" = "false" ]]; then
+        resourceExist ${CP4BA_INST_NAMESPACE} "pfs" ${CP4BA_INST_PFS_NAME}
+        if [ $? -eq 1 ]; then
+          federateBawsInDeployment
+        fi
       fi
       
       echo -e "${_CLR_GREEN}ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"

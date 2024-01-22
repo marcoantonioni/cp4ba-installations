@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2024-01-22</i> use '<b>1.0.3-stable</b>'
+<i>Last update: 2024-01-22</i> use '<b>1.0.4-stable</b>'
 
 ## Description of the contents of this repository
 
