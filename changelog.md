@@ -1,7 +1,7 @@
 
 # Change Log
   
-## [1.0.2] - 2024-...to be released in next branch
+## [1.0.2] - 2024-01-22
 
 Minimal adjustments
 
