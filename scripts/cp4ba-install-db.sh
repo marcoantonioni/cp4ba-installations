@@ -134,8 +134,20 @@ deployDBCluster() {
   fi
 }
 
+waitForClustersPostgresCRD () {
+# clusters.postgresql.k8s.enterprisedb.io  
+  while [ true ]
+  do
+    if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
+      sleep 2
+    fi
+  done
+}
+
 deployDBClusters() {
 # $1: namespace
+
+  waitForClustersPostgresCRD
 
   i=1
   _IDX_END=$CP4BA_INST_DB_INSTANCES

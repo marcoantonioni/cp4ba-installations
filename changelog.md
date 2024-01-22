@@ -6,7 +6,9 @@
 Minimal adjustments
 
 ### Added
-n/a
+
+cp4ba-install-db.sh
+* waitForClustersPostgresCRD: wait for Postgres CRD creation
 
 ### Changed
 cp4ba-deploy-env.sh
