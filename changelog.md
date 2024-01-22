@@ -1,6 +1,19 @@
 
 # Change Log
   
+## [1.0.3] - 2024-01-22
+
+Minimal adjustments
+
+### Added
+
+### Changed
+cp4ba-deploy-env.sh
+* federateBawsInDeployment: added PFS readiness check
+
+### Fixed
+n/a
+ 
 ## [1.0.2] - 2024-01-22
 
 Minimal adjustments

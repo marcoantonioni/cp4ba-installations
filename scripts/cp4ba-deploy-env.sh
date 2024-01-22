@@ -426,6 +426,33 @@ waitForPfsReady () {
   return 0
 }
 
+federateBawsInDeployment () {
+
+  i=1
+  _MAX_BAW=10
+  while [[ $i -le $_MAX_BAW ]]
+  do
+    __BAW_INST="CP4BA_INST_BAW_${i}"
+    __BAW_NAME="CP4BA_INST_BAW_${i}_NAME"
+    __BAW_FEDERATE="CP4BA_INST_BAW_${i}_FEDERATED"
+    __BAW_HOST_FED_PORTAL="CP4BA_INST_BAW_${i}_HOST_FEDERATED_PORTAL"
+
+    _INST="${!__BAW_INST}"
+    _FEDERATE="${!__BAW_FEDERATE}"
+    _NAME="${!__BAW_NAME}"
+    _HFP="${!__BAW_HOST_FED_PORTAL}"
+    if [[ "${_INST}" = "true" ]] && [[ "${_FEDERATE}" = "true" ]]; then
+      federateBaw "${_NAME}" "${_HFP}"
+      _NAME=""
+    else
+      if [[ ! -z "${_NAME}" ]]; then
+        echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+      fi 
+    fi
+    ((i=i+1))
+  done
+}
+
 waitDeploymentReadiness () {
   echo -e "${_CLR_GREEN}Configuration and deployment complete for '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
@@ -446,6 +473,12 @@ waitDeploymentReadiness () {
     fi
     _CR_READY=$(oc get ICP4ACluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
     if [[ "${_CR_READY}" = "True" ]] && [[ ${_PFS_READY} -eq 1 ]]; then
+
+      resourceExist ${CP4BA_INST_NAMESPACE} "pfs" ${_PFS_CR_NAME}
+      if [ $? -eq 1 ]; then
+        federateBawsInDeployment
+      fi
+      
       echo -e "${_CLR_GREEN}ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
       ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       NUM_KEYS=$(echo $ACC_INFO | jq length)
@@ -498,32 +531,6 @@ waitDeploymentReadiness () {
   done
 }
 
-federateBawsInDeployment () {
-  sleep 10 # PFS creation
-  i=1
-  _MAX_BAW=10
-  while [[ $i -le $_MAX_BAW ]]
-  do
-    __BAW_INST="CP4BA_INST_BAW_${i}"
-    __BAW_NAME="CP4BA_INST_BAW_${i}_NAME"
-    __BAW_FEDERATE="CP4BA_INST_BAW_${i}_FEDERATED"
-    __BAW_HOST_FED_PORTAL="CP4BA_INST_BAW_${i}_HOST_FEDERATED_PORTAL"
-
-    _INST="${!__BAW_INST}"
-    _FEDERATE="${!__BAW_FEDERATE}"
-    _NAME="${!__BAW_NAME}"
-    _HFP="${!__BAW_HOST_FED_PORTAL}"
-    if [[ "${_INST}" = "true" ]] && [[ "${_FEDERATE}" = "true" ]]; then
-      federateBaw "${_NAME}" "${_HFP}"
-      _NAME=""
-    else
-      if [[ ! -z "${_NAME}" ]]; then
-        echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
-      fi 
-    fi
-    ((i=i+1))
-  done
-}
 
 echo -e "${_CLR_YELLOW}=============================================================="
 echo -e "${_CLR_YELLOW}Deploying CP4BA environment '${_CLR_GREEN}${CP4BA_INST_ENV}${_CLR_YELLOW}' in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'${_CLR_NC}"
@@ -564,7 +571,6 @@ if [ $? -eq 1 ]; then
     deployEnvironment
     deployPostEnv
     deployPFS
-    federateBawsInDeployment
   fi
   waitDeploymentReadiness
 
