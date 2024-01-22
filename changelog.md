@@ -1,6 +1,19 @@
 
 # Change Log
   
+## [1.0.5] - 2024-01-22
+
+Minimal adjustments
+
+### Added
+
+### Changed
+cp4ba-deploy-env.sh
+* waitDeploymentReadiness: update federate-only logic
+
+### Fixed
+n/a
+ 
 ## [1.0.4] - 2024-01-22
 
 Minimal adjustments
