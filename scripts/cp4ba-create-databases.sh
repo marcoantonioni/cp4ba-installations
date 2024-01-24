@@ -99,7 +99,7 @@ _createDatabases () {
   fi
   if [[ "${_WAIT}" = "true" ]]; then
     _seconds=0
-    _MAX_WAIT=1200
+    _MAX_WAIT=1800
     until [ $_seconds -gt $_MAX_WAIT ];
     do
       resourceExist "${CP4BA_INST_SUPPORT_NAMESPACE}" "pod" "${_DB_CR_NAME}-1"

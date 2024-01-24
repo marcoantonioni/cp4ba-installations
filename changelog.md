@@ -1,6 +1,20 @@
 
 # Change Log
   
+## [1.0.6] - 2024-01-22
+
+Minimal adjustments
+
+### Added
+
+### Changed
+cp4ba-deploy-env.sh
+* waitDeploymentReadiness: text of wait messages
+* cp4ba-create-databases.sh: changed timeout limit wait pod ready (now 30 minutes to manage parallel installations)
+
+### Fixed
+n/a
+ 
 ## [1.0.5] - 2024-01-22
 
 Minimal adjustments

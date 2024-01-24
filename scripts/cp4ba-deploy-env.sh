@@ -460,7 +460,7 @@ federateBawsInDeployment () {
 }
 
 waitDeploymentReadiness () {
-  echo -e "${_CLR_GREEN}Configuration and deployment complete for '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
+  echo -e "${_CLR_GREEN}Configuration and deployment complete for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
   _seconds=0
   _total_warnings=0
@@ -483,6 +483,7 @@ waitDeploymentReadiness () {
       if [[ "${_WAIT_ONLY}" = "false" ]] || [[ "${_FEDERATE_ONLY}" = "true" ]]; then
         resourceExist ${CP4BA_INST_NAMESPACE} "pfs" ${CP4BA_INST_PFS_NAME}
         if [ $? -eq 1 ]; then
+          echo ""
           federateBawsInDeployment
         fi
       fi
