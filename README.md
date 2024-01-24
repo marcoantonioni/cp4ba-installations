@@ -489,7 +489,7 @@ PAY ATTENTION: Adapt this script using a different shell tool if you are not usi
 # set the name of your configuration file
 _CONFIG_FILE="../configs/multienv.properties"
 
-# set the name-segment suffix for the envs (it will be abc-1, abc-2, and so on)
+# set the name-segment suffix for the envs (it will be workshop-env-1, workshop-env-2, and so on)
 _MULTI_ENV="workshop-env"
 
 # suffix for environment name
