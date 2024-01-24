@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2024-01-22</i> use '<b>1.0.5-stable</b>'
+<i>Last update: 2024-01-24</i> use '<b>1.0.6-stable</b>'
 
 ## Description of the contents of this repository
 
@@ -474,6 +474,60 @@ _SCRIPTS=/tmp/mycmgr/ibm-cp-automation-5.1.0/...../crs/cert-kubernetes/scripts
 ./cp4ba-deploy-env.sh -c ${_CFG} -l ${_LDAP_CFG_FILE}
 ```
 This is not the best solution but it still works without users onboarding in IAM (must be done manually via web console or using script 'onboard-users.sh' in repo 'cp4ba-idp-ldap').
+
+### 6. For IBMers, Business Partners and others who may have needs
+
+If you need to present a hands-on workshop on CP4BA and want to make a dedicated environment available for each guest, you can configure multiple environments with the same configuration file in this way (adapt the variables based on your environment).
+
+PAY ATTENTION: Adapt this script using a different shell tool if you are not using 'gnome-terminal' (default in an RH/CentOS linux box with graphic desktop).
+
+#### 6.1 Install multiple CP4BA environments
+
+<b>IMPORTANT</b> comment out the definition of var <b>CP4BA_INST_ENV</b> in <i>.properties</i> file.
+
+```
+# set the name of your configuration file
+_CONFIG_FILE="../configs/multienv.properties"
+
+# set the name-segment suffix for the envs (it will be abc-1, abc-2, and so on)
+_MULTI_ENV="workshop-env"
+
+# suffix for environment name
+i=1
+# tot num of envs (pay attention and evaluate 'max' based on your Openshift cluster size and type of deployment)
+max=2
+while [[ $i -le $max ]]
+do
+  # name of environment
+  export CP4BA_INST_ENV="${_MULTI_ENV}-${i}"
+
+  # !!! set your path to scripts
+  export _S="/home/marco/cp4ba-projects/cp4ba-installations/scripts"
+  export _C=${_CONFIG_FILE}
+  gnome-terminal -q --geometry=140x24 -t "CP4BA-${i}" -- bash -c 'export _T=$(($RANDOM % 30)); sleep $_T; cd ${_S}; ./cp4ba-one-shot-installation.sh -c ${_C} -m -v 5.1.0; exec bash -i'
+  ((i = i + 1))
+done
+```
+
+#### 6.2 Clean multiple CP4BA environments
+```
+# set the namespace prefix for the envs (it will be cp4ba-workshop-env-1, cp4ba-workshop-env-2, and so on)
+_MULTI_ENV="cp4ba-workshop-env"
+
+# suffix for environment name
+i=1
+# tot num of envs
+max=2
+while [[ $i -le $max ]]
+do
+  export _N="${_MULTI_ENV}-${i}"
+
+  # !!! set your path to scripts
+  export _S=/home/marco/cp4ba-projects/cp4ba-utilities/remove-cp4ba
+  gnome-terminal -q --geometry=140x24 -t "CP4BA-${i}" -- bash -c "cd ${_S}; ./cp4ba-remove-namespace.sh -n ${_N}"
+  ((i = i + 1))
+done
+```
 
 ---
 **DISCLAIMER**

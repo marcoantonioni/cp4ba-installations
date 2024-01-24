@@ -1,7 +1,7 @@
 
 # Change Log
   
-## [1.0.6] - 2024-01-22
+## [1.0.6] - 2024-01-24
 
 Minimal adjustments
 
@@ -10,11 +10,14 @@ Minimal adjustments
 ### Changed
 cp4ba-deploy-env.sh
 * waitDeploymentReadiness: text of wait messages
-* cp4ba-create-databases.sh: changed timeout limit wait pod ready (now 30 minutes to manage parallel installations)
+* cp4ba-create-databases.sh: changed timeout limit wait pod ready (now 30 minutes to manage parallel installations load)
+* cp4ba-deploy-env.sh: deployPreEnv / deployPostEnv, moved DB inst as Post action because of PostgreSQL CRD not yet available
+* cp4ba-install-db.sh: waitForClustersPostgresCRD, added loop for CRD conditions 
 
 ### Fixed
-n/a
- 
+* Timeout in 'waitForClustersPostgresCRD' during PostgreSQL installation when clusters.postgresql.k8s.enterprisedb.io not yet deployed
+
+
 ## [1.0.5] - 2024-01-22
 
 Minimal adjustments

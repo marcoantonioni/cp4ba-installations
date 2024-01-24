@@ -208,14 +208,6 @@ deployPreEnv () {
     fi
   fi
 
-  if [[ "${CP4BA_INST_DB}" = "true" ]]; then
-    ./cp4ba-install-db.sh -c ${_CFG}
-    if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
-      exit 1
-    fi
-  fi
-
   if [[ "${CP4BA_INST_TYPE}" != "starter" ]]; then
     ./cp4ba-create-secrets.sh -c ${_CFG} -s -t 0
     if [[ $? -ne 0 ]]; then
@@ -227,6 +219,15 @@ deployPreEnv () {
 
 #-------------------------------
 deployPostEnv () {
+
+  if [[ "${CP4BA_INST_DB}" = "true" ]]; then
+    ./cp4ba-install-db.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
   if [[ "${CP4BA_INST_DB}" = "true" ]]; then
     ./cp4ba-create-databases.sh -c ${_CFG} -w
     if [[ $? -ne 0 ]]; then

@@ -136,14 +136,52 @@ deployDBCluster() {
 
 waitForClustersPostgresCRD () {
 # clusters.postgresql.k8s.enterprisedb.io  
-  while [ true ]
-  do
-    if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
-      sleep 2
-    else
-      break
-    fi
-  done
+  if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
+    while [ true ]
+    do
+      if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
+        echo -e -n "wait for CRD 'clusters.postgresql.k8s.enterprisedb.io' created (may take minutes) ...\033[0K\r"
+        sleep 5
+      else
+        break
+      fi
+    done
+    echo ""
+  fi
+
+  _READY_ITEMS=$(oc get crd clusters.postgresql.k8s.enterprisedb.io -o jsonpath='{.status.conditions}' | jq '.[] | select(.status=="True") ' | jq .status | wc -l)
+  if [ $_READY_ITEMS -lt 2 ]; then
+    while [ true ]
+    do
+      _READY_ITEMS=$(oc get crd clusters.postgresql.k8s.enterprisedb.io -o jsonpath='{.status.conditions}' | jq '.[] | select(.status=="True") ' | jq .status | wc -l)
+      if [ $_READY_ITEMS -lt 2 ]; then
+        sleep 5
+        echo -e -n "wait for CRD 'clusters.postgresql.k8s.enterprisedb.io' ready ... \033[0K\r"
+      else
+        break
+      fi
+    done
+    echo ""
+  fi
+
+  # wait for pod postgresql-operator-controller-manager
+  _PSQL_OCM_POD=$(oc get pod --no-headers -n cp4ba-sogei-beta 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
+  if [[ -z "${_PSQL_OCM_POD}" ]]; then
+    while [ true ]
+    do
+      sleep 5
+      _PSQL_OCM_POD=$(oc get pod --no-headers -n cp4ba-sogei-beta 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
+    done
+  fi
+
+  # wait for pod postgresql-operator-controller-manager ready
+  _MAX_WAIT_READY=600
+  _RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${_PSQL_OCM_POD} --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
+  _IS_READY=$(echo $_RES | grep "condition met" | wc -l)
+  if [ $_IS_READY -eq 0 ]; then
+    echo -e "${_CLR_RED}[✗] ERROR: waitForClustersPostgresCRD pod 'postgresql-operator-controller-manager' not ready, cannot deploy database${_CLR_NC}"
+    exit 1
+  fi
 }
 
 deployDBClusters() {
