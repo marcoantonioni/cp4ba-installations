@@ -1,7 +1,7 @@
 
 # Change Log
 
-## [1.0.8] - 2024-01-??
+## [1.0.8] - 2024-01-25
 Minimal adjustments
 
 ### Added
