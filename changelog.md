@@ -1,6 +1,19 @@
 
 # Change Log
-  
+
+## [1.0.7] - 2024-01-25
+
+Minimal adjustments
+
+### Added
+
+### Changed
+cp4ba-deploy-env.sh
+* waitDeploymentReadiness: code enforcement for data analysis in config map 'access-info'
+
+### Fixed
+
+
 ## [1.0.6] - 2024-01-24
 
 Minimal adjustments
