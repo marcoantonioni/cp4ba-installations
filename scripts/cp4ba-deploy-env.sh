@@ -493,14 +493,14 @@ waitDeploymentReadiness () {
       echo -e "${_CLR_GREEN}Wait for access info config map ...${_CLR_NC}"
       while [ true ]
       do
-        _ACC_INFO_FOUND=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | wc -l)
+        _ACC_INFO_FOUND=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info 2>/dev/null | wc -l)
         if [ $_ACC_INFO_FOUND -lt 1 ]; then
           sleep 5
         else
           break
         fi
       done
-      ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
+      ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info 2>/dev/null | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       if [[ ! -z "${ACC_INFO}" ]]; then
         NUM_KEYS=$(echo $ACC_INFO | jq length)
         echo "" > ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
