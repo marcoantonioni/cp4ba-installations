@@ -265,7 +265,13 @@ installAndVerifyCasePkgMgr
 if [[ $_ERR_PKG_MGR -eq 0 ]]; then
   ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
   if [[ $? -eq 0 ]]; then
-    ./cp4ba-deploy-env.sh -c ${_CFG} -l ${CP4BA_INST_LDAP_CFG_FILE}
+
+    _LDAP_PARAMS=""
+    if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
+      _LDAP_PARAMS="-l ${CP4BA_INST_LDAP_CFG_FILE}"
+    fi
+    
+    ./cp4ba-deploy-env.sh -c ${_CFG} ${LDAP_PARAMS}
     if [[ $? -eq 0 ]]; then
       if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
         onboardUsers

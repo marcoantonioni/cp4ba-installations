@@ -165,12 +165,12 @@ waitForClustersPostgresCRD () {
   fi
 
   # wait for pod postgresql-operator-controller-manager
-  _PSQL_OCM_POD=$(oc get pod --no-headers -n cp4ba-sogei-beta 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
+  _PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
   if [[ -z "${_PSQL_OCM_POD}" ]]; then
     while [ true ]
     do
       sleep 5
-      _PSQL_OCM_POD=$(oc get pod --no-headers -n cp4ba-sogei-beta 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
+      _PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
     done
   fi
 

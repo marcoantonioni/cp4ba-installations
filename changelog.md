@@ -1,24 +1,39 @@
 
 # Change Log
 
-## [1.0.7] - 2024-01-25
-
+## [1.0.8] - 2024-01-??
 Minimal adjustments
 
 ### Added
+n/a
+
+### Changed
+cp4ba-one-shot-installation.sh
+* launch of ./cp4ba-deploy-env.sh with variable num of params 
+
+### Fixed
+cp4ba-install-db.sh: wrong namespace in waitForClustersPostgresCRD
+
+
+## [1.0.7] - 2024-01-25
+Minimal adjustments
+
+### Added
+n/a
 
 ### Changed
 cp4ba-deploy-env.sh
 * waitDeploymentReadiness: code enforcement for data analysis in config map 'access-info'
 
 ### Fixed
+n/a
 
 
 ## [1.0.6] - 2024-01-24
-
 Minimal adjustments
 
 ### Added
+n/a
 
 ### Changed
 cp4ba-deploy-env.sh
@@ -32,10 +47,10 @@ cp4ba-deploy-env.sh
 
 
 ## [1.0.5] - 2024-01-22
-
 Minimal adjustments
 
 ### Added
+n/a
 
 ### Changed
 cp4ba-deploy-env.sh
@@ -45,10 +60,10 @@ cp4ba-deploy-env.sh
 n/a
  
 ## [1.0.4] - 2024-01-22
-
 Minimal adjustments
 
 ### Added
+n/a
 
 ### Changed
 cp4ba-deploy-env.sh
@@ -58,10 +73,10 @@ cp4ba-deploy-env.sh
 n/a
  
 ## [1.0.3] - 2024-01-22
-
 Minimal adjustments
 
 ### Added
+n/a
 
 ### Changed
 cp4ba-deploy-env.sh
@@ -71,11 +86,9 @@ cp4ba-deploy-env.sh
 n/a
  
 ## [1.0.2] - 2024-01-22
-
 Minimal adjustments
 
 ### Added
-
 cp4ba-install-db.sh
 * waitForClustersPostgresCRD: wait for Postgres CRD creation
 
@@ -88,7 +101,6 @@ cp4ba-deploy-env.sh
 n/a
  
 ## [1.0.1] - 2024-01-19
-  
 Minor fixes
 
 ### Added
@@ -101,12 +113,14 @@ Separated logic for Federation and Hosting federated ProcessPortal to have only 
 Federation function
  
 ## [1.0.0] - 2024-01-19
-  
 First release
 
 ### Added
- 
+n/a
+
 ### Changed
+n/a
    
 ### Fixed
+n/a
  
