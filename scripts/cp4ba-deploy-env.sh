@@ -488,17 +488,33 @@ waitDeploymentReadiness () {
           federateBawsInDeployment
         fi
       fi
+
       
-      echo -e "${_CLR_GREEN}ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
-      ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
-      NUM_KEYS=$(echo $ACC_INFO | jq length)
-      echo "" > ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
-      echo 
-      for (( i=0; i<$NUM_KEYS; i++ ));
+      echo -e "${_CLR_GREEN}Wait for access info config map ...${_CLR_NC}"
+      while [ true ]
       do
-        KEY=$(echo $ACC_INFO | jq keys[$i])
-        echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+        _ACC_INFO_FOUND=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | wc -l)
+        if [ $_ACC_INFO_FOUND -lt 1 ]; then
+          sleep 5
+        else
+          break
+        fi
       done
+      ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
+      if [[ ! -z "${ACC_INFO}" ]]; then
+        NUM_KEYS=$(echo $ACC_INFO | jq length)
+        echo "" > ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+        echo 
+        for (( i=0; i<$NUM_KEYS; i++ ));
+        do
+          KEY=$(echo $ACC_INFO | jq keys[$i])
+          echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+        done
+      else
+        echo -e "${_CLR_YELLOW}Waarning access info config map empty or not valid${_CLR_NC}"
+      fi
+
+      echo -e "${_CLR_GREEN}ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
       echo "See acces info urls in file ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"     
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
