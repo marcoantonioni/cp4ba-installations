@@ -497,6 +497,8 @@ waitDeploymentReadiness () {
         if [ $_ACC_INFO_FOUND -lt 1 ]; then
           sleep 5
         else
+          # wait for cm population
+          sleep 10 
           break
         fi
       done
@@ -526,8 +528,8 @@ waitDeploymentReadiness () {
     if [ $_warning_interval -gt 10 ]; then
       # check for failures and pending pvc (for pending items there are no immediate errors from operators)
       _warning_interval=0
-      _pending_pvc_count=$(oc get pvc -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null| grep Pending | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc" | wc -l)
-      _operator_failures=$(oc logs -n ${CP4BA_INST_NAMESPACE} -c operator $(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep cp4a-operator- | awk '{print $1}') 2>/dev/null | grep "FAIL" | uniq | wc -l)
+      _pending_pvc_count=$(oc get pvc -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null | grep Pending 2>/dev/null | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc" 2>/dev/null | wc -l)
+      _operator_failures=$(oc logs -n ${CP4BA_INST_NAMESPACE} -c operator $(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep cp4a-operator- 2>/dev/null  | awk '{print $1}') 2>/dev/null | grep "FAIL" 2>/dev/null | uniq 2>/dev/null | wc -l)
       ((_total_warnings=_pending_pvc_count+_operator_failures))
       if [ $_total_warnings -gt 0 ]; then
         if [ $_total_warnings -gt 99 ]; then
