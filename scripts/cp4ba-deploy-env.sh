@@ -478,7 +478,9 @@ waitDeploymentReadiness () {
       waitForPfsReady
       _PFS_READY=$?
     fi
+    
     _CR_READY=$(oc get ICP4ACluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
+
     if [[ "${_CR_READY}" = "True" ]] && [[ ${_PFS_READY} -eq 1 ]]; then
 
       if [[ "${_WAIT_ONLY}" = "false" ]] || [[ "${_FEDERATE_ONLY}" = "true" ]]; then
@@ -497,8 +499,6 @@ waitDeploymentReadiness () {
         if [ $_ACC_INFO_FOUND -lt 1 ]; then
           sleep 5
         else
-          # wait for cm population
-          sleep 10 
           break
         fi
       done
