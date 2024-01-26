@@ -76,7 +76,7 @@ checkPrepreqTools () {
 #-------------------------------
 namespaceExist () {
 # ns name: $1
-  if [ $(oc get ns $1 2> /dev/null | grep $1 | wc -l) -lt 1 ];
+  if [ $(oc get ns $1 2>/dev/null | grep $1 2>/dev/null | wc -l) -lt 1 ];
   then
       return 0
   fi
@@ -85,7 +85,7 @@ namespaceExist () {
 
 #-------------------------------
 storageClassExist () {
-    if [ $(oc get sc $1 2>/dev/null | grep $1 | wc -l) -lt 1 ];
+    if [ $(oc get sc $1 2>/dev/null | grep $1 2>/dev/null | wc -l) -lt 1 ];
     then
         return 0
     fi
@@ -97,7 +97,7 @@ resourceExist () {
 #    echo "namespace name: $1"
 #    echo "resource type: $2"
 #    echo "resource name: $3"
-  if [ $(oc get $2 -n $1 $3 2> /dev/null | grep $3 | wc -l) -lt 1 ];
+  if [ $(oc get $2 -n $1 $3 2> /dev/null | grep $3 2>/dev/null | wc -l) -lt 1 ];
   then
       return 0
   fi
@@ -491,18 +491,17 @@ waitDeploymentReadiness () {
         fi
       fi
 
-      
       echo -e "${_CLR_GREEN}Wait for access info config map ...${_CLR_NC}"
       while [ true ]
       do
-        _ACC_INFO_FOUND=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info 2>/dev/null | wc -l)
+        _ACC_INFO_FOUND=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep "access-info" 2>/dev/null | wc -l)
         if [ $_ACC_INFO_FOUND -lt 1 ]; then
           sleep 5
         else
           break
         fi
       done
-      ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep access-info 2>/dev/null | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
+      ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep "access-info" 2>/dev/null | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       if [[ ! -z "${ACC_INFO}" ]]; then
         NUM_KEYS=$(echo $ACC_INFO | jq length)
         echo "" > ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
@@ -513,7 +512,7 @@ waitDeploymentReadiness () {
           echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
         done
       else
-        echo -e "${_CLR_YELLOW}Waarning access info config map empty or not valid${_CLR_NC}"
+        echo -e "${_CLR_YELLOW}Warning access info config map empty or not valid${_CLR_NC}"
       fi
 
       echo -e "${_CLR_GREEN}ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
@@ -528,8 +527,8 @@ waitDeploymentReadiness () {
     if [ $_warning_interval -gt 10 ]; then
       # check for failures and pending pvc (for pending items there are no immediate errors from operators)
       _warning_interval=0
-      _pending_pvc_count=$(oc get pvc -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null | grep Pending 2>/dev/null | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc" 2>/dev/null | wc -l)
-      _operator_failures=$(oc logs -n ${CP4BA_INST_NAMESPACE} -c operator $(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep cp4a-operator- 2>/dev/null  | awk '{print $1}') 2>/dev/null | grep "FAIL" 2>/dev/null | uniq 2>/dev/null | wc -l)
+      _pending_pvc_count=$(oc get pvc -n ${CP4BA_INST_NAMESPACE} --no-headers 2>/dev/null | grep "Pending" 2>/dev/null | grep -Ev "ibm-zen-cs-mongo-backup|ibm-zen-objectstore-backup-pvc" 2>/dev/null | wc -l)
+      _operator_failures=$(oc logs -n ${CP4BA_INST_NAMESPACE} -c operator $(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep "cp4a-operator-" 2>/dev/null  | awk '{print $1}') 2>/dev/null | grep "FAIL" 2>/dev/null | uniq 2>/dev/null | wc -l)
       ((_total_warnings=_pending_pvc_count+_operator_failures))
       if [ $_total_warnings -gt 0 ]; then
         if [ $_total_warnings -gt 99 ]; then
