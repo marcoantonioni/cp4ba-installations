@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2024-01-25</i> use '<b>1.0.8-stable</b>'
+<i>Last update: 2024-01-27</i> use '<b>1.0.9-stable</b>'
 
 ## Description of the contents of this repository
 
@@ -54,6 +54,8 @@ A linux box (scripts are only available in the bash shell)
 'jq' tool (mandatory)
 
 'yq' tool (mandatory, also available in IBM's CP4BA Case Package Manager)
+
+'envsubst' (mandatory)
 
 'openssl' client tool (optional, used with my other git repositories from the cp4ba-* family, eg: for trusted certificate list configuration)
 
@@ -649,6 +651,9 @@ https://www.ibm.com/software/reports/compatibility/clarity/softwareReqsForProduc
 ### YQ
 [https://github.com/mikefarah/yq](https://github.com/mikefarah/yq)
 You may find a portable version of 'yq' in folder './scripts/helper/yq/' of CP4BA Case Installation tool.
+
+### envsubst
+[https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html)
 
 ### Openssl
 [https://www.openssl.org/](https://www.openssl.org/)

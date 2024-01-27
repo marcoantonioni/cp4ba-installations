@@ -1,6 +1,20 @@
 
 # Change Log
 
+## [1.0.9] - 2024-01-27
+Minimal adjustments
+
+### Added
+n/a
+
+### Changed
+Logged activities
+Renamed some configuration samples
+
+### Fixed
+n/a
+
+
 ## [1.0.8] - 2024-01-25
 Minimal adjustments
 
