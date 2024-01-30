@@ -81,7 +81,7 @@ createSecretFNCM () {
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
   _ERR=0  
   if [[ ! -z "${CP4BA_INST_DB_BAWDOCS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWDOS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWTOS_USER}" ]]; then
-    echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectores users)${_CLR_NC}'"
+    echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectstores users)${_CLR_NC}'"
     
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
       --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
@@ -100,7 +100,7 @@ createSecretFNCM () {
       --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
     _ERR=$?
   else
-    echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM objectores users)${_CLR_NC}'"
+    echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM objectstores users)${_CLR_NC}'"
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
       --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
       --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
