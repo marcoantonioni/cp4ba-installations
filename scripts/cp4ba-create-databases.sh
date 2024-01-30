@@ -74,7 +74,7 @@ _generateSQL () {
   _SQL_FULL_TARGET="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
   cp ${ENV_STATS} ${_SQL_FULL_TARGET} 2>/dev/null
   rm ${ENV_STATS}
-  echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved\nin file '${_CLR_YELLOW}${_SQL_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
+  echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_SQL_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
 }
 
 #-------------------------------
@@ -190,7 +190,8 @@ createDatabases () {
   _IDX_END=${CP4BA_INST_DB_INSTANCES}
   while [[ $i -le $_IDX_END ]]
   do
-    _INST_BAW="CP4BA_INST_BAW_$i"
+    #_INST_ITEM="CP4BA_INST_BAW_$i"
+    _INST_ITEM="$1_$i"
     _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
     _INST_DB_1_TEMPLATE="CP4BA_INST_DB_"$i"_TEMPLATE"
 
@@ -199,7 +200,7 @@ createDatabases () {
       echo ""
       exit 1
     fi
-    if [[ "${!_INST_BAW}" = "true" ]]; then
+    if [[ "${!_INST_ITEM}" = "true" ]]; then
       if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_1_TEMPLATE}" ]]; then
         _createDatabases ${!_INST_DB_CR_NAME} ${!_INST_DB_1_TEMPLATE}
       else
@@ -209,7 +210,7 @@ createDatabases () {
         exit 1
       fi
     else
-      echo -e "${_CLR_YELLOW}Warning: DB '${_CLR_GREEN}${!_INST_DB_CR_NAME}${_CLR_YELLOW}' is disabled, skipping configuration${_CLR_NC}"
+      echo -e "${_CLR_YELLOW}Warning: BAW DB '${_CLR_GREEN}${!_INST_DB_CR_NAME}${_CLR_YELLOW}' is disabled, skipping configuration${_CLR_NC}"
     fi
     ((i = i + 1))
   done  
@@ -221,7 +222,8 @@ if [[ "${CP4BA_INST_DB}" = "true" ]]; then
   if [[ "${_GENERATE_SQL_ONLY}" = "false" ]]; then
     echo -e "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers${_CLR_NC}"
   fi
-  createDatabases
+  createDatabases "CP4BA_INST_BAW"
+  createDatabases "CP4BA_INST_CONTENT"
 else
   echo -e "${_CLR_GREEN}Skipping creation of databases${_CLR_NC}"
 fi

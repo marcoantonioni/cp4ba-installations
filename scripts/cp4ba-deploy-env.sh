@@ -297,7 +297,7 @@ generateCR () {
     echo -e "${_CLR_GREEN}[✗] Error, file not found '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
     exit 1
   fi 
-  echo -e "${_CLR_GREEN}CR for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' saved\nin file '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_YELLOW}'${_CLR_NC}"
+  echo -e "${_CLR_GREEN}CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_YELLOW}'${_CLR_NC}"
 }
 
 #-------------------------------
@@ -305,7 +305,7 @@ deployEnvironment () {
   generateCR
 
   echo -e "=============================================================="
-  echo -e "${_CLR_GREEN}Deploying ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
+  echo -e "${_CLR_GREEN}Deploying CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
   _INST_ENV_FULL_PATH="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   oc apply -n ${CP4BA_INST_NAMESPACE} -f ${_INST_ENV_FULL_PATH}
@@ -461,7 +461,7 @@ federateBawsInDeployment () {
 }
 
 waitDeploymentReadiness () {
-  echo -e "${_CLR_GREEN}Configuration and deployment complete for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
+  echo -e "${_CLR_GREEN}Configuration and deployment complete for CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
   _seconds=0
   _total_warnings=0
@@ -479,10 +479,23 @@ waitDeploymentReadiness () {
       _PFS_READY=$?
     fi
     
-    _CR_READY=$(oc get ICP4ACluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
-
+    _CR_ICP4A_READY="True"
+    _CR_CONTENT_READY="True"
+    # if CR ICP4ACluster found
+    _CR_FOUND=$(oc get ICP4ACluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} --no-headers 2>/dev/null | wc -l)
+    if [ $_CR_FOUND -gt 0 ]; then
+      _CR_ICP4A_READY=$(oc get ICP4ACluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
+    fi
+    # if CR Content found
+    _CR_FOUND=$(oc get Content -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} --no-headers 2>/dev/null | wc -l)
+    if [ $_CR_FOUND -gt 0 ]; then
+      _CR_CONTENT_READY=$(oc get Content -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.[] | select(.type == "Ready")' | jq .status | sed 's/"//g')
+    fi
+    _CR_READY=""
+    if [[ "${_CR_ICP4A_READY}" = "True" ]] && [[ "${_CR_CONTENT_READY}" = "True" ]]; then
+      _CR_READY="True"
+    fi
     if [[ "${_CR_READY}" = "True" ]] && [[ ${_PFS_READY} -eq 1 ]]; then
-
       if [[ "${_WAIT_ONLY}" = "false" ]] || [[ "${_FEDERATE_ONLY}" = "true" ]]; then
         resourceExist ${CP4BA_INST_NAMESPACE} "pfs" ${CP4BA_INST_PFS_NAME}
         if [ $? -eq 1 ]; then
@@ -490,7 +503,6 @@ waitDeploymentReadiness () {
           federateBawsInDeployment
         fi
       fi
-
       echo -e "${_CLR_GREEN}Wait for access info config map ...${_CLR_NC}"
       while [ true ]
       do
@@ -501,6 +513,7 @@ waitDeploymentReadiness () {
           break
         fi
       done
+      sleep 5
       ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep "access-info" 2>/dev/null | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       if [[ ! -z "${ACC_INFO}" ]]; then
         NUM_KEYS=$(echo $ACC_INFO | jq length)
@@ -509,13 +522,15 @@ waitDeploymentReadiness () {
         for (( i=0; i<$NUM_KEYS; i++ ));
         do
           KEY=$(echo $ACC_INFO | jq keys[$i])
+          echo "  saving access-info data for key: ${KEY}"
           echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
         done
+        echo "Platform URLs stored in: ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"
       else
         echo -e "${_CLR_YELLOW}Warning access info config map empty or not valid${_CLR_NC}"
       fi
 
-      echo -e "${_CLR_GREEN}ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
+      echo -e "${_CLR_GREEN}CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
       echo "See acces info urls in file ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"     
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
@@ -552,7 +567,7 @@ waitDeploymentReadiness () {
     TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
     TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
 
-    echo -e -n "${_CLR_GREEN}Wait for ICP4ACluster '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready (${_CLR_YELLOW} ${_ROTOR_CHAR} ${_CLR_GREEN}) warnings [${_CLR_RED}${_WARNING_PENDING}${_CLR_GREEN}] elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
+    echo -e -n "${_CLR_GREEN}Wait for CP4BA CRs '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready (${_CLR_YELLOW} ${_ROTOR_CHAR} ${_CLR_GREEN}) warnings [${_CLR_RED}${_WARNING_PENDING}${_CLR_GREEN}] elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
     ((_seconds=_seconds+1))
     sleep 1
   done

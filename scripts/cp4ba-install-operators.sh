@@ -165,7 +165,7 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
       if [ $? -eq 0 ]; then
         rm ./_clusteradmin.out
         cd ${_ACT_DIR}
-        echo "Ready to deploy ICP4ACluster CR in namespace '${CP4BA_INST_NAMESPACE}'"
+        echo "Ready to deploy CR in namespace '${CP4BA_INST_NAMESPACE}'"
         _OK=true
       else
         cat ./_clusteradmin.out

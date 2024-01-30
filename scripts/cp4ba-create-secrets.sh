@@ -61,7 +61,6 @@ createSecretLDAP () {
 }
 
 #-------------------------------
-#???
 createSecretAE () {
   if [[ ! -z "${CP4BA_INST_AE_1_AD_SECRET_NAME}" ]]; then
     echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_AE_1_AD_SECRET_NAME}${_CLR_NC}'"
@@ -79,24 +78,42 @@ createSecretAE () {
 
 #-------------------------------
 createSecretFNCM () {
-  echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
-  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
-    --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
-    --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
-    --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
-    --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
-    --from-literal="${CP4BA_INST_DB_BAWDOCS_LBL}"DBUsername="${CP4BA_INST_DB_BAWDOCS_USER}" \
-    --from-literal="${CP4BA_INST_DB_BAWDOCS_LBL}"DBPassword="${CP4BA_INST_DB_BAWDOCS_PWD}" \
-    --from-literal="${CP4BA_INST_DB_BAWDOS_LBL}"DBUsername="${CP4BA_INST_DB_BAWDOS_USER}" \
-    --from-literal="${CP4BA_INST_DB_BAWDOS_LBL}"DBPassword="${CP4BA_INST_DB_BAWDOS_PWD}" \
-    --from-literal="${CP4BA_INST_DB_BAWTOS_LBL}"DBUsername="${CP4BA_INST_DB_BAWTOS_USER}" \
-    --from-literal="${CP4BA_INST_DB_BAWTOS_LBL}"DBPassword="${CP4BA_INST_DB_BAWTOS_PWD}" \
-    --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
-    --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
-    --from-literal=ltpaPassword="passw0rd" \
-    --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
-  if [[ $? -gt 0 ]]; then
+  _ERR=0  
+  if [[ ! -z "${CP4BA_INST_DB_BAWDOCS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWDOS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWTOS_USER}" ]]; then
+    echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectores users)${_CLR_NC}'"
+    
+    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
+      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
+      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
+      --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
+      --from-literal="${CP4BA_INST_DB_BAWDOCS_LBL}"DBUsername="${CP4BA_INST_DB_BAWDOCS_USER}" \
+      --from-literal="${CP4BA_INST_DB_BAWDOCS_LBL}"DBPassword="${CP4BA_INST_DB_BAWDOCS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_BAWDOS_LBL}"DBUsername="${CP4BA_INST_DB_BAWDOS_USER}" \
+      --from-literal="${CP4BA_INST_DB_BAWDOS_LBL}"DBPassword="${CP4BA_INST_DB_BAWDOS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_BAWTOS_LBL}"DBUsername="${CP4BA_INST_DB_BAWTOS_USER}" \
+      --from-literal="${CP4BA_INST_DB_BAWTOS_LBL}"DBPassword="${CP4BA_INST_DB_BAWTOS_PWD}" \
+      --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+      --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
+      --from-literal=ltpaPassword="passw0rd" \
+      --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+    _ERR=$?
+  else
+    echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM objectores users)${_CLR_NC}'"
+    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
+      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
+      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
+      --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
+      --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+      --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
+      --from-literal=ltpaPassword="passw0rd" \
+      --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+    _ERR=$?
+  fi
+
+  if [[ $_ERR -gt 0 ]]; then
     _ERROR=1
     echo -e "${_CLR_RED}Secret ibm-fncm-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
@@ -178,13 +195,17 @@ createSecrets () {
   _IDX_END=$CP4BA_INST_DB_INSTANCES
   while [[ $i -le $_IDX_END ]]
   do
-  _DB_SECRET="CP4BA_INST_BAW_"$i"_DB_SECRET"
-  #_DB_USER="CP4BA_INST_BAW_"$i"_DB_USER"
-  #_DB_PWD="CP4BA_INST_BAW_"$i"_DB_PWD"
-    if [[ ! -z "${!_DB_SECRET}" ]]; then
-      createSecretBAW ${!_DB_SECRET} ${CP4BA_INST_DB_BAW_USER} ${CP4BA_INST_DB_BAW_PWD} # ${!_DB_USER} ${!_DB_PWD}
-    else
-      echo -e "${_CLR_RED}ERROR, env var '${_CLR_GREEN}${_DB_SECRET}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES and CP4BA_INST_BAW_* values.${_CLR_NC}"
+    _INST_BAW="CP4BA_INST_BAW_$i"
+    _INST="${!_INST_BAW}"
+    if [[ "${_INST}" = "true" ]]; then
+      _DB_SECRET="CP4BA_INST_BAW_"$i"_DB_SECRET"
+      #_DB_USER="CP4BA_INST_BAW_"$i"_DB_USER"
+      #_DB_PWD="CP4BA_INST_BAW_"$i"_DB_PWD"
+      if [[ ! -z "${!_DB_SECRET}" ]]; then
+        createSecretBAW ${!_DB_SECRET} ${CP4BA_INST_DB_BAW_USER} ${CP4BA_INST_DB_BAW_PWD} # ${!_DB_USER} ${!_DB_PWD}
+      else
+        echo -e "${_CLR_RED}ERROR, env var '${_CLR_GREEN}${_DB_SECRET}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES and CP4BA_INST_BAW_* values.${_CLR_NC}"
+      fi
     fi
     ((i = i + 1))
   done  

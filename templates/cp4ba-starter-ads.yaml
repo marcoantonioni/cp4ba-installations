@@ -42,7 +42,7 @@ spec:
     sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
     sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
     sc_deployment_type: "Starter"
-    sc_deployment_platform: "OCP"
+    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
     sc_image_repository: cp.icr.io
     sc_ingress_enable: false
     trusted_certificate_list: []
