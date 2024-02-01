@@ -141,8 +141,23 @@ _createDatabases () {
       done
 
       if [ $_KO -eq 0 ]; then
-        # create f.s. folder for tablespaces
-        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/icn /run/tbs/os1 /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
+        # create f.s. folders for tablespaces
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/setupdb /run/tbs/gcd /run/tbs/icn /run/tbs/docs /run/tbs/dos /run/tbs/tosdata /run/tbs/tosindex /run/tbs/tosblob
+        if [ $? -gt 0 ]; then
+          _KO=1
+          echo -e "${_CLR_RED}Error creating folders in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"        
+        fi
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/tbs/os1data /run/tbs/os2data /run/tbs/os3data /run/tbs/os4data /run/tbs/os5data
+        if [ $? -gt 0 ]; then
+          _KO=1
+          echo -e "${_CLR_RED}Error creating folders in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"        
+        fi
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/tbs/os1index /run/tbs/os2index /run/tbs/os3index /run/tbs/os4index /run/tbs/os5index
+        if [ $? -gt 0 ]; then
+          _KO=1
+          echo -e "${_CLR_RED}Error creating folders in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"        
+        fi
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 mkdir -p /run/tbs/os1blob /run/tbs/os2blob /run/tbs/os3blob /run/tbs/os4blob /run/tbs/os5blob
         if [ $? -gt 0 ]; then
           _KO=1
           echo -e "${_CLR_RED}Error creating folders in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"        

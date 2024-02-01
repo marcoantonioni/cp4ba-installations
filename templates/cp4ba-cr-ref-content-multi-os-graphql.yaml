@@ -184,6 +184,20 @@ spec:
         oc_cpe_obj_store_asa_file_systems_storage_device_name: "${CP4BA_INST_CONTENT_OS_ASA_1_FS_DEV_NAME}"
         oc_cpe_obj_store_asa_root_dir_path: "/opt/ibm/asa/${CP4BA_INST_CONTENT_OS_ASA_1_ROOT_DIR_NAME}"
 
+        # Workflow
+        oc_cpe_obj_store_enable_content_event_emitter: false
+        oc_cpe_obj_store_enable_workflow: ${CP4BA_INST_CONTENT_1_WF_ENABLE}
+        oc_cpe_obj_store_workflow_locale: en
+        oc_cpe_obj_store_workflow_region_number: 1
+        oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_DB_TOS_REGION_NAME}"
+        oc_cpe_obj_store_workflow_date_time_mask: "${CP4BA_INST_DB_TOS_DT_MASK}"
+        oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
+        oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
+        oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"          
+        oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+        oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+        oc_cpe_obj_store_workflow_pe_conn_point_name: "pe_conn_os1"
+
       - oc_cpe_obj_store_display_name: "OS02"
         oc_cpe_obj_store_symb_name: "OS02"
         oc_cpe_obj_store_conn:
@@ -196,6 +210,7 @@ spec:
         oc_cpe_obj_store_asa_name: "${CP4BA_INST_CONTENT_OS_ASA_2_NAME}"
         oc_cpe_obj_store_asa_file_systems_storage_device_name: "${CP4BA_INST_CONTENT_OS_ASA_2_FS_DEV_NAME}"
         oc_cpe_obj_store_asa_root_dir_path: "/opt/ibm/asa/${CP4BA_INST_CONTENT_OS_ASA_2_ROOT_DIR_NAME}"
+
 
     ic_icn_init_info:
       icn_repos:
