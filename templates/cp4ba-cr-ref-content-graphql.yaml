@@ -166,6 +166,9 @@ spec:
         oc_cpe_obj_store_admin_user_groups:
           - "${CP4BA_INST_PAKBA_ADMIN_USER}"
           - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+        oc_cpe_obj_store_asa_name: "${CP4BA_INST_CONTENT_OS_ASA_1_NAME}"
+        oc_cpe_obj_store_asa_file_systems_storage_device_name: "${CP4BA_INST_CONTENT_OS_ASA_1_FS_DEV_NAME}"
+        oc_cpe_obj_store_asa_root_dir_path: "/opt/ibm/asa/${CP4BA_INST_CONTENT_OS_ASA_1_ROOT_DIR_NAME}"
 
     ic_icn_init_info:
       icn_repos:
