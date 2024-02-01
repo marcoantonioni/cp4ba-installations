@@ -218,7 +218,7 @@ spec:
         add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
         add_repo_os_sym_name: "OS01"
         add_repo_os_dis_name: "OS01"
-        add_repo_workflow_enable: false
+        add_repo_workflow_enable: ${CP4BA_INST_CONTENT_1_WF_ENABLE}
         add_repo_work_conn_pnt: "pe_conn_os1:1"
         add_repo_protocol: "FileNetP8WSI"
 
@@ -226,7 +226,7 @@ spec:
         add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
         add_repo_os_sym_name: "OS02"
         add_repo_os_dis_name: "OS02"
-        add_repo_workflow_enable: false
+        add_repo_workflow_enable: ${CP4BA_INST_CONTENT_2_WF_ENABLE}
         add_repo_work_conn_pnt: "pe_conn_os2:1"
         add_repo_protocol: "FileNetP8WSI"
 
