@@ -5,6 +5,22 @@
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
 
+## [1.0.11] - 2024-02-01
+New deployment option, configuration/template for FNCM Workflow.
+
+### Added
+
+
+### Changed
+Content deployment configurations (.properties, .yaml, .sql)
+Up to 5 ObjectStores
+
+* cp4ba-create-databases.sh
+
+### Fixed
+n/a
+
+
 ## [1.0.10] - 2024-01-30
 New deployment option, configuration/template for Content (FNCM) CR.
 
