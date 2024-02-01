@@ -24,7 +24,7 @@ done
 
 if [[ -z "${_CFG}" ]]; then
   echo "usage: $_me -c path-of-config-file -s cp4ba-case-pkg-scripts-folder"
-  exit
+  exit 1
 fi
 
 if [[ ! -f "${_CFG}" ]]; then
@@ -137,7 +137,8 @@ checkPrereqVars
 # verify logged in OCP
 oc whoami 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
-  echo -e "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" && exit 1
+  echo -e "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
+  exit 1
 fi
 
 oc new-project ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null

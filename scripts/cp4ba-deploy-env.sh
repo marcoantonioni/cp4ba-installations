@@ -514,6 +514,7 @@ waitDeploymentReadiness () {
         fi
       done
       sleep 5
+      _FULL_TXT_NAME="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"
       ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep "access-info" 2>/dev/null | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       if [[ ! -z "${ACC_INFO}" ]]; then
         NUM_KEYS=$(echo $ACC_INFO | jq length)
@@ -523,9 +524,16 @@ waitDeploymentReadiness () {
         do
           KEY=$(echo $ACC_INFO | jq keys[$i])
           echo "  saving access-info data for key: ${KEY}"
-          echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
+          echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${_FULL_TXT_NAME}
         done
-        echo "Platform URLs stored in: ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"
+
+        _ADMINUSER=$(oc get secrets -n ${CP4BA_INST_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 -d)
+        _ADMINPASSWORD=$(oc get secrets -n ${CP4BA_INST_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
+        echo "" >> ${_FULL_TXT_NAME}
+        echo "Admin user: ${_ADMINUSER}" >> ${_FULL_TXT_NAME}
+        echo "Admin password: ${_ADMINPASSWORD}" >> ${_FULL_TXT_NAME}
+
+        echo "Platform URLs stored in: ${_FULL_TXT_NAME}"
       else
         echo -e "${_CLR_YELLOW}Warning access info config map empty or not valid${_CLR_NC}"
       fi
