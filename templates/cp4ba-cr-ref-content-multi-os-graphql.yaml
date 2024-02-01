@@ -207,6 +207,14 @@ spec:
         add_repo_work_conn_pnt: "pe_conn_os1:1"
         add_repo_protocol: "FileNetP8WSI"
 
+      - add_repo_id: "demo_repo2"
+        add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
+        add_repo_os_sym_name: "OS02"
+        add_repo_os_dis_name: "OS02"
+        add_repo_workflow_enable: false
+        add_repo_work_conn_pnt: "pe_conn_os2:1"
+        add_repo_protocol: "FileNetP8WSI"
+
       icn_desktop:
       - add_desktop_id: "demo"
         add_desktop_name: "icn_desktop"
