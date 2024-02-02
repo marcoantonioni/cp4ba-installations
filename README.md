@@ -608,6 +608,22 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters
 
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-business-automation-workflow-authoring
 
+## Content
+https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=containers-administering
+https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=resource-creating-volumes-folders-deployment
+https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=resource-creating-volumes-folders-deployment
+https://www.ibm.com/docs/en/filenet-p8-platform/5.5.11?topic=resource-setting-values-your-filenet-content-manager-deployment
+https://www.ibm.com/docs/en/filenet-p8-platform/5.5.11?topic=resource-creating-custom-using-yaml
+
+## ADS
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=capabilities-automation-decision-services
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=ads-creating-automation-decision-services-database-secrets-without-running-provided-scripts
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=services-configuring-decision-runtime
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-automation-decision-services
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-decision-runtime
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-shared-by-decision-designer-decision-runtime
+
+
 ## Federate capabilities
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployments-installing-cp4ba-process-federation-server-production-deployment
 

@@ -236,7 +236,7 @@ spec:
         add_desktop_description: "This is ICN desktop"
         add_desktop_is_default: false
         add_desktop_repo_id: "demo_repo1"
-        add_desktop_repo_workflow_enable: false
+        add_desktop_repo_workflow_enable: ${CP4BA_INST_CONTENT_1_WF_ENABLE}
 
   ecm_configuration:
     graphql:
