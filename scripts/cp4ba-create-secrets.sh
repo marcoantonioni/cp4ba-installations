@@ -175,6 +175,29 @@ createSecretBAW () {
 }
 
 #-------------------------------
+createSecretADS () {
+  echo -e "Secret '${_CLR_YELLOW}ibm-dba-ads-runtime-secret${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-runtime-secret 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-dba-ads-runtime-secret \
+    --from-literal=asraManagerUsername="${CP4BA_INST_ADS_SECRETS_ASRA_MGR_USER}" \
+    --from-literal=asraManagerPassword="${CP4BA_INST_ADS_SECRETS_ASRA_MGR_PASS}" \
+    --from-literal=decisionServiceUsername="${CP4BA_INST_ADS_SECRETS_DRS_USER}" \
+    --from-literal=decisionServicePassword="${CP4BA_INST_ADS_SECRETS_DRS_PASS}" \
+    --from-literal=decisionServiceManagerUsername="${CP4BA_INST_ADS_SECRETS_DRS_MGR_USER}" \
+    --from-literal=decisionServiceManagerPassword="${CP4BA_INST_ADS_SECRETS_DRS_MGR_PASS}" \
+    --from-literal=decisionRuntimeMonitorUsername="${CP4BA_INST_ADS_SECRETS_DRS_MON_USER}" \
+    --from-literal=decisionRuntimeMonitorPassword="${CP4BA_INST_ADS_SECRETS_DRS_MON_PASS}" \
+    --from-literal=deploymentSpaceManagerUsername="${CP4BA_INST_ADS_SECRETS_DEPL_MGR_USER}" \
+    --from-literal=deploymentSpaceManagerPassword="${CP4BA_INST_ADS_SECRETS_DEPL_MGR_PASS}" \
+    --from-literal=encryptionKeys="{\"activeKey\":\"key1\",\"secretKeyList\":[{\"secretKeyId\":\"key1\",\"value\":\"123344566745435\"},{\"secretKeyId\":\"key2\",\"value\":\"987766544365675\"}]}" \
+    --from-literal=sslKeystorePassword="averymuchlongpasswordtobecompliantwithfips" 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    echo -e "${_CLR_RED}Secret ibm-dba-ads-runtime-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
+}
+
+#-------------------------------
 createSecrets () {
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     createSecretLDAP
@@ -189,6 +212,11 @@ createSecrets () {
     else
       createSecretFNCMBpmOnly
     fi
+  fi
+
+  # ADS
+  if [[ "${CP4BA_INST_ADS_SECRETS_CREATE}" = "true" ]]; then
+    createSecretADS
   fi
 
   i=1
