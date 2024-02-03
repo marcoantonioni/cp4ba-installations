@@ -196,6 +196,16 @@ createSecretADS () {
     echo -e "${_CLR_RED}Secret ibm-dba-ads-runtime-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
 
+  echo -e "Secret '${_CLR_YELLOW}ibm-dba-ads-mongo-secret${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-mongo-secret 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-dba-ads-mongo-secret \
+    --from-literal=mongoUser="${CP4BA_INST_ADS_SECRETS_MONGO_USER}" \
+    --from-literal=mongoPassword="${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    echo -e "${_CLR_RED}Secret ibm-dba-ads-mongo-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
+
   # to be investigated
   #echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
   #oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
@@ -209,7 +219,7 @@ createSecretADS () {
 createConfigMapADS() {
   echo -e "ConfigMap '${_CLR_YELLOW}${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME} 2> /dev/null 1> /dev/null
-  
+
 cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
 apiVersion: v1
 kind: ConfigMap

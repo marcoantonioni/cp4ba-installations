@@ -43,13 +43,10 @@ spec:
     root_ca_secret: icp4a-root-ca
     sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
     sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
-    sc_deployment_context: "CP4A"
     sc_deployment_type: "Production"
     sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
     sc_deployment_profile_size: "small"
     sc_ingress_enable: false
-    sc_egress_configuration:
-      sc_restricted_internet_access: false
     trusted_certificate_list: []
     storage_configuration:
       sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
@@ -60,6 +57,8 @@ spec:
     sc_iam:
       default_admin_username: "${CP4BA_INST_IAM_ADMIN_USER}"
     enable_fips: false
+    sc_egress_configuration:
+      sc_restricted_internet_access: false
     encryption_key_secret: ibm-iaws-shared-key-secret
     image_pull_secrets:
       - ibm-entitlement-key
@@ -98,10 +97,14 @@ spec:
 
     decision_runtime:
       enabled: true
+      verification:
+        enabled: true
       admin_secret_name: ibm-dba-ads-runtime-secret
       authentication_mode: "zen"
       deployment_profile_size: "small"
       archive_storage_type: "fs"
+      asra:
+        authentication_mode: "zen"
 
       # Event emitter, needs Insight Engine (BAI).
       event_emitter:
@@ -133,6 +136,7 @@ spec:
         repository: cp.icr.io/cp/cp4a/ads/mongo
         tag: 5.0.21
       persistence:
+        enabled: ${CP4BA_INST_ADS_MONGO_USE_EMBEDDED}
         use_dynamic_provisioning: ${CP4BA_INST_ADS_MONGO_USE_DYN_PROVISIONING}
         storage_class_name: ${CP4BA_INST_ADS_MONGO_SC_CLASSNAME}
         resources:
@@ -145,95 +149,6 @@ spec:
         limits:
           cpu: '1000m'
           memory: '1Gi'
-
-    rest_api:
-      image:
-        repository: cp.icr.io/cp/cp4a/ads/ads-restapi
-        tag: "${CP4BA_INST_APPVER}"
-      replica_count: 1
-      resources:
-        requests:
-          cpu: '500m'
-          memory: '800Mi'
-        limits:
-          cpu: '1000m'
-          memory: '1.5Gi'
-
-    credentials_service:
-      image:
-        repository: cp.icr.io/cp/cp4a/ads/ads-credentials
-        tag: "${CP4BA_INST_APPVER}"
-      replica_count: 1
-      resources:
-        requests:
-          cpu: '250m'
-          memory: '800Mi'
-        limits:
-          cpu: '1000m'
-          memory: '1.5Gi'
-
-    git_service:
-      image:
-        repository: cp.icr.io/cp/cp4a/ads/ads-gitservice
-        tag: "${CP4BA_INST_APPVER}"
-      replica_count: 1
-      resources:
-        requests:
-          cpu: '500m'
-          memory: '800Mi'
-        limits:
-          cpu: '1000m'
-          memory: '1.5Gi'
-
-    parsing_service:
-      image:
-        repository: cp.icr.io/cp/cp4a/ads/ads-parsing
-        tag: "${CP4BA_INST_APPVER}"
-      replica_count: 1
-      resources:
-        requests:
-          cpu: '250m'
-          memory: '800Mi'
-        limits:
-          cpu: '1000m'
-          memory: '1.5Gi'          
-      autoscaling:
-        enabled: ${CP4BA_INST_ADS_AUTOSCALING_ENABLED}
-        min_replicas: ${CP4BA_INST_ADS_AUTOSCALING_REPLICA_MIN}
-        max_replicas: ${CP4BA_INST_ADS_AUTOSCALING_REPLICA_MAX}
-        target_cpu_average_utilization: ${CP4BA_INST_ADS_AUTOSCALING_TGT_AVG_CPU}
-
-    run_service:
-      image:
-        repository: cp.icr.io/cp/cp4a/ads/ads-run
-        tag: "${CP4BA_INST_APPVER}"
-      replica_count: 1
-      resources:
-        requests:
-          cpu: '500m'
-          memory: '800Mi'
-        limits:
-          cpu: '1000m'
-          memory: '1.5Gi'
-      autoscaling:
-        enabled: ${CP4BA_INST_ADS_AUTOSCALING_ENABLED}
-        min_replicas: ${CP4BA_INST_ADS_AUTOSCALING_REPLICA_MIN}
-        max_replicas: ${CP4BA_INST_ADS_AUTOSCALING_REPLICA_MAX}
-        target_cpu_average_utilization: ${CP4BA_INST_ADS_AUTOSCALING_TGT_AVG_CPU}
-
-    embedded_build_service:
-      image:
-        repository: cp.icr.io/cp/cp4a/ads/ads-build
-        tag: "${CP4BA_INST_APPVER}"
-      replica_count: 1
-      executor_count: 1 # Number of Jenkins executors, default 1. A good guess is cpu limit -1. Too many executors can saturate the cpu and cause pod restarts.
-      resources:
-        requests:
-          cpu: '500m'
-          memory: '800Mi'
-        limits:
-          cpu: '2000m'
-          memory: '1.5Gi'
 
     decision_runtime_service:
       image:
