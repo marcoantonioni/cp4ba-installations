@@ -92,6 +92,11 @@ spec:
   ########   IBM Business Automation Decision Services            ########
   ########################################################################
 
+  # ??? error without
+  # FAIL - BAS Deployment failed BAStudio admin secret configuration missing: bastudio_configuration.admin_secret_name: icp4adeploy-ads-rt-only-bas-admin-secret
+  bastudio_configuration:
+    admin_secret_name: "${CP4BA_INST_CR_NAME}-bas-admin-secret"
+
   ads_configuration:
     seccomp_profile:
     disable_fips: false

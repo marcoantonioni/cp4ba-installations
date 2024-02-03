@@ -195,6 +195,36 @@ createSecretADS () {
     _ERROR=1
     echo -e "${_CLR_RED}Secret ibm-dba-ads-runtime-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
+
+  # to be investigated
+  #echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
+  #oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
+  #oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
+  #  --from-literal=dbUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+  #  --from-literal=dbPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 1> /dev/null
+
+}
+
+#-------------------------------
+createConfigMapADS() {
+  echo -e "ConfigMap '${_CLR_YELLOW}${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME} 2> /dev/null 1> /dev/null
+  
+cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+  labels:
+    webapp: runtime
+data:
+  decision_storage.crt: |
+    -----BEGIN CERTIFICATE-----
+    ...
+    -----END CERTIFICATE-----
+EOF
+
 }
 
 #-------------------------------
@@ -217,6 +247,7 @@ createSecrets () {
   # ADS
   if [[ "${CP4BA_INST_ADS_SECRETS_CREATE}" = "true" ]]; then
     createSecretADS
+    createConfigMapADS
   fi
 
   i=1
