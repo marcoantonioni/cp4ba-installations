@@ -215,26 +215,65 @@ createSecretADS () {
 
 }
 
-#-------------------------------
-createConfigMapADS() {
-  echo -e "ConfigMap '${_CLR_YELLOW}${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}${_CLR_NC}'"
-  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME} 2> /dev/null 1> /dev/null
+#--------------------------------------------------------------
+# get certificate from remote url
+# $1: url:port
+# $2: cert name
+# $3: output file
+getCertificate () {
 
-cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
+  echo "Getting certificate from: "$1  
+  _FILE_TMP="/tmp/cp4ba-ads-cert-$USER-$RANDOM"
+  openssl s_client -showcerts -connect $1 < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ${_FILE_TMP}
+  
+  echo "  $2: |" >> $3
+  while IFS= read -r line
+  do
+    echo "    $line" >> $3
+  done < "${_FILE_TMP}"
+
+  rm ${_FILE_TMP}
+}
+
+#--------------------------------------------------------------
+grabCertificates () {
+
+  _CFGMAP_FILE_TMP="/tmp/cp4ba-ads-cfgmap-$USER-$RANDOM"
+
+echo "
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}
   namespace: ${CP4BA_INST_NAMESPACE}
   labels:
-    webapp: runtime
+    ads-trusted-certs: runtime
 data:
-  decision_storage.crt: |
-    -----BEGIN CERTIFICATE-----
-    ...
-    -----END CERTIFICATE-----
-EOF
+" > ${_CFGMAP_FILE_TMP}
 
+  for i in {1..10}
+  do
+    __URL="CP4BA_INST_ADS_HOST_PORT_TRUSTED_EP_$i"
+    __CRT="CP4BA_INST_ADS_CERT_NAME_TRUSTED_EP_$i"
+    _URL=${!__URL}
+    _CRT=${!__CRT}
+    if [[ ! -z "${_URL}" ]]; then
+      getCertificate ${_URL} ${_CRT} ${_CFGMAP_FILE_TMP}
+    fi
+  done
+
+  _ALREADY_SET=$(oc get cm --no-headers ${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME} -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | wc -l)
+  if [[ "${_ALREADY_SET}" == "1" ]]; then
+    oc delete cm ${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME} -n ${CP4BA_INST_NAMESPACE} 2>/dev/null
+  fi
+  oc create -f ${_CFGMAP_FILE_TMP} 2>/dev/null 1>/dev/null
+  rm ${_CFGMAP_FILE_TMP}
+}
+
+#-------------------------------
+createConfigMapADS() {
+  echo -e "ConfigMap '${_CLR_YELLOW}${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}${_CLR_NC}'"
+  grabCertificates
 }
 
 #-------------------------------
