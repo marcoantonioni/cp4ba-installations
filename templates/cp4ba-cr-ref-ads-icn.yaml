@@ -1,0 +1,298 @@
+###############################################################################
+##
+##Licensed Materials - Property of IBM
+##
+##(C) Copyright IBM Corp. 2021, 2023. All Rights Reserved.
+##
+##US Government Users Restricted Rights - Use, duplication or
+##disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+##
+###############################################################################
+##
+##============================================================================================
+## DISCLAIMER
+## These configurations are not indicated or intended to be valid for production environments.
+## The purpose is purely educational.
+##============================================================================================
+##
+## DEPLOYMENT CONTENTS (ADS runtime only)
+## 
+## patterns: foundation,decisions_ads
+##============================================================================================
+apiVersion: icp4a.ibm.com/v1
+kind: ICP4ACluster
+metadata:
+  name: ${CP4BA_INST_CR_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+  labels:
+    app.kubernetes.io/instance: ibm-dba
+    app.kubernetes.io/managed-by: ibm-dba
+    app.kubernetes.io/name: ibm-dba
+    release: ${CP4BA_INST_APPVER}
+  annotations:
+    kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
+spec:
+
+  appVersion: ${CP4BA_INST_APPVER}
+  ibm_license: accept
+
+  shared_configuration:
+    sc_deployment_license: "non-production"
+    sc_deployment_context: "CP4A"
+    sc_image_repository: cp.icr.io
+    root_ca_secret: icp4a-root-ca
+    sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
+    sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
+    sc_deployment_type: "Production"
+    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
+    sc_deployment_profile_size: "small"
+    sc_ingress_enable: false
+    trusted_certificate_list: []
+    storage_configuration:
+      sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
+    sc_iam:
+      default_admin_username: "${CP4BA_INST_IAM_ADMIN_USER}"
+    enable_fips: false
+    sc_egress_configuration:
+      sc_restricted_internet_access: false
+    encryption_key_secret: ibm-iaws-shared-key-secret
+    image_pull_secrets:
+      - ibm-entitlement-key
+    no_log: false
+    show_sensitive_log: true
+
+  ldap_configuration:
+    lc_selected_ldap_type: "Custom"
+    lc_ldap_server: "${CP4BA_INST_LDAP_HOST}"
+    lc_ldap_port: "${CP4BA_INST_LDAP_PORT}"
+    lc_bind_secret: "${CP4BA_INST_LDAP_SECRET}"
+    lc_ldap_base_dn: "${CP4BA_INST_LDAP_BASE_DOMAIN}"
+    lc_ldap_ssl_enabled: false
+    lc_ldap_ssl_secret_name: ""
+    lc_ldap_user_name_attribute: "*:cn"
+    lc_ldap_user_display_name_attr: "cn"
+    lc_ldap_group_base_dn: "${CP4BA_INST_LDAP_BASE_DOMAIN}"
+    lc_ldap_group_name_attribute: "*:cn"
+    lc_ldap_group_display_name_attr: "cn"
+    lc_ldap_group_membership_search_filter: "(&(cn=%v)(objectclass=groupOfNames))"
+    lc_ldap_group_member_id_map: "memberof:member"
+    lc_ldap_recursive_search: true
+    lc_enable_pagination: false
+    lc_pagination_size: 4500     
+    custom:
+      lc_user_filter: "(&(cn=%v)(objectclass=person))"
+      lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
+
+  datasource_configuration:
+    dc_ssl_enabled: false
+
+    dc_icn_datasource:
+      dc_database_type: "postgresql"
+      dc_common_icn_datasource_name: "ECMClientDS"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_icn"
+      database_ssl_secret_name: ""
+      dc_hadr_validation_timeout: 15
+      dc_hadr_standby_servername: ""
+      dc_hadr_standby_port: ""
+      dc_hadr_retry_interval_for_client_reroute: 15
+      dc_hadr_max_retries_for_client_reroute: 3
+
+  ########################################################################
+  ########   IBM Business Automation Decision Services            ########
+  ########################################################################
+
+  ads_configuration:
+    seccomp_profile:
+    disable_fips: false
+
+    decision_runtime:
+      enabled: true
+      verification:
+        enabled: true
+      admin_secret_name: ibm-dba-ads-runtime-secret
+      authentication_mode: "zen"
+      deployment_profile_size: "small"
+      archive_storage_type: "fs"
+      asra:
+        authentication_mode: "zen"
+
+      # Event emitter, needs Insight Engine (BAI).
+      event_emitter:
+        enabled: ${CP4BA_INST_ADS_EVT_EMITTER_ENABLED}
+#        kafka_topic:  # default "ads-decision-execution-common-data", optional.
+#        kafka_properties_config_map_name: # default null, see KC for content. Optional.
+#        elasticsearch_index:  # default "ads-decision-execution-common-data", optional. See KC for elasticsearch indexes names criteria.
+#        allow_missing_events : # default true, optional.
+#        queue_capacity:  # default 50000, optional.
+#        dequeur_threads: # default null,  as startup time, optional.
+
+    rr_integration:
+      image:
+        repository: cp.icr.io/cp/cp4a/ads/ads-rrintegration
+        tag: "${CP4BA_INST_APPVER}"
+      resources:
+        requests:
+          cpu: '200m'
+          memory: '256Mi'
+        limits:
+          cpu: '500m'
+          memory: '512Mi'
+
+    mongo:
+      use_embedded: ${CP4BA_INST_ADS_MONGO_USE_EMBEDDED}
+      # If you provide an external mongo db, fill the mongo connection string in the admin secret.
+      # admin_secret_name: ibm-dba-ads-mongo-secret
+      image:
+        repository: cp.icr.io/cp/cp4a/ads/mongo
+        tag: 5.0.21
+      persistence:
+        enabled: ${CP4BA_INST_ADS_MONGO_USE_EMBEDDED}
+        use_dynamic_provisioning: ${CP4BA_INST_ADS_MONGO_USE_DYN_PROVISIONING}
+        storage_class_name: ${CP4BA_INST_ADS_MONGO_SC_CLASSNAME}
+        resources:
+          requests:
+            storage: 3Gi
+      resources:
+        requests:
+          cpu: '500m'
+          memory: '256Mi'
+        limits:
+          cpu: '1000m'
+          memory: '1Gi'
+
+    decision_runtime_service:
+      image:
+        repository: cp.icr.io/cp/cp4a/ads/ads-runtime
+        tag: "${CP4BA_INST_APPVER}"
+      replica_count: 1
+      stack_trace_enabled: ${CP4BA_INST_ADS_STACK_TRACE_ENABLED}
+      tls:
+        certs_config_map_name: "${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}"
+        allow_self_signed: ${CP4BA_INST_ADS_TLS_ALLOW_SELF_SIGNED}
+        verify_hostname: ${CP4BA_INST_ADS_TLS_VERIFY_HOST_NAMEs}
+      storage_decision_check_status_interval: 30000 # The interval, in milliseconds, between checks and updates of the cached decisions, default 30000, optional
+      cache:
+        config:
+          expiry: ''
+          resources: |-
+            <heap unit="entries">100</heap>
+      metadata:
+        cache:
+          config:
+            expiry: ''
+            check_interval: 30000
+            manager:
+              threads: 1
+            resources: |-
+              <heap unit="entries">100</heap>
+      decision_selection:
+        threads: 1
+        update_interval: 120000 # milliseconds (2 minutes)
+        query_interval: 1000 # milliseconds (1 minute)
+        cache:
+          config:
+             expiry: ''
+             resources: |-
+                <heap unit="entries">100</heap>
+      resources:
+        requests:
+          cpu: '500m'
+          memory: '2Gi'
+        limits:
+          cpu: '1000m'
+          memory: '3Gi'
+      persistence:
+        use_dynamic_provisioning: ${CP4BA_INST_ADS_RUNTIME_PERSIST_PROVISIONING}
+        storage_class_name: "${CP4BA_INST_SC_FILE}"
+        resources:
+          requests:
+            storage: 1Gi
+      autoscaling:
+        enabled: ${CP4BA_INST_ADS_AUTOSCALING_ENABLED}
+        min_replicas: ${CP4BA_INST_ADS_AUTOSCALING_REPLICA_MIN}
+        max_replicas: ${CP4BA_INST_ADS_AUTOSCALING_REPLICA_MAX}
+        target_cpu_average_utilization: ${CP4BA_INST_ADS_AUTOSCALING_TGT_AVG_CPU}
+
+  # IBM Business Automation Navigator configuration
+  navigator_configuration:
+    ## Navigator secret that contains user credentials for LDAP and database
+    ban_secret_name: ibm-ban-secret
+    replica_count: 1
+    image:
+      ## The default repository is the IBM Entitled Registry
+      repository: cp.icr.io/cp/cp4a/ban/navigator
+      tag: "${CP4BA_INST_APPVER}"
+      pull_policy: IfNotPresent
+    log:
+      format: json
+    resources:
+      requests:
+        cpu: 1
+        memory: 3072Mi
+        ephemeral_storage: 1Gi
+      limits:
+        cpu: 1
+        memory: 3072Mi
+        ephemeral_storage: 2.5Gi
+    disable_fips: false
+    disable_basic_auth: true
+
+    ## Below are the default ICN Production settings.  Make the necessary changes as you see fit.  Refer to Knowledge Center documentation for details.
+    icn_production_setting:
+      timezone: Etc/UTC
+      icn_jndids_name: ECMClientDS
+      icn_schema: "${CP4BA_INST_DB_ICN_USER}"
+      icn_table_space: "${CP4BA_INST_DB_ICN_USER}_icndb_tbs"
+      allow_remote_plugins_via_http: false
+    monitor_enabled: false
+    logging_enabled: false
+
+    ## Persistent Volume Claims for ICN.  If the storage_configuration in the shared_configuration is configured,
+    ## the Operator will create the PVC using the names below.
+    datavolume:
+      existing_pvc_for_icn_cfgstore: 
+        name: "icn-cfgstore"
+        size: 1Gi
+      existing_pvc_for_icn_logstore: 
+        name: "icn-logstore"
+        size: 1Gi
+      existing_pvc_for_icn_pluginstore: 
+        name: "icn-pluginstore"
+        size: 1Gi
+      existing_pvc_for_icnvw_cachestore: 
+        name: "icn-vw-cachestore"
+        size: 1Gi
+      existing_pvc_for_icnvw_logstore: 
+        name: "icn-vw-logstore"
+        size: 1Gi
+      existing_pvc_for_icn_aspera: 
+        name: "icn-asperastore" 
+        size: 1Gi
+
+    ## Default values for both rediness and liveness probes.  Modify these values to meet your requirements.
+    probe:
+      startup:
+        initial_delay_seconds: 120
+        period_seconds: 10
+        timeout_seconds: 10
+        failure_threshold: 6
+      readiness:
+        period_seconds: 10
+        timeout_seconds: 10
+        failure_threshold: 6
+      liveness:
+        period_seconds: 10
+        timeout_seconds: 5
+        failure_threshold: 6
+
+    ## Only use this parameter if you want to override the image_pull_secrets setting in the shared_configuration above.
+    image_pull_secrets:
+      name: "ibm-entitlement-key"
+    ## BAN Sync services work with Zen URL by default, change it to false to use BAN Route URL.
+    use_sync_with_zen_url: true

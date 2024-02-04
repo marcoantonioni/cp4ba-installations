@@ -81,8 +81,7 @@ createSecretFNCM () {
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
   _ERR=0  
   if [[ ! -z "${CP4BA_INST_DB_BAWDOCS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWDOS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWTOS_USER}" ]]; then
-    echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectstores users)${_CLR_NC}'"
-    
+    echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectstores users)${_CLR_NC}'"    
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
       --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
       --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
@@ -100,17 +99,27 @@ createSecretFNCM () {
       --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
     _ERR=$?
   else
-    echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM objectstores users)${_CLR_NC}'"
-    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
-      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
-      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
-      --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
-      --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
-      --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
-      --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
-      --from-literal=ltpaPassword="passw0rd" \
-      --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
-    _ERR=$?
+    if [[ ! -z "${CP4BA_INST_DB_OS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_GCD_USER}" ]]; then
+      echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM objectstores users)${_CLR_NC}'"
+      oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
+        --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
+        --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
+        --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
+        --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
+        --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+        --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
+        --from-literal=ltpaPassword="passw0rd" \
+        --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+      _ERR=$?
+    else
+      echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (APP only)${_CLR_NC}'"
+      oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
+        --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+        --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
+        --from-literal=ltpaPassword="passw0rd" \
+        --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+      _ERR=$?
+    fi
   fi
 
   if [[ $_ERR -gt 0 ]]; then
@@ -198,7 +207,7 @@ createSecretADS () {
 
   echo -e "Secret '${_CLR_YELLOW}ibm-dba-ads-mongo-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-mongo-secret 2> /dev/null 1> /dev/null
-  if [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_USER}" ]] && [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" ]]
+  if [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_USER}" ]] && [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" ]]; then
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-dba-ads-mongo-secret \
       --from-literal=mongoUser="${CP4BA_INST_ADS_SECRETS_MONGO_USER}" \
       --from-literal=mongoPassword="${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" 1> /dev/null
