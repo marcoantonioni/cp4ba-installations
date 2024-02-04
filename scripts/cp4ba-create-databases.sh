@@ -201,23 +201,24 @@ _createDatabases () {
 }
 
 createDatabases () {
+# $1: prefix key
+
   i=1
   _IDX_END=${CP4BA_INST_DB_INSTANCES}
   while [[ $i -le $_IDX_END ]]
   do
-    #_INST_ITEM="CP4BA_INST_BAW_$i"
     _INST_ITEM="$1_$i"
     _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
-    _INST_DB_1_TEMPLATE="CP4BA_INST_DB_"$i"_TEMPLATE"
+    _INST_DB_TEMPLATE="CP4BA_INST_DB_"$i"_TEMPLATE"
 
-    if [[ ! -f "${!_INST_DB_1_TEMPLATE}" ]]; then
-      echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< SQL Statements file not found: "${!_INST_DB_1_TEMPLATE}
+    if [[ ! -f "${!_INST_DB_TEMPLATE}" ]]; then
+      echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< SQL Statements file not found: "${!_INST_DB_TEMPLATE}
       echo ""
       exit 1
     fi
     if [[ "${!_INST_ITEM}" = "true" ]]; then
-      if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_1_TEMPLATE}" ]]; then
-        _createDatabases ${!_INST_DB_CR_NAME} ${!_INST_DB_1_TEMPLATE}
+      if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_TEMPLATE}" ]]; then
+        _createDatabases ${!_INST_DB_CR_NAME} ${!_INST_DB_TEMPLATE}
       else
         echo -e "${_CLR_RED}ERROR, env var '${_CLR_GREEN}${_INST_DB_CR_NAME}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES value.${_CLR_NC}"
         echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< env var '${_CLR_GREEN}${_INST_DB_CR_NAME}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES value.${_CLR_NC}"
@@ -225,7 +226,7 @@ createDatabases () {
         exit 1
       fi
     else
-      echo -e "${_CLR_YELLOW}Warning: BAW DB '${_CLR_GREEN}${!_INST_DB_CR_NAME}${_CLR_YELLOW}' is disabled, skipping configuration${_CLR_NC}"
+      echo -e "${_CLR_YELLOW}Warning: DB '${_CLR_GREEN}${!_INST_DB_CR_NAME}${_CLR_YELLOW}' is disabled, skipping configuration${_CLR_NC}"
     fi
     ((i = i + 1))
   done  
@@ -239,6 +240,7 @@ if [[ "${CP4BA_INST_DB}" = "true" ]]; then
   fi
   createDatabases "CP4BA_INST_BAW"
   createDatabases "CP4BA_INST_CONTENT"
+  createDatabases "CP4BA_INST_ICN"
 else
   echo -e "${_CLR_GREEN}Skipping creation of databases${_CLR_NC}"
 fi
