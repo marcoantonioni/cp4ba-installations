@@ -174,12 +174,20 @@ _createDatabases () {
       fi
 
       if [ $_KO -eq 0 ]; then
-        # esecute sql statements
-        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
-        if [ $? -gt 0 ]; then
-          _KO=1
-          echo -e "${_CLR_RED}Error executing SQL statements in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}'${_CLR_NC}"        
-        fi
+        # execute sql statements
+        _retry=0
+        while [[ $_retry -le 10 ]]
+        do
+          oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
+          if [ $? -gt 0 ]; then
+            _KO=1
+            echo -e "${_CLR_RED}Error executing SQL statements in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}', retry...${_CLR_NC}" 
+            sleep 10
+          else
+            _KO=0       
+          fi
+          ((_retry = _retry + 1))
+        done        
       fi
 
       if [ $_KO -eq 0 ]; then

@@ -15,7 +15,7 @@
 ## The purpose is purely educational.
 ##============================================================================================
 ##
-## DEPLOYMENT CONTENTS (ADS runtime only)
+## DEPLOYMENT CONTENTS (ADS runtime only, ICN, Kafka)
 ## 
 ## patterns: foundation,decisions_ads
 ##============================================================================================
@@ -87,6 +87,22 @@ spec:
       lc_user_filter: "(&(cn=%v)(objectclass=person))"
       lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
 
+  datasource_configuration:
+    dc_ssl_enabled: false
+
+    dc_icn_datasource:
+      dc_database_type: "postgresql"
+      dc_common_icn_datasource_name: "ECMClientDS"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_icn"
+      database_ssl_secret_name: ""
+      dc_hadr_validation_timeout: 15
+      dc_hadr_standby_servername: ""
+      dc_hadr_standby_port: ""
+      dc_hadr_retry_interval_for_client_reroute: 15
+      dc_hadr_max_retries_for_client_reroute: 3
+
   ########################################################################
   ########   IBM Business Automation Decision Services            ########
   ########################################################################
@@ -109,12 +125,16 @@ spec:
       # Event emitter, needs Insight Engine (BAI).
       event_emitter:
         enabled: ${CP4BA_INST_ADS_EVT_EMITTER_ENABLED}
-#        kafka_topic:  # default "ads-decision-execution-common-data", optional.
-#        kafka_properties_config_map_name: # default null, see KC for content. Optional.
-#        elasticsearch_index:  # default "ads-decision-execution-common-data", optional. See KC for elasticsearch indexes names criteria.
-#        allow_missing_events : # default true, optional.
-#        queue_capacity:  # default 50000, optional.
-#        dequeur_threads: # default null,  as startup time, optional.
+        kafka_topic: "${CP4BA_INST_ADS_EVT_EMITTER_KAFKA_TOPIC}"
+        kafka_properties_config_map_name: "${CP4BA_INST_ADS_EVT_EMITTER_KAKFA_PROPS_CM}"
+        kafka_bootstrap_servers: "${CP4BA_INST_ADS_EVT_EMITTER_KAFKA_BOOT_SERVERS}"
+        kafka_connection_secret_name: "${CP4BA_INST_ADS_EVT_EMITTER_KAFKA_SECRET}"
+        kafka_security_protocol: "${CP4BA_INST_ADS_EVT_EMITTER_KAKFA_SEC_PROTOCOL}"
+        kafka_sasl_mechanism: "${CP4BA_INST_ADS_EVT_EMITTER_KAKFA_SASL_MECH}"
+        elasticsearch_index: "${CP4BA_INST_ADS_EVT_EMITTER_ES_INDEX}"
+        allow_missing_events : "${CP4BA_INST_ADS_EVT_EMITTER_ALLOW_MISSING_EVENTS}"
+        queue_capacity: "${CP4BA_INST_ADS_EVT_EMITTER_QUEUE_CAPACITY}"
+        dequeur_threads: # default null
 
     rr_integration:
       image:
@@ -202,3 +222,81 @@ spec:
         min_replicas: ${CP4BA_INST_ADS_AUTOSCALING_REPLICA_MIN}
         max_replicas: ${CP4BA_INST_ADS_AUTOSCALING_REPLICA_MAX}
         target_cpu_average_utilization: ${CP4BA_INST_ADS_AUTOSCALING_TGT_AVG_CPU}
+
+  # IBM Business Automation Navigator configuration
+  navigator_configuration:
+    ## Navigator secret that contains user credentials for LDAP and database
+    ban_secret_name: ibm-ban-secret
+    replica_count: 1
+    image:
+      ## The default repository is the IBM Entitled Registry
+      repository: cp.icr.io/cp/cp4a/ban/navigator
+      tag: "${CP4BA_INST_APPVER}"
+      pull_policy: IfNotPresent
+    log:
+      format: json
+    resources:
+      requests:
+        cpu: 1
+        memory: 3072Mi
+        ephemeral_storage: 1Gi
+      limits:
+        cpu: 1
+        memory: 3072Mi
+        ephemeral_storage: 2.5Gi
+    disable_fips: false
+    disable_basic_auth: true
+
+    ## Below are the default ICN Production settings.  Make the necessary changes as you see fit.  Refer to Knowledge Center documentation for details.
+    icn_production_setting:
+      timezone: Etc/UTC
+      icn_jndids_name: ECMClientDS
+      icn_schema: "${CP4BA_INST_DB_ICN_USER}"
+      icn_table_space: "${CP4BA_INST_DB_ICN_USER}_icndb_tbs"
+      allow_remote_plugins_via_http: false
+    monitor_enabled: false
+    logging_enabled: false
+
+    ## Persistent Volume Claims for ICN.  If the storage_configuration in the shared_configuration is configured,
+    ## the Operator will create the PVC using the names below.
+    datavolume:
+      existing_pvc_for_icn_cfgstore: 
+        name: "icn-cfgstore"
+        size: 1Gi
+      existing_pvc_for_icn_logstore: 
+        name: "icn-logstore"
+        size: 1Gi
+      existing_pvc_for_icn_pluginstore: 
+        name: "icn-pluginstore"
+        size: 1Gi
+      existing_pvc_for_icnvw_cachestore: 
+        name: "icn-vw-cachestore"
+        size: 1Gi
+      existing_pvc_for_icnvw_logstore: 
+        name: "icn-vw-logstore"
+        size: 1Gi
+      existing_pvc_for_icn_aspera: 
+        name: "icn-asperastore" 
+        size: 1Gi
+
+    ## Default values for both rediness and liveness probes.  Modify these values to meet your requirements.
+    probe:
+      startup:
+        initial_delay_seconds: 120
+        period_seconds: 10
+        timeout_seconds: 10
+        failure_threshold: 6
+      readiness:
+        period_seconds: 10
+        timeout_seconds: 10
+        failure_threshold: 6
+      liveness:
+        period_seconds: 10
+        timeout_seconds: 5
+        failure_threshold: 6
+
+    ## Only use this parameter if you want to override the image_pull_secrets setting in the shared_configuration above.
+    image_pull_secrets:
+      name: "ibm-entitlement-key"
+    ## BAN Sync services work with Zen URL by default, change it to false to use BAN Route URL.
+    use_sync_with_zen_url: true
