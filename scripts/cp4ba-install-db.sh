@@ -135,20 +135,17 @@ deployDBCluster() {
 }
 
 waitForClustersPostgresCRD () {
-# clusters.postgresql.k8s.enterprisedb.io 
-  echo "wait for CRD and Operator for 'clusters.postgresql.k8s.enterprisedb.io' (may take minutes)"
+  echo "Wait for CR and Operator of 'clusters.postgresql.k8s.enterprisedb.io' (may take minutes)"
 
   if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
     while [ true ]
     do
       if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
-        #echo -e -n "wait for CRD 'clusters.postgresql.k8s.enterprisedb.io' created (may take minutes) ...\033[0K\r"
         sleep 5
       else
         break
       fi
     done
-    #echo ""
   fi
 
   _READY_ITEMS=$(oc get crd clusters.postgresql.k8s.enterprisedb.io -o jsonpath='{.status.conditions}' | jq '.[] | select(.status=="True") ' | jq .status | wc -l)
