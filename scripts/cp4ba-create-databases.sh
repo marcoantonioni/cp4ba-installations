@@ -178,7 +178,7 @@ _createDatabases () {
         _retry=0
         while [[ $_retry -le 10 ]]
         do
-          oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 1>/dev/null
+          oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-1 psql -U postgres -f /run/setupdb/db-statements.sql 2>/dev/null 1>/dev/null
           if [ $? -gt 0 ]; then
             _KO=1
             echo -e "${_CLR_RED}Error executing SQL statements in pod '${_CLR_YELLOW}${_DB_CR_NAME}-1${_CLR_RED}', retry...${_CLR_NC}" 
@@ -234,7 +234,7 @@ createDatabases () {
         exit 1
       fi
     else
-      echo -e "${_CLR_YELLOW}Warning: DB '${_CLR_GREEN}${!_INST_DB_CR_NAME}${_CLR_YELLOW}' is disabled, skipping configuration${_CLR_NC}"
+      echo -e "${_CLR_YELLOW}Warning: ${_INST_ITEM} DB '${_CLR_GREEN}${!_INST_DB_CR_NAME}${_CLR_YELLOW}' is disabled, skipping configuration${_CLR_NC}"
     fi
     ((i = i + 1))
   done  

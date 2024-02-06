@@ -194,12 +194,12 @@ installAndVerifyCasePkgMgr () {
 
     if [[ -z "${CP4BA_INST_APPVER}" ]]; then
       export CP4BA_INST_APPVER=${_RELEASE_BASE}
-    else
-      if [[ "${_RELEASE_BASE}" != "${CP4BA_INST_APPVER}" ]]; then
-        echo -e "${_CLR_RED}WARNING, CP4BA_RELEASE_BASE='${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_RED}' of installation package doesn't match your configuration CP4BA_INST_APPVER='${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_RED}'${_CLR_NC}" 
-        export CP4BA_INST_APPVER=${_RELEASE_BASE}
-        echo -e "${_CLR_GREEN}Continue the installation using version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}, update you configuration or set empty the var CP4BA_INST_APPVER=''${_CLR_NC}"
-      fi
+    #else
+      #if [[ "${_RELEASE_BASE}" != "${CP4BA_INST_APPVER}" ]]; then
+      #  echo -e "${_CLR_RED}WARNING, CP4BA_RELEASE_BASE='${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_RED}' of installation package doesn't match your configuration CP4BA_INST_APPVER='${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_RED}'${_CLR_NC}" 
+      #  export CP4BA_INST_APPVER=${_RELEASE_BASE}
+      #  echo -e "${_CLR_GREEN}Continue the installation using version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}, update you configuration or set empty the var CP4BA_INST_APPVER=''${_CLR_NC}"
+      #fi
     fi
 
     #---------------------
@@ -245,7 +245,7 @@ installAndVerifyCasePkgMgr () {
 
 echo ""
 echo -e "${_CLR_YELLOW}***********************************************************************"
-echo -e "Install CP4BA version '${_CLR_GREEN}${CP4BA_INST_RELEASE}${_CLR_YELLOW}' complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
+echo -e "Install CP4BA version '${_CLR_GREEN}${CP4BA_INST_APPVER}${_CLR_YELLOW}' complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
 echo -e "Started at ${_CLR_GREEN}"$(date)"${_CLR_YELLOW}"
 echo -e "***********************************************************************${_CLR_NC}"
 

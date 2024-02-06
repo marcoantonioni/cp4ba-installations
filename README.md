@@ -337,7 +337,7 @@ Ready to begin ? <i>GO !!!</i>
 CONFIG_FILE=../configs/env1-baw.properties
 
 # run the real 'one-shot' CP4BA installation command
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.1
 ```
 
 Well, now you have to... no... you don't have to do anything more, just wait for the procedure to finish.
@@ -396,7 +396,7 @@ Note: 'Baw full' is federated only, 'BAW Workflow' is federated and host federat
 CONFIG_FILE=../configs/env1-baw-double-pfs.properties
 
 # run the real 'one-shot' CP4BA installation command
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.0
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.1
 ```
 
 The average time for an installation of this type varies between 90/100 minutes.
@@ -506,7 +506,7 @@ do
   # !!! set your path to scripts
   export _S="/home/marco/cp4ba-projects/cp4ba-installations/scripts"
   export _C=${_CONFIG_FILE}
-  gnome-terminal -q --geometry=140x24 -t "CP4BA-${i}" -- bash -c 'export _T=$(($RANDOM % 30)); sleep $_T; cd ${_S}; ./cp4ba-one-shot-installation.sh -c ${_C} -m -v 5.1.0; exec bash -i'
+  gnome-terminal -q --geometry=140x24 -t "CP4BA-${i}" -- bash -c 'export _T=$(($RANDOM % 30)); sleep $_T; cd ${_S}; ./cp4ba-one-shot-installation.sh -c ${_C} -m -v 5.1.1; exec bash -i'
   ((i = i + 1))
 done
 ```
