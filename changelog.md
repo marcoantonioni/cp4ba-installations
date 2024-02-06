@@ -5,9 +5,10 @@
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
 
-## [1.0.11] - 2024-02-03
+## [1.0.11] - next release
 New deployment option, configuration/template for FNCM Workflow.
 New deployment option, configuration/template for ADS Runtime.
+Tested with CP4BA v23.0.2-IF001
 
 ### Added
 Added 'ADS' runtime deployment configurations (.properties, .yaml)
