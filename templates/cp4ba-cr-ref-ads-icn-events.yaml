@@ -123,15 +123,16 @@ spec:
         authentication_mode: "zen"
 
       # Event emitter, needs Insight Engine (BAI).
+      # For some attributes the empty or null value are not handled correctly by the operator in v23.0.2, comment out the unvalued attributes.
       event_emitter:
         enabled: ${CP4BA_INST_ADS_EVT_EMITTER_ENABLED}
-        kafka_topic: "${CP4BA_INST_ADS_EVT_EMITTER_KAFKA_TOPIC}"
-        kafka_properties_config_map_name: "${CP4BA_INST_ADS_EVT_EMITTER_KAKFA_PROPS_CM}"
+        kafka_topic: ${CP4BA_INST_ADS_EVT_EMITTER_KAFKA_TOPIC}
+        # kafka_properties_config_map_name: ${CP4BA_INST_ADS_EVT_EMITTER_KAKFA_PROPS_CM} # default null
         kafka_bootstrap_servers: ${CP4BA_INST_ADS_EVT_EMITTER_KAFKA_BOOT_SERVERS}
-        kafka_connection_secret_name: "${CP4BA_INST_ADS_EVT_EMITTER_KAFKA_SECRET}"
-        kafka_security_protocol: "${CP4BA_INST_ADS_EVT_EMITTER_KAKFA_SEC_PROTOCOL}"
-        kafka_sasl_mechanism: "${CP4BA_INST_ADS_EVT_EMITTER_KAKFA_SASL_MECH}"
-        elasticsearch_index: "${CP4BA_INST_ADS_EVT_EMITTER_ES_INDEX}"
+        kafka_connection_secret_name: ${CP4BA_INST_ADS_EVT_EMITTER_KAFKA_SECRET}
+        kafka_security_protocol: ${CP4BA_INST_ADS_EVT_EMITTER_KAKFA_SEC_PROTOCOL}
+        kafka_sasl_mechanism: ${CP4BA_INST_ADS_EVT_EMITTER_KAKFA_SASL_MECH}
+        # elasticsearch_index: ${CP4BA_INST_ADS_EVT_EMITTER_ES_INDEX} # default null
         allow_missing_events : ${CP4BA_INST_ADS_EVT_EMITTER_ALLOW_MISSING_EVENTS}
         queue_capacity: ${CP4BA_INST_ADS_EVT_EMITTER_QUEUE_CAPACITY}
         # dequeur_threads: # default null
@@ -161,26 +162,26 @@ spec:
         storage_class_name: ${CP4BA_INST_ADS_MONGO_SC_CLASSNAME}
         resources:
           requests:
-            storage: 3Gi
+            storage: ${CP4BA_INST_ADS_MONGO_STORAGE_SIZE}
       resources:
         requests:
           cpu: '500m'
           memory: '256Mi'
         limits:
-          cpu: '1000m'
-          memory: '1Gi'
+          cpu: '${CP4BA_INST_ADS_MONGO_LIMITS_CPU}'
+          memory: '${CP4BA_INST_ADS_MONGO_LIMITS_MEMORY}'
 
     decision_runtime_service:
       image:
         repository: cp.icr.io/cp/cp4a/ads/ads-runtime
         tag: "${CP4BA_INST_APPVER}"
-      replica_count: 1
+      replica_count: ${CP4BA_INST_ADS_RUNTIME_REPLICAS}
       stack_trace_enabled: ${CP4BA_INST_ADS_STACK_TRACE_ENABLED}
       tls:
         certs_config_map_name: "${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}"
         allow_self_signed: ${CP4BA_INST_ADS_TLS_ALLOW_SELF_SIGNED}
         verify_hostname: ${CP4BA_INST_ADS_TLS_VERIFY_HOST_NAMEs}
-      storage_decision_check_status_interval: 30000 # The interval, in milliseconds, between checks and updates of the cached decisions, default 30000, optional
+      storage_decision_check_status_interval: ${CP4BA_INST_ADS_RUNTIME_CHK_STATUS}
       cache:
         config:
           expiry: ''
@@ -209,14 +210,14 @@ spec:
           cpu: '500m'
           memory: '2Gi'
         limits:
-          cpu: '1000m'
-          memory: '3Gi'
+          cpu: '${CP4BA_INST_ADS_RUNTIME_LIMITS_CPU}'
+          memory: '${CP4BA_INST_ADS_RUNTIME_LIMITS_MEMORY}'
       persistence:
         use_dynamic_provisioning: ${CP4BA_INST_ADS_RUNTIME_PERSIST_PROVISIONING}
         storage_class_name: "${CP4BA_INST_SC_FILE}"
         resources:
           requests:
-            storage: 1Gi
+            storage: ${CP4BA_INST_ADS_RUNTIME_STORAGE_SIZE}
       autoscaling:
         enabled: ${CP4BA_INST_ADS_AUTOSCALING_ENABLED}
         min_replicas: ${CP4BA_INST_ADS_AUTOSCALING_REPLICA_MIN}
