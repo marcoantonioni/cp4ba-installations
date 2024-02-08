@@ -7,7 +7,9 @@
 
 ## [1.0.11] - 2024-02-08
 New deployment option, configuration/template for FNCM Workflow.
+
 New deployment option, configuration/template for ADS Runtime.
+
 Tested with CP4BA v23.0.2-IF001
 
 ### Added
