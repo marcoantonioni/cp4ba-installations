@@ -91,6 +91,8 @@ spec:
       enabled: true
 
   bastudio_configuration:
+    kafka_services:
+      enabled: true
     database:
       cm_max_pool_size: ${CP4BA_INST_BASTUDIO_DB_MIN_POOL}
       cm_min_pool_size: ${CP4BA_INST_BASTUDIO_DB_MAX_POOL}
