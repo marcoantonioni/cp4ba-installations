@@ -146,7 +146,7 @@ onboardUsers () {
   echo -e "${_CLR_GREEN}CP4BA Onboarding users${_CLR_NC}"
 
   # !!! cp4admin perde ruoli Automation Administrator, Automation Developer se remove-and-add
-  ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_IDP_CFG_FILE} -l ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -s -o add
+  ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -s -o add
 }
 
 installAndVerifyCasePkgMgr () {

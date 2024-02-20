@@ -2,7 +2,26 @@
 # Change Log
 
 ## External dependencies (please update your supporting repo copies)
+
+2024-02-20: updated project cp4ba-utilities, new 'cp4ba-tls-entry-point', utility to apply your TLS certificate on ZenService
+
+2024-01-29: updated project cp4ba-idp-ldap, onboard-users.sh modified admin roles for cp4admin user
+
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
+
+
+## [1.0.12] - 2024-02-20
+
+### Added
+
+Add custom TLS certificate on ZenService
+
+### Changed
+
+* cp4ba-deploy-env.sh
+
+### Fixed
+n/a
 
 
 ## [1.0.11] - 2024-02-08

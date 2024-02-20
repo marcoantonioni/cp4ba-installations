@@ -235,6 +235,14 @@ deployPostEnv () {
       exit 1
     fi
   fi
+
+  if [[ "${CP4BA_INST_ZS_CONFIGURE}" = "true" ]]; then
+    ${CP4BA_INST_UTILS_TOOLS_FOLDER}/cp4ba-tls-update-ep.sh -x -n ${CP4BA_INST_NAMESPACE} -z ${CP4BA_INST_ZS_NAME} -s ${CP4BA_INST_ZS_TARGET_SECRET} -f ${CP4BA_INST_ZS_SOURCE_SECRET} -k ${CP4BA_INST_ZS_SOURCE_NAMESPACE}
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_YELLOW}[✗] Warning, ZenService not updated with certificate ${CP4BA_INST_ZS_SOURCE_SECRET}.${_CLR_NC}"
+    fi
+  fi
+
 }
 
 #-------------------------------
@@ -503,7 +511,7 @@ waitDeploymentReadiness () {
           federateBawsInDeployment
         fi
       fi
-      echo -e "${_CLR_GREEN}Wait for access info config map ...${_CLR_NC}"
+      #echo -e "${_CLR_GREEN}Wait for access info config map ...${_CLR_NC}"
       while [ true ]
       do
         _ACC_INFO_FOUND=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep "access-info" 2>/dev/null | wc -l)
