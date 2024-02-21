@@ -194,6 +194,20 @@ checkPrereqVars () {
 }
 
 #-------------------------------
+updateZenServiceCertificate () {
+  _ZENCONFIGURED=0
+  if [[ "${CP4BA_INST_ZS_CONFIGURE}" = "true" ]]; then
+    ${CP4BA_INST_UTILS_TOOLS_FOLDER}/cp4ba-tls-update-ep.sh -x -n ${CP4BA_INST_NAMESPACE} -z ${CP4BA_INST_ZS_NAME} -s ${CP4BA_INST_ZS_TARGET_SECRET} -f ${CP4BA_INST_ZS_SOURCE_SECRET} -k ${CP4BA_INST_ZS_SOURCE_NAMESPACE}
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_YELLOW}[✗] Warning, ZenService not updated with certificate ${CP4BA_INST_ZS_SOURCE_SECRET}.${_CLR_NC}"
+    else
+      _ZENCONFIGURED=1
+    fi
+  fi
+  return $_ZENCONFIGURED
+}
+
+#-------------------------------
 deployPreEnv () {
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     if [[ ! -z "${_LDAP}" ]]; then
@@ -233,13 +247,6 @@ deployPostEnv () {
     if [[ $? -ne 0 ]]; then
       echo -e "${_CLR_RED}[✗] Error, databases not created.${_CLR_NC}"
       exit 1
-    fi
-  fi
-
-  if [[ "${CP4BA_INST_ZS_CONFIGURE}" = "true" ]]; then
-    ${CP4BA_INST_UTILS_TOOLS_FOLDER}/cp4ba-tls-update-ep.sh -x -n ${CP4BA_INST_NAMESPACE} -z ${CP4BA_INST_ZS_NAME} -s ${CP4BA_INST_ZS_TARGET_SECRET} -f ${CP4BA_INST_ZS_SOURCE_SECRET} -k ${CP4BA_INST_ZS_SOURCE_NAMESPACE}
-    if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_YELLOW}[✗] Warning, ZenService not updated with certificate ${CP4BA_INST_ZS_SOURCE_SECRET}.${_CLR_NC}"
     fi
   fi
 
@@ -587,6 +594,11 @@ waitDeploymentReadiness () {
     ((_seconds=_seconds+1))
     sleep 1
   done
+
+  if [[ "${CP4BA_INST_ZS_CONFIGURE}" = "true" ]]; then
+    updateZenServiceCertificate
+  fi
+
 }
 
 
