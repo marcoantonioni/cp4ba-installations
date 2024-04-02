@@ -10,6 +10,17 @@
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
 
+## [1.0.13] - 2024-04-02
+
+### Added
+
+### Changed
+
+### Fixed
+
+* cp4ba-one-shot-installation.sh
+  checkPrepreqTools: added test for 'yq' prerequisite
+
 ## [1.0.12] - 2024-02-20
 
 ### Added
