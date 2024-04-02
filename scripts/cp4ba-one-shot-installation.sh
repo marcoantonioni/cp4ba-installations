@@ -75,6 +75,13 @@ checkPrepreqTools () {
     echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
     exit 1
   fi
+
+  which yq &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_RED}[✗] Error, yq not installed, cannot proceed.${_CLR_NC}"
+    exit 1
+  fi
+
   which openssl &>/dev/null
   if [[ $? -ne 0 ]]; then
     echo -e "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
