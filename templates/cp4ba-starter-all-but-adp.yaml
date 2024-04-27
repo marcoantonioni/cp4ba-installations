@@ -58,7 +58,7 @@ spec:
       default_admin_username: ""
     enable_fips: false
     sc_egress_configuration:
-      sc_restricted_internet_access: true
+      sc_restricted_internet_access: false
       sc_api_namespace:
       sc_api_port:
       sc_dns_namespace:
