@@ -396,7 +396,7 @@ Note: 'Baw full' is federated only, 'BAW Workflow' is federated and host federat
 CONFIG_FILE=../configs/env1-baw-double-pfs.properties
 
 # run the real 'one-shot' CP4BA installation command
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.1
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.4
 ```
 
 The average time for an installation of this type varies between 90/100 minutes.
@@ -530,6 +530,11 @@ do
   ((i = i + 1))
 done
 ```
+
+### Troubleshooting
+
+If operators installation seems to be freezed have a look at file '.../cert-kubernetes/scripts/_clusteradmin.out'
+
 
 ---
 **DISCLAIMER**

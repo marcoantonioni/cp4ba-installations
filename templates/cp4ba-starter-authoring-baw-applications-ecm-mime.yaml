@@ -17,7 +17,7 @@
 ##
 ## DEPLOYMENT CONTENTS
 ## 
-## patterns: all but adp
+## patterns: starter, authoring, bai
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
@@ -28,58 +28,17 @@ metadata:
     app.kubernetes.io/instance: ibm-dba
     app.kubernetes.io/managed-by: ibm-dba
     app.kubernetes.io/name: ibm-dba
-    release: "${CP4BA_INST_RELEASE}"
+    release: "23.0.2"
   annotations:
     kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
 spec:
 
-  # appVersion: "23.0.2"
-  appVersion: "${CP4BA_INST_RELEASE}"
+  appVersion: "23.0.2"
   ibm_license: accept
-
-  shared_configuration:
-    sc_deployment_fncm_license: non-production
-    sc_deployment_baw_license: non-production
-    sc_deployment_license: non-production
-    sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
-    sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
-    sc_deployment_type: "Starter"
-    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
-
-    sc_image_repository: cp.icr.io
-    sc_ingress_enable: false
-    trusted_certificate_list: []
-    storage_configuration:
-      sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
-      sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
-      sc_slow_file_storage_classname: ""
-      sc_medium_file_storage_classname: ""
-      sc_fast_file_storage_classname: ""
-    sc_iam:
-      default_admin_username: ""
-    enable_fips: false
-    sc_egress_configuration:
-      sc_restricted_internet_access: false
-      sc_api_namespace:
-      sc_api_port:
-      sc_dns_namespace:
-      sc_dns_port:
-    root_ca_secret: "{{ meta.name }}-root-ca"
-    sc_run_as_user:
-    sc_drivers_url:
-    sc_content_initialization: true
-    image_pull_secrets:
-    - ibm-entitlement-key
 
   bai_configuration:
     business_performance_center:
       all_users_access: true
-
-  ads_configuration:
-    decision_designer:
-      enabled: true
-    decision_runtime:
-      enabled: true
 
   bastudio_configuration:
     kafka_services:
@@ -92,3 +51,42 @@ spec:
         limits:          
           cpu: '${CP4BA_INST_BASTUDIO_LIMITS_CPU}'
           memory: ${CP4BA_INST_BASTUDIO_LIMITS_MEM}
+
+    bastudio_custom_xml: |-
+      <server merge="mergeChildren"> 
+        <document-attachment-accepted-mime-types merge="replace"> 
+          <disable-document-attachment-accepted-mime-types>true</disable-document-attachment-accepted-mime-types> 
+        </document-attachment-accepted-mime-types> 
+      </server>
+    
+  shared_configuration:
+    enable_fips: false
+    sc_deployment_type: Starter
+    sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
+    sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
+    sc_iam:
+      default_admin_username: ''
+    sc_drivers_url: null
+    image_pull_secrets:
+      - ibm-entitlement-key
+    trusted_certificate_list: []
+    sc_deployment_baw_license: non-production
+    storage_configuration:
+      sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
+    root_ca_secret: '{{ meta.name }}-root-ca'
+    sc_content_initialization: true
+    sc_deployment_license: non-production
+    sc_egress_configuration:
+      sc_api_namespace: null
+      sc_api_port: null
+      sc_dns_namespace: null
+      sc_dns_port: null
+      sc_restricted_internet_access: false
+    sc_ingress_enable: false
+    sc_image_repository: cp.icr.io
+    sc_deployment_platform: OCP
+    sc_deployment_fncm_license: non-production

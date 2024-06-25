@@ -9,6 +9,16 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+## [1.0.14] - 2024-06-25
+
+### Added
+
+Variable CP4BA_AUTO_AIGRAP_MODE in all properties files
+
+### Changed
+
+### Fixed
+
 
 ## [1.0.13] - 2024-04-02
 
