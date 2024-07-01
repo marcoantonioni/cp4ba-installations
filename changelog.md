@@ -13,7 +13,7 @@
 
 ### Added
 
-Variable CP4BA_AUTO_AIGRAP_MODE in all properties files
+Variable CP4BA_AUTO_AIRGAP_MODE in all properties files
 
 ### Changed
 
