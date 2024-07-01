@@ -9,6 +9,16 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+## [1.0.15] - 2024-07-01
+
+### Added
+
+Variable CP4BA_AUTO_SEPARATE_OPERATOR and CP4BA_AUTO_CS_SERVICE_NAMESPACE in all properties files
+
+### Changed
+
+### Fixed
+
 ## [1.0.14] - 2024-06-25
 
 ### Added
