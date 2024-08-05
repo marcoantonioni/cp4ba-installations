@@ -9,6 +9,21 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+## [1.1.0] - 2024-08-05
+
+### Added
+
+Support for v24.x deployment (Starter configuration)
+
+Now version and templetes are splitted in 'configs23' / 'templates23' and 'configs24' / 'templates24' folders.
+
+### Changed
+
+Some environment variables added for v24 version.
+
+### Fixed
+
+
 ## [1.0.16] - 2024-07-02
 
 ### Added
@@ -24,8 +39,6 @@ and
 https://github.com/icp4a/cert-kubernetes/tree
 
 ### Changed
-
-  installCasePackMgr
 
 ### Fixed
 
