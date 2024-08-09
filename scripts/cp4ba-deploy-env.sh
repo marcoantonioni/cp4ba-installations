@@ -35,7 +35,7 @@ usage () {
        (eg: '../configs/env1.properties')
     -l(optional) ldap-config-file
        (eg: '../configs/_cfg-production-ldap-domain.properties')
-    -w(optional) wait only, skip deployment
+    -w(optional) wait only, skip deployment and create access info file
     -g(optional) generate yaml only, skip deployment
     -f(optional) federate only, skip deployment${_CLR_NC}"
 }
