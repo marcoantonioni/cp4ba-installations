@@ -330,6 +330,8 @@ We'll use the simplest method, we'll run a single shell script named 'cp4ba-one-
 - '-m' parameter that requires an online download of the IBM CP4BA Case Package Manager (download in a temporary directory then removed)
 - '-v' parameter indicating the version of the IBM CP4BA Case Package Manager to use
 
+In version 24 the version selection code of the installation package version has been changed; to install version 24.0.0 use the key '24.0.0' 
+
 Note: Version 5.1.0 corresponds to CP4BA version v23.0.2
 
 Ready to begin ? <i>GO !!!</i>
@@ -338,7 +340,12 @@ Ready to begin ? <i>GO !!!</i>
 CONFIG_FILE=../configs/env1-baw.properties
 
 # run the real 'one-shot' CP4BA installation command
+# v23
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 5.1.1
+
+# v24
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 24.0.1
+
 ```
 
 Well, now you have to... no... you don't have to do anything more, just wait for the procedure to finish.

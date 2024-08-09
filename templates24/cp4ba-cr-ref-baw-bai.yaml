@@ -554,7 +554,7 @@ spec:
     ## BAN Sync services work with Zen URL by default, change it to false to use BAN Route URL.
     use_sync_with_zen_url: true
 
-  # BAI
+  ## BAI
   bai_configuration:
     bpmn:
       install: true
@@ -563,7 +563,7 @@ spec:
     business_performance_center:
       all_users_access: true
 
-  # BAML
+  ## BAML
   baml_configuration:
     workforce_insights:
       replicas: 1
@@ -575,4 +575,4 @@ spec:
           cpu: 1
           memory: 1024Mi
     intelligent_task_prioritization:
-      retrain_model_schedule: */30 * * * *
+      retrain_model_schedule: "*/30 * * * *"
