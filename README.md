@@ -602,6 +602,9 @@ https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=vtpiicd-creating-po
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=cfcmdswrps-creating-secrets-protect-sensitive-filenet-content-manager-configuration-data
 
 ## Configuration parameters
+
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/24.0.0?topic=reference-custom-resource-configuration-parameters
+
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-pattern-configuration
 
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters-initialization
