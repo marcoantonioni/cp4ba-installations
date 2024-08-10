@@ -437,6 +437,26 @@ federateBaw () {
   fi
 }
 
+#-------------------------------
+waitForBawStatefulSetReady () {
+  _SFSET_NAME="${CP4BA_INST_CR_NAME}-$1-baw-server"
+  echo -e -n "${_CLR_GREEN}Wait for ${_CLR_YELLOW}${_SFSET_NAME}${_CLR_GREEN}${_CLR_NC}..."
+  waitForResourceCreated ${CP4BA_INST_NAMESPACE} "statefulset" ${_SFSET_NAME} 5
+
+  _SFS_READY=0
+  while [ true ]; 
+  do   
+    _SFS_READY=$(oc get statefulset -n cp4ba-baw-double-pfs ${_SFSET_NAME} -o jsonpath="{.status.readyReplicas}")
+    if [[ "${_SFS_READY}" = "0" ]]; then
+      sleep 1
+    else
+      break
+    fi
+  done
+  echo -e "${_CLR_YELLOW}READY${_CLR_GREEN}${_CLR_NC}"
+}
+
+#-------------------------------
 waitForPfsReady () {
   _PFS_COMPONENTS=$(oc get pfs -n ${CP4BA_INST_PFS_NAMESPACE} ${CP4BA_INST_PFS_NAME} -o jsonpath='{.status.components.pfs}')
   _pfsDeployment=$(echo $_PFS_COMPONENTS | jq .pfsDeployment 2>/dev/null | sed 's/"//g' )
@@ -464,6 +484,7 @@ federateBawsInDeployment () {
     _NAME="${!__BAW_NAME}"
     _HFP="${!__BAW_HOST_FED_PORTAL}"
     if [[ "${_INST}" = "true" ]] && [[ "${_FEDERATE}" = "true" ]]; then
+      waitForBawStatefulSetReady "${_NAME}"
       federateBaw "${_NAME}" "${_HFP}"
       _NAME=""
     else

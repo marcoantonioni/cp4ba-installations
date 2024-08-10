@@ -557,22 +557,22 @@ spec:
   ## BAI
   bai_configuration:
     bpmn:
-      install: true
-      force_elasticsearch_timeseries: true
+      install: ${CP4BA_INST_BAI_BPMN}
+      force_elasticsearch_timeseries: ${CP4BA_INST_BAI_BPMN_TIMESERIES}
 
     business_performance_center:
-      all_users_access: true
+      all_users_access: ${CP4BA_INST_BAI_BPC_ALLUSER}
 
   ## BAML
   baml_configuration:
     workforce_insights:
-      replicas: 1
+      replicas: ${CP4BA_INST_BAML_REPLICAS}
       resources:
         limits:
-          cpu: 1
-          memory: 1024Mi        
+          cpu: ${CP4BA_INST_BAML_RES_LIMITS_CPU}
+          memory: ${CP4BA_INST_BAML_RES_LIMITS_MEM}
         requests:
-          cpu: 1
-          memory: 1024Mi
+          cpu: ${CP4BA_INST_BAML_RES_REQS_CPU}
+          memory: ${CP4BA_INST_BAML_RES_REQS_MEM}
     intelligent_task_prioritization:
-      retrain_model_schedule: "*/30 * * * *"
+      retrain_model_schedule: "${CP4BA_INST_BAML_RETRAIN_MODEL_SCHEDULE}"
