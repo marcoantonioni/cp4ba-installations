@@ -10,6 +10,19 @@
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
 
+## [1.1.2] - 2024-08-11
+
+### Added
+
+### Changed
+
+Delete PFS operator to avoid federation failure (probably failed credential update), is a workaround.
+Currently only supports configuration with operators and deployment in the same namespace.
+Will be changed soon with dual namespace support.
+
+### Fixed
+
+
 ## [1.1.1] - 2024-08-10
 
 ### Added
