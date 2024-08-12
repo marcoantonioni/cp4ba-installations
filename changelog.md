@@ -10,6 +10,17 @@
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
 
+## [1.1.3] - 2024-08-12
+
+### Added
+
+### Changed
+
+Moved .sql template files in dedicated folder 'templates-sql'.
+
+### Fixed
+
+
 ## [1.1.2] - 2024-08-11
 
 ### Added
