@@ -495,11 +495,7 @@ federateBawsInDeployment () {
     ((i=i+1))
   done
   
-  # only for operator in same NS (to be modified...)
-  _PFS_OPERATOR=$(oc get pod -n ${CP4BA_INST_PFS_NAMESPACE} | grep "ibm-pfs-operator-" | awk '{print $1}')
-  if [[ ! -z ${_PFS_OPERATOR} ]]; then
-    oc delete pod -n ${CP4BA_INST_PFS_NAMESPACE} ${_PFS_OPERATOR}
-  fi
+  echo -e "${_CLR_GREEN}INFO: ${_CLR_YELLOW}The CR defining BAW servers has been modified for federation with PFS, operators will follow their periodic tasks and complete the necessary configurations; the whole operation can take minutes; the installation procedure continues without waiting.${_CLR_GREEN}${_CLR_NC}"
 
 }
 
