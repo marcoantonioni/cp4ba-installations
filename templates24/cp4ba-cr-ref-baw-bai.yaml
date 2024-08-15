@@ -559,9 +559,14 @@ spec:
     bpmn:
       install: ${CP4BA_INST_BAI_BPMN}
       force_elasticsearch_timeseries: ${CP4BA_INST_BAI_BPMN_TIMESERIES}
+      end_aggregation_delay: ${CP4BA_INST_BAI_END_AGGR_DELAY}
+      force_opensearch_timeseries: ${CP4BA_INST_BAI_FORCE_TIMESERIES}
 
     business_performance_center:
       all_users_access: ${CP4BA_INST_BAI_BPC_ALLUSER}
+    
+    flink:
+      create_route: ${CP4BA_INST_BAI_FLINK_ROUTE}
 
   ## BAML
   baml_configuration:
