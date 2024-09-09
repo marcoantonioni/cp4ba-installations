@@ -1,0 +1,26 @@
+{
+  "name": "",
+  "description": "",
+  "protocol": "ldap",
+  "type": "Custom",
+  "idp_config": {
+        "ldap_id": "",
+        "ldap_realm": "REALM",
+        "ldap_url": "ldap://vuxprod-ldap.cp4ba-baw-bai.svc.cluster.local:389",
+        "ldap_host": "vuxprod-ldap.cp4ba-baw-bai.svc.cluster.local",
+        "ldap_port": "389",
+        "ldap_protocol": "ldap",
+        "ldap_basedn": "",
+        "ldap_binddn": "",
+        "ldap_bindpassword": "",
+        "ldap_type": "Custom",
+        "ldap_ignorecase": "true",
+        "ldap_userfilter": "",
+        "ldap_useridmap": "",
+        "ldap_groupfilter": "",
+        "ldap_groupidmap": "",
+        "ldap_groupmemberidmap": "",
+        "ldap_nestedsearch": "",
+        "ldap_pagingsearch": ""
+        }
+}
