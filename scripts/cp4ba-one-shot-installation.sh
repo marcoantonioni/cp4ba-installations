@@ -51,12 +51,14 @@ do
         d) _CPAK_MGR_FOLDER=${OPTARG};;
         t) _TEST_CFG=true;;
         \?) # Invalid option
+            echo "Invalid option: "${flag}
             usage
             exit 1;;        
     esac
 done
 
 if [[ -z "${_CFG}" ]]; then
+  echo "Configuration file name is empty"
   usage
   exit 1
 fi
@@ -99,6 +101,7 @@ if [[ "${_TEST_CFG}" = "true" ]]; then
 fi
 
 if [[ "${_CPAK_MGR}" = "false" ]] && [[ -z "${_SCRIPTS}" ]]; then
+  echo "Invalid combination: when '-m' is not specificied the scripts folder must be defined."
   usage
   exit 1
 fi
