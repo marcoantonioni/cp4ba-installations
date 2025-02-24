@@ -28,12 +28,12 @@ metadata:
     app.kubernetes.io/instance: ibm-dba
     app.kubernetes.io/managed-by: ibm-dba
     app.kubernetes.io/name: ibm-dba
-    release: "23.0.2"
+    release: 24.0.1
   annotations:
     kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
 spec:
 
-  appVersion: "23.0.2"
+  appVersion: "${CP4BA_INST_APPVER}"
   ibm_license: accept
 
   shared_configuration:
@@ -73,22 +73,6 @@ spec:
   bai_configuration:
     business_performance_center:
       all_users_access: true
-
-  odm_configuration:
-    image:
-      pullSecrets: "ibm-entitlement-key"
-    decisionCenter:
-      enabled: true
-    decisionServerRuntime:
-      enabled: true
-    decisionRunner:
-      enabled: true
-
-  ads_configuration:
-    decision_designer:
-      enabled: true
-    decision_runtime:
-      enabled: true
 
   bastudio_configuration:
     kafka_services:
