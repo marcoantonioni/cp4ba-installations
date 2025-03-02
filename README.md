@@ -109,6 +109,7 @@ For each installation, the CR ICP4ACluster yaml file is created, enhanced with t
 
 ```
 ./scripts/
+├── cp4ba-configure-genai.sh
 ├── cp4ba-create-databases.sh
 ├── cp4ba-create-pvc.sh
 ├── cp4ba-create-secrets.sh
