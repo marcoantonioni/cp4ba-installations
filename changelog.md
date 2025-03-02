@@ -9,6 +9,32 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+## [1.1.5] - 2025-03-02
+
+### Added
+
+GenAI configuration for "starter" deployment.
+
+GenAI "production" configuration will arrive as soon as possible.
+
+see section 'BAStudio GenAI configuration' in .properties file
+```
+# BAStudio GenAI configuration
+export CP4BA_INST_GENAI_ENABLED="true"
+export CP4BA_INST_GENAI_WX_AUTH_SECRET="watsonx-ai-secret"
+# set your values here or set following env vars in shell before run main script 
+# export _WX_USERID=, export _WX_APIKEY=, export _WX_PRJ_ID=, export _WX_URL_PROVIDER=
+export CP4BA_INST_GENAI_WX_USERID="my-user-id@ibm.com"
+export CP4BA_INST_GENAI_WX_APIKEY="your-apy-key-from-watsonx-ibm-cloud"
+export CP4BA_INST_GENAI_WX_PRJ_ID="your-project-id-from-watsonx-ibm-cloud"
+export CP4BA_INST_GENAI_WX_URL_PROVIDER="https://your-region.ml.cloud.ibm.com"
+```
+for details see 'scripts/cp4ba-configure-genai.sh'
+
+### Changed
+
+### Fixed
+
 ## [1.1.4] - 2025-02-05
 
 ### Added

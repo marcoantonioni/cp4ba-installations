@@ -250,6 +250,15 @@ deployPostEnv () {
     fi
   fi
 
+  # Configure GenAI
+  if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
+    ./cp4ba-configure-genai.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
 }
 
 #-------------------------------
