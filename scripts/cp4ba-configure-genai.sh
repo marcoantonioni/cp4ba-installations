@@ -136,9 +136,9 @@ _verifyVars() {
   fi
   if [[ "${_KO_CFG}" = "true" ]]; then
     echo -e "${_CLR_RED}[✗] ERROR: _verifyVars GenAI configuration error, verify values for:${_CLR_YELLOW}${_WRONG_VARS}${_CLR_NC}"
-    exit 1
+    return 0
   fi
-
+  return 1
 }
 
 #-------------------------------
@@ -156,11 +156,14 @@ namespaceExist () {
 configureGenAI() {
   _verifyVars
   if [ $? -eq 1 ]; then
-    _createWxSecret $1 ${CP4BA_INST_GENAI_WX_AUTH_SECRET}
-    _createGenAiConfiguration $1
-  else
-    echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
-    exit 1
+    namespaceExist $1
+    if [ $? -eq 1 ]; then
+      _createWxSecret $1 ${CP4BA_INST_GENAI_WX_AUTH_SECRET}
+      _createGenAiConfiguration $1
+    else
+      echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
+      exit 1
+    fi
   fi  
 }
 
