@@ -77,7 +77,7 @@ _createGenAiConfiguration () {
 
     _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-$USER-$RANDOM"
 
-    if [[ "${CP4BA_INST_TYPE}" = "starter" ]]
+    if [[ "${CP4BA_INST_TYPE}" = "starter" ]]; then
       echo 'spec:' > ${_WX_GENAI_TMP}
       echo '  bastudio_configuration:' >> ${_WX_GENAI_TMP}
       echo '    custom_secret_name: '${CP4BA_INST_GENAI_WX_AUTH_SECRET} >> ${_WX_GENAI_TMP}
@@ -141,11 +141,27 @@ _verifyVars() {
 
 }
 
+#-------------------------------
+namespaceExist () {
+# ns name: $1
+  if [ $(oc get ns $1 2>/dev/null | grep $1 2>/dev/null | wc -l) -lt 1 ];
+  then
+      return 0
+  fi
+  return 1
+}
+
+
 #--------------------------------------------------------
 configureGenAI() {
   _verifyVars
-  _createWxSecret $1 ${CP4BA_INST_GENAI_WX_AUTH_SECRET}
-  _createGenAiConfiguration $1
+  if [ $? -eq 1 ]; then
+    _createWxSecret $1 ${CP4BA_INST_GENAI_WX_AUTH_SECRET}
+    _createGenAiConfiguration $1
+  else
+    echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
+    exit 1
+  fi  
 }
 
 #==================================
