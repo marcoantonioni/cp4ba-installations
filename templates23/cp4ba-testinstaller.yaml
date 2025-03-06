@@ -47,7 +47,7 @@ spec:
     sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
     sc_deployment_type: "Production"
     sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
-    sc_deployment_profile_size: "${CP4BA_INST_DEPL_PROFILE_SIZE:-small}"
+    sc_deployment_profile_size: "${CP4BA_INST_DEPL_PROFILE_SIZE}"
     sc_ingress_enable: false
     trusted_certificate_list: []
     storage_configuration:
