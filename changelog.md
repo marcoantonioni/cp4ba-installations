@@ -9,6 +9,18 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+## [1.1.6] - 2025-03-06
+
+### Added
+
+### Changed
+Changed predefined value in template files, now is
+
+  <b>sc_deployment_profile_size: "${CP4BA_INST_DEPL_PROFILE_SIZE}"</b>
+
+
+### Fixed
+
 ## [1.1.5] - 2025-03-02
 
 ### Added
