@@ -177,7 +177,7 @@ waitForClustersPostgresCRD () {
   fi
 
   #echo "wait for pod postgresql-operator-controller-manager ready"
-  _MAX_WAIT_READY=1200
+  _MAX_WAIT_READY=12000
   _RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${_PSQL_OCM_POD} --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
   _IS_READY=$(echo $_RES | grep "condition met" | wc -l)
   if [ $_IS_READY -eq 0 ]; then
