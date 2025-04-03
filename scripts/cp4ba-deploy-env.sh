@@ -211,7 +211,7 @@ updateZenServiceCertificate () {
 deployPreEnv () {
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     if [[ ! -z "${_LDAP}" ]]; then
-      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-ldap.sh -p ${_LDAP}
+      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-ldap.sh -p ${_LDAP} -n ${CP4BA_INST_NAMESPACE}
       if [[ $? -ne 0 ]]; then
         echo -e "${_CLR_RED}[✗] Error, LDAP not installed.${_CLR_NC}"
         exit 1
@@ -455,7 +455,7 @@ waitForBawStatefulSetReady () {
   _SFS_READY=0
   while [ true ]; 
   do   
-    _SFS_READY=$(oc get statefulset -n cp4ba-baw-double-pfs ${_SFSET_NAME} -o jsonpath="{.status.readyReplicas}")
+    _SFS_READY=$(oc get statefulset -n ${CP4BA_INST_NAMESPACE} ${_SFSET_NAME} -o jsonpath="{.status.readyReplicas}")
     if [[ "${_SFS_READY}" = "0" ]]; then
       sleep 1
     else

@@ -9,6 +9,18 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+
+## [1.1.7] - 2025-04-03
+
+### Added
+
+### Changed
+
+### Fixed
+waitForBawStatefulSetReady
+
+
+
 ## [1.1.6] - 2025-03-06
 
 ### Added
