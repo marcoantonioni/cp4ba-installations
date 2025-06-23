@@ -508,6 +508,41 @@ federateBawsInDeployment () {
 
 }
 
+restartStatefulSets () {
+  _NS=$1
+  _STATEFULSET_SUFFIX=$2
+
+  STATEFULSET_NAME=$(oc get statefulsets -n ${_NS} | grep "${_STATEFULSET_SUFFIX}" | awk '{print $1}')
+
+  if [[ ! -z "${STATEFULSET_NAME}" ]]; then
+    echo -e "${_CLR_GREEN}Restarting statefulset: ${_CLR_YELLOW}${STATEFULSET_NAME}${_CLR_GREEN}${_CLR_NC}"
+
+    STATEFULSET_REPLICAS=$(oc get statefulsets -n ${_NS} ${STATEFULSET_NAME} -o jsonpath="{.spec.replicas}")
+
+    if [[ ! -z ${STATEFULSET_REPLICAS} ]]; then
+      oc scale statefulset -n ${_NS} ${STATEFULSET_NAME} --replicas=0 2>/dev/null 1>/dev/null
+      sleep 5
+      oc scale statefulset -n ${_NS} ${STATEFULSET_NAME} --replicas=${STATEFULSET_REPLICAS} 2>/dev/null 1>/dev/null
+    fi
+  fi
+
+}
+
+zenCertInTrustedList () {
+  _NS=$1
+  _SECRET_NAME=$2
+  _DEPL_NAME=$(oc get ICP4ACluster -n ${_NS} | grep -v NAME | awk '{print $1}')
+  NUM_TRUSTED_CERTS=$(oc get ICP4ACluster ${_DEPL_NAME} -n ${_NS} -o jsonpath='{.spec.shared_configuration.trusted_certificate_list}' | jq '. | length')
+
+  TRUSTED_CERT_PRESENT=$(oc get ICP4ACluster ${_DEPL_NAME} -n ${_NS} -o jsonpath='{.spec.shared_configuration.trusted_certificate_list}' | jq '.| select( any(. == "'${_SECRET_NAME}'") )')
+
+  if [[ ! -z "$TRUSTED_CERT_PRESENT" ]]; then 
+    restartStatefulSets ${_NS} "bastudio-deployment"
+    restartStatefulSets ${_NS} "baw-server"
+  fi
+
+}
+
 waitDeploymentReadiness () {
   echo -e "${_CLR_GREEN}Configuration and deployment complete for CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
@@ -630,8 +665,11 @@ waitDeploymentReadiness () {
 
   if [[ "${CP4BA_INST_ZS_CONFIGURE}" = "true" ]]; then
     updateZenServiceCertificate
-  fi
 
+    # 20250407 If Zen cert in trusted list, restart staefulset
+    zenCertInTrustedList ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_ZS_TARGET_SECRET}
+
+  fi
 }
 
 
