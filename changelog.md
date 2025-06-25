@@ -10,6 +10,17 @@
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
 
+## [1.1.8] - 2025-06-23
+
+### Added
+
+### Changed
+Support for v25.x
+
+### Fixed
+installCasePackMgr pattern matching to support v25
+
+
 ## [1.1.7] - 2025-04-03
 
 ### Added

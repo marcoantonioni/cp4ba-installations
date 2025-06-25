@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2025-04-03</i> (see changelog.md for details)
+<i>Last update: 2025-06-23</i> (see changelog.md for details)
 
 ## Description of the contents of this repository
 
@@ -538,6 +538,13 @@ do
   ((i = i + 1))
 done
 ```
+
+### 7. Configure GenAI
+```
+CONFIG_FILE=../configs25/env1-starter-all-but-adp.properties
+./cp4ba-configure-genai.sh -c ${CONFIG_FILE}
+```
+
 
 ### Troubleshooting
 
