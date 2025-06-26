@@ -1,0 +1,126 @@
+###############################################################################
+##
+##Licensed Materials - Property of IBM
+##
+##(C) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+##
+##US Government Users Restricted Rights - Use, duplication or
+##disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+##
+###############################################################################
+##
+##============================================================================================
+## DISCLAIMER
+## These configurations are not indicated or intended to be valid for production environments.
+## The purpose is purely educational.
+##============================================================================================
+##
+## DEPLOYMENT CONTENTS
+## 
+## patterns: all but adp
+###############################################################################
+apiVersion: icp4a.ibm.com/v1
+kind: ICP4ACluster
+metadata:
+  name: ${CP4BA_INST_CR_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+  labels:
+    app.kubernetes.io/instance: ibm-dba
+    app.kubernetes.io/managed-by: ibm-dba
+    app.kubernetes.io/name: ibm-dba
+    release: 25.0.0
+  annotations:
+    kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
+spec:
+
+  appVersion: "${CP4BA_INST_APPVER}"
+  ibm_license: accept
+
+  shared_configuration:
+    sc_deployment_fncm_license: non-production
+    sc_deployment_baw_license: non-production
+    sc_deployment_license: non-production
+    sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
+    sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
+    sc_deployment_type: "Starter"
+    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
+
+    sc_image_repository: cp.icr.io
+    sc_ingress_enable: false
+    trusted_certificate_list: []
+    storage_configuration:
+      sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
+      sc_slow_file_storage_classname: ""
+      sc_medium_file_storage_classname: ""
+      sc_fast_file_storage_classname: ""
+    sc_iam:
+      default_admin_username: ""
+    enable_fips: false
+    sc_egress_configuration:
+      sc_restricted_internet_access: false
+      sc_api_namespace:
+      sc_api_port:
+      sc_dns_namespace:
+      sc_dns_port:
+    root_ca_secret: "{{ meta.name }}-root-ca"
+    sc_run_as_user:
+    sc_drivers_url:
+    sc_content_initialization: true
+    image_pull_secrets:
+    - ibm-entitlement-key
+
+  bai_configuration:
+    bpmn:
+      install: ${CP4BA_INST_BAI_BPMN}
+      force_elasticsearch_timeseries: ${CP4BA_INST_BAI_BPMN_TIMESERIES}
+      end_aggregation_delay: ${CP4BA_INST_BAI_END_AGGR_DELAY}
+      force_opensearch_timeseries: ${CP4BA_INST_BAI_FORCE_TIMESERIES}
+
+    business_performance_center:
+      all_users_access: ${CP4BA_INST_BAI_BPC_ALLUSER}
+      workforce_insights_secret: ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
+
+    flink:
+      create_route: ${CP4BA_INST_BAI_FLINK_ROUTE}
+
+  baml_configuration:
+    workforce_insights:
+      replicas: ${CP4BA_INST_BAML_REPLICAS}
+      resources:
+        limits:
+          cpu: ${CP4BA_INST_BAML_RES_LIMITS_CPU}
+          memory: ${CP4BA_INST_BAML_RES_LIMITS_MEM}
+        requests:
+          cpu: ${CP4BA_INST_BAML_RES_REQS_CPU}
+          memory: ${CP4BA_INST_BAML_RES_REQS_MEM}
+    intelligent_task_prioritization:
+      retrain_model_schedule: "${CP4BA_INST_BAML_RETRAIN_MODEL_SCHEDULE}"
+
+  odm_configuration:
+    image:
+      pullSecrets: "ibm-entitlement-key"
+    decisionCenter:
+      enabled: true
+    decisionServerRuntime:
+      enabled: true
+    decisionRunner:
+      enabled: true
+
+  ads_configuration:
+    decision_designer:
+      enabled: true
+    decision_runtime:
+      enabled: true
+
+  bastudio_configuration:
+    kafka_services:
+      enabled: true
+    database:
+      cm_min_pool_size: ${CP4BA_INST_BASTUDIO_DB_MIN_POOL}
+      cm_max_pool_size: ${CP4BA_INST_BASTUDIO_DB_MAX_POOL}
+    resources:
+      bastudio:
+        limits:          
+          cpu: '${CP4BA_INST_BASTUDIO_LIMITS_CPU}'
+          memory: ${CP4BA_INST_BASTUDIO_LIMITS_MEM}

@@ -259,6 +259,15 @@ deployPostEnv () {
     fi
   fi
 
+  # Configure BAIWorkforce
+  if [[ "${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}" = "true" ]]; then
+    ./cp4ba-configure-bai-workforce.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_RED}[✗] Error, BAIWorkforce not configured.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
 }
 
 #-------------------------------
