@@ -33,6 +33,10 @@ metadata:
     app.kubernetes.io/managed-by: ibm-dba
     app.kubernetes.io/name: ibm-dba
     release: "25.0.0"
+
+    # new v25
+    cp4ba.ibm.com/backup-type: mandatory
+
   annotations:
     kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
 spec:
@@ -49,7 +53,7 @@ spec:
     root_ca_secret: icp4a-root-ca
     sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
     sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
-    sc_deployment_type: "Production"
+    sc_deployment_type: "production"
     sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
     sc_deployment_profile_size: "${CP4BA_INST_DEPL_PROFILE_SIZE}"
     sc_ingress_enable: false
@@ -73,6 +77,28 @@ spec:
     no_log: false
     show_sensitive_log: true
 
+    # new v25
+    sc_is_multiple_az: false
+    sc_generate_sample_network_policies: false
+    images:
+      keytool_job_container:
+        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-jobcontainer
+        tag: "25.0.0-IF001"
+      dbcompatibility_init_container:
+        repository: cp.icr.io/cp/cp4a/baw/dba-dbcompatibility-initcontainer
+        tag: "25.0.0-IF001"
+      keytool_init_container:
+        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-initcontainer
+        tag: "25.0.0-IF001"
+      umsregistration_initjob:
+        repository: cp.icr.io/cp/cp4a/baw/dba-umsregistration-initjob
+        tag: "25.0.0-IF001"
+
+      ## All CP4A components should use this pull_policy as the default, but it can override by each component
+      pull_policy: IfNotPresent
+
+    sc_drivers_url:
+
   ldap_configuration:
     lc_selected_ldap_type: "Custom"
     lc_ldap_server: "${CP4BA_INST_LDAP_HOST}"
@@ -94,6 +120,36 @@ spec:
     custom:
       lc_user_filter: "(&(cn=%v)(objectclass=person))"
       lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
+
+    # new v25 (to be verified...)
+    scim_configuration_iam:
+      user_unique_id_attribute: "uid"
+      user_name_attribute: "cn"
+      user_principal_name_attribute: "cn"
+      user_display_name_attribute: "cn"
+      user_given_name_attribute: "cn"
+      user_family_name_attribute: "sn"
+      user_full_name_attribute: "cn"
+      user_external_id_attribute: "dn"
+      user_emails_attribute: "mail"
+      user_created_attribute: "createTimestamp"
+      user_lastmodified_attribute: "modifyTimestamp"
+      user_phonenumbers:
+      - value: "mobile"
+        type: "mobile"
+      - value: "telephoneNumber"
+        type: "work"
+      user_object_class_attribute: "organizationalPerson"
+      user_groups_attribute: "member"
+      group_unique_id_attribute: "uid"
+      group_name_attribute: "cn"
+      group_principal_name_attribute: "cn"
+      group_display_name_attribute: "cn"
+      group_external_id_attribute: "dn"
+      group_created_attribute: "createTimestamp"
+      group_lastmodified_attribute: "modifyTimestamp"
+      group_object_class_attribute: "groupOfNames"
+      group_members_attribute: "uniqueMember"
 
   datasource_configuration:
     dc_ssl_enabled: false
@@ -348,6 +404,26 @@ spec:
         ## You might run the following sample command to create the secret:
         ## `kubectl create secret generic baw_custom_trusted_keystore_secret --from-file=truststorefile=./trust.p12 --from-literal=type=PKCS12  --from-literal=password=WebAS`
         tls_trust_store: ''
+
+      # new v25
+      image:
+        ## Workflow Server (Process Server) image repository URL.
+        repository: cp.icr.io/cp/cp4a/baw/workflow-server
+        ## Image tag for Workflow Server container.
+        tag: "25.0.0-IF001"
+        ## Pull policy for Workflow Server container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
+        pull_policy: IfNotPresent
+        
+      # new v25
+      upgrade_job:
+        ## Workflow Server database handling image repository URL.
+        repository: cp.icr.io/cp/cp4a/baw/workflow-server-dbhandling
+        ## Workflow Server database handling image repository tag.
+        tag: "25.0.0-IF001"
+        ## Pull policy for database handling. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
+        pull_policy: IfNotPresent
+        ## The trace Specification for database handling job, the trace is disabled by default, you can enable it when the job fails, the sample trace specification is WLE.*=all:com.ibm.bpm.*=all:com.ibm.workflow.*=all
+        trace_specification: ""
 
       # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
       #process_federation_server:
