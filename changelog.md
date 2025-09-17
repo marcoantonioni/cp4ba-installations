@@ -9,6 +9,16 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+## [1.2.0] - 2025-09-17
+
+### Added
+
+### Changed
+Support for v25.x
+
+### Fixed
+Set a workaround to avoid operator bug (commented the tag "replicas" in baw_configuration, the default value is 1). 
+Scale up manually after deployment if needed.
 
 ## [1.1.8] - 2025-06-23
 
