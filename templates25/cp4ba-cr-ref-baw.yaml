@@ -53,7 +53,7 @@ spec:
     root_ca_secret: icp4a-root-ca
     sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
     sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
-    sc_deployment_type: "production"
+    sc_deployment_type: "Production"
     sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
     sc_deployment_profile_size: "${CP4BA_INST_DEPL_PROFILE_SIZE}"
     sc_ingress_enable: false
@@ -347,7 +347,9 @@ spec:
         fs_groupchangepolicy:
       # Production, Staging, Test, Development
       env_type: Test
-      replicas: ${CP4BA_INST_BAW_1_REPLICAS}
+      
+      # just as workaround for operator bug (25.0.1) replicas: ${CP4BA_INST_BAW_1_REPLICAS}
+      
       resources:
         limits:
           cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"
