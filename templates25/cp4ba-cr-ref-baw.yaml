@@ -141,7 +141,7 @@ spec:
         type: "work"
       user_object_class_attribute: "organizationalPerson"
       user_groups_attribute: "member"
-      group_unique_id_attribute: "uid"
+      group_unique_id_attribute: "cn"
       group_name_attribute: "cn"
       group_principal_name_attribute: "cn"
       group_display_name_attribute: "cn"
@@ -149,7 +149,7 @@ spec:
       group_created_attribute: "createTimestamp"
       group_lastmodified_attribute: "modifyTimestamp"
       group_object_class_attribute: "groupOfNames"
-      group_members_attribute: "uniqueMember"
+      group_members_attribute: "member"
 
   datasource_configuration:
     dc_ssl_enabled: false
