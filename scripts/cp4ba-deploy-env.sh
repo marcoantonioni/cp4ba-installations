@@ -277,20 +277,20 @@ deployPFS () {
 
     if [[ -f "${_PFS_SCRIPT}" ]]; then
 
-      _PFS_PRAMS_FILE="/tmp/cp4ba-pfs-params-$USER-$RANDOM"
+      _PFS_PARAMS_FILE="/tmp/cp4ba-pfs-params-$USER-$RANDOM"
 
-      echo "CP4BA_INST_PFS_NAME=\"${CP4BA_INST_PFS_NAME}\"" > ${_PFS_PRAMS_FILE}
-      echo "CP4BA_INST_PFS_NAMESPACE=\"${CP4BA_INST_PFS_NAMESPACE}\"" >> ${_PFS_PRAMS_FILE}
-      echo "CP4BA_INST_PFS_STORAGE_CLASS=\"${CP4BA_INST_PFS_STORAGE_CLASS}\"" >> ${_PFS_PRAMS_FILE}
-      echo "CP4BA_INST_PFS_APP_VER=\"${CP4BA_INST_PFS_APP_VER}\"" >> ${_PFS_PRAMS_FILE}
-      echo "CP4BA_INST_PFS_ADMINUSER=\"${CP4BA_INST_PFS_ADMINUSER}\"" >> ${_PFS_PRAMS_FILE}
+      echo "CP4BA_INST_PFS_NAME=\"${CP4BA_INST_PFS_NAME}\"" > ${_PFS_PARAMS_FILE}
+      echo "CP4BA_INST_PFS_NAMESPACE=\"${CP4BA_INST_PFS_NAMESPACE}\"" >> ${_PFS_PARAMS_FILE}
+      echo "CP4BA_INST_PFS_STORAGE_CLASS=\"${CP4BA_INST_PFS_STORAGE_CLASS}\"" >> ${_PFS_PARAMS_FILE}
+      echo "CP4BA_INST_PFS_APP_VER=\"${CP4BA_INST_PFS_APP_VER}\"" >> ${_PFS_PARAMS_FILE}
+      echo "CP4BA_INST_PFS_ADMINUSER=\"${CP4BA_INST_PFS_ADMINUSER}\"" >> ${_PFS_PARAMS_FILE}
 
       echo -e "${_CLR_GREEN}Wait for PFS deployment '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' to complete${_CLR_NC}"
       # launch in embedded mode, no wait
-      /bin/bash ${_PFS_SCRIPT} -c ${_PFS_PRAMS_FILE} -e 1>/dev/null
+      /bin/bash ${_PFS_SCRIPT} -c ${_PFS_PARAMS_FILE} -e 1>/dev/null
       echo -e "${_CLR_GREEN}PFS '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' deployment complete${_CLR_NC}"
 
-      rm ${_PFS_PRAMS_FILE}
+      rm ${_PFS_PARAMS_FILE}
     else
       echo -e "${_CLR_RED}[✗] Error, PFS tool script not found (check var CP4BA_INST_PFS_TOOLS_FOLDER), PFS CR not generated.${_CLR_NC}"
       exit 1
