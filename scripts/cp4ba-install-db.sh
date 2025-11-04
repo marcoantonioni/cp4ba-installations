@@ -213,7 +213,7 @@ waitForClustersPostgresCRD () {
     #echo ""
   fi
 
-  echo "Wait for pod postgresql-operator-controller-manager creation ..."
+  echo "Wait for pod 'postgresql-operator-controller-manager' creation ..."
 
   while [ true ]
   do
