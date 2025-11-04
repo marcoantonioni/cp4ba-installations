@@ -68,16 +68,10 @@ _deployDBCluster () {
       _imageName="${CP4BA_INST_DB_IMAGE}"
     fi
 
-echo "===================================>>>>>>>>>>>>>>>>>"
     echo "Deploying cluster postgresql.k8s.enterprisedb.io name '$1'"
     echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_imageName}
 
-    # ???? modificare logica per test creazione...
-
-    # - crea CR su file temporaneo
     _PG_CLUSTER_CR_TMP="/tmp/cp4ba-pg-cluster-$USER-$RANDOM"
-
-# OLD cat <<EOF | oc create -f -
 
 cat <<EOF > ${_PG_CLUSTER_CR_TMP}
 apiVersion: postgresql.k8s.enterprisedb.io/v1
@@ -146,10 +140,6 @@ spec:
   primaryUpdateStrategy: unsupervised
   instances: 1
 EOF
-
-echo "------------------------------------------------------"
-cat ${_PG_CLUSTER_CR_TMP}
-echo "------------------------------------------------------"
 
     # - loop 
     while [ true ]
@@ -225,19 +215,18 @@ waitForClustersPostgresCRD () {
 
   echo "Wait for pod postgresql-operator-controller-manager creation ..."
 
-  #_PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
-  #if [[ -z "${_PSQL_OCM_POD}" ]]; then
-    while [ true ]
-    do
-      sleep 5
-      _PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
-      if [[ ! -z "${_PSQL_OCM_POD}" ]]; then
-        break
-      fi
-    done
-  #fi
+  while [ true ]
+  do
+    sleep 5
+    _PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
+    if [[ ! -z "${_PSQL_OCM_POD}" ]]; then
+      break
+    fi
+  done
 
   echo "Wait for pod 'postgresql-operator-controller-manager...' ready ..."
+  START_SECONDS=$SECONDS
+
   while [ true ]
   do
     sleep 3
@@ -248,21 +237,18 @@ waitForClustersPostgresCRD () {
         echo "Pod 'postgresql-operator-controller-manager...' is ready"
         break
       else
-        echo "Pod 'postgresql-operator-controller-manager...' is NOT ready"
+        NOW_SECONDS=$SECONDS
+        ELAPSED_SECONDS=$(( $NOW_SECONDS - $START_SECONDS ))
+        TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+        TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
+        TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
+
+        echo "Pod 'postgresql-operator-controller-manager...' is NOT ready [[${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]]"
         echo -e -n "${_CLR_GREEN}Wait for Pod 'postgresql-operator-controller-manager...'\033[0K\r"
       fi
     fi
   done
 
-  #_MAX_WAIT_READY=60000
-  #_RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${_PSQL_OCM_POD} --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
-  #_IS_READY=$(echo $_RES | grep "condition met" | wc -l)
-  #if [ $_IS_READY -eq 0 ]; then
-  #  echo -e "${_CLR_RED}[✗] ERROR: waitForClustersPostgresCRD pod '${_PSQL_OCM_POD}' not ready in ${_MAX_WAIT_READY}, cannot deploy database${_CLR_NC}"
-  #  sleep 5
-  #  exit 1
-  #fi
-  #echo "Pod '${_PSQL_OCM_POD}' is ready"
 }
 
 deployDBClusters() {
