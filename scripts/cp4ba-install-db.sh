@@ -240,7 +240,7 @@ waitForClustersPostgresCRD () {
   echo "Wait for pod 'postgresql-operator-controller-manager...' ready ..."
   while [ true ]
   do
-    sleep 5
+    sleep 3
     _PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
     if [[ ! -z "${_PSQL_OCM_POD}" ]]; then
       _IS_READY=$(oc get pods -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PSQL_OCM_POD} | grep -m 1 "Running" | wc -l)
@@ -249,6 +249,7 @@ waitForClustersPostgresCRD () {
         break
       else
         echo "Pod 'postgresql-operator-controller-manager...' is NOT ready"
+        echo -e -n "${_CLR_GREEN}Wait for Pod 'postgresql-operator-controller-manager...'\033[0K\r"
       fi
     fi
   done
