@@ -337,11 +337,11 @@ generateCR () {
 deployEnvironment () {
   generateCR
 
-  echo -e "=============================================================="
+  # echo -e "=============================================================="
   echo -e "${_CLR_GREEN}Deploying CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
   _INST_ENV_FULL_PATH="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
-  oc apply -n ${CP4BA_INST_NAMESPACE} -f ${_INST_ENV_FULL_PATH}
+  oc apply -n ${CP4BA_INST_NAMESPACE} -f ${_INST_ENV_FULL_PATH} 2>/dev/null 1>/dev/null
   if [ $? -gt 0 ]; then
     echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
     echo -e "${_CLR_RED}[✗] Cannot deploy CP4BA CR '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}', use yq to verify"

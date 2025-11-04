@@ -41,40 +41,45 @@ resourceExist () {
 
 _deployDBCluster () {
 
-if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
+  if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
 
-resourceExist $2 cluster $1
-if [ $? -eq 1 ]; then
-  oc delete cluster -n $2 $1 2>/dev/null 1>/dev/null
-fi
+    resourceExist $2 cluster $1
+    if [ $? -eq 1 ]; then
+      oc delete cluster -n $2 $1 2>/dev/null 1>/dev/null
+    fi
 
-# v25
-#    icr.io/cpopen/edb/postgresql:14.18-5.16.0@sha256:8ceef1ac05972ab29b026fab3fab741a3c905f17773feee2b34f513e444f0fda
+    # v25
+    #    icr.io/cpopen/edb/postgresql:14.18-5.16.0@sha256:8ceef1ac05972ab29b026fab3fab741a3c905f17773feee2b34f513e444f0fda
 
-# vPREV
-#    icr.io/cpopen/edb/postgresql:13.10-4.14.0@sha256:0064d1e77e2f7964d562c5538f0cb3a63058d55e6ff998eb361c03e0ef7a96dd
+    # vPREV
+    #    icr.io/cpopen/edb/postgresql:13.10-4.14.0@sha256:0064d1e77e2f7964d562c5538f0cb3a63058d55e6ff998eb361c03e0ef7a96dd
 
-# 
+    if [[ -z "${CP4BA_INST_DB_IMAGE}" ]]; then
 
-if [[ -z "${CP4BA_INST_DB_IMAGE}" ]]; then
+      # check CP4BA version
+      case "${CP4BA_INST_APPVER}" in
+          25*)
+                  _imageName="icr.io/cpopen/edb/postgresql:14.18-5.16.0@sha256:8ceef1ac05972ab29b026fab3fab741a3c905f17773feee2b34f513e444f0fda";;
+          *)
+                  _imageName="icr.io/cpopen/edb/postgresql:13.10-4.14.0@sha256:0064d1e77e2f7964d562c5538f0cb3a63058d55e6ff998eb361c03e0ef7a96dd";;
+      esac
 
-  # check CP4BA version
-  case "${CP4BA_INST_APPVER}" in
-      25*)
-              _imageName="icr.io/cpopen/edb/postgresql:14.18-5.16.0@sha256:8ceef1ac05972ab29b026fab3fab741a3c905f17773feee2b34f513e444f0fda";;
-      *)
-              _imageName="icr.io/cpopen/edb/postgresql:13.10-4.14.0@sha256:0064d1e77e2f7964d562c5538f0cb3a63058d55e6ff998eb361c03e0ef7a96dd";;
-  esac
+    else
+      _imageName="${CP4BA_INST_DB_IMAGE}"
+    fi
 
-else
-  _imageName="${CP4BA_INST_DB_IMAGE}"
-fi
+echo "===================================>>>>>>>>>>>>>>>>>"
+    echo "Deploying cluster postgresql.k8s.enterprisedb.io name '$1'"
+    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_imageName}
 
+    # ???? modificare logica per test creazione...
 
-echo "Deploying cluster postgresql.k8s.enterprisedb.io name '$1'"
-echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_imageName}
+    # - crea CR su file temporaneo
+    _PG_CLUSTER_CR_TMP="/tmp/cp4ba-pg-cluster-$USER-$RANDOM"
 
-cat <<EOF | oc create -f -
+# OLD cat <<EOF | oc create -f -
+
+cat <<EOF > ${_PG_CLUSTER_CR_TMP}
 apiVersion: postgresql.k8s.enterprisedb.io/v1
 kind: Cluster
 metadata:
@@ -142,12 +147,39 @@ spec:
   instances: 1
 EOF
 
-# ???? modificare logica per test creazione...
+echo "------------------------------------------------------"
+cat ${_PG_CLUSTER_CR_TMP}
+echo "------------------------------------------------------"
 
-else
-  echo -e "${_CLR_RED}[✗] ERROR: _deployDBCluster name or namespace empty${_CLR_NC}"
-  exit 1
-fi
+    # - loop 
+    while [ true ]
+    do
+      # apply CR
+      oc apply -n $2 -f ${_PG_CLUSTER_CR_TMP} 2>/dev/null 1>/dev/null
+      if [ $? -gt 0 ]; then
+        echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
+        echo -e "${_CLR_RED}[✗] Error deploying Postgres CR '${_CLR_YELLOW}${_PG_CLUSTER_CR_TMP}${_CLR_RED}', retry now..."      
+        sleep 2
+      else
+        # -- verify CR existence
+        resourceExist $2 "clusters.postgresql.k8s.enterprisedb.io" $1
+        
+        # -- if OK end loop
+        if [ $? -eq 1 ]; then
+          echo "Deployed cluster postgresql.k8s.enterprisedb.io name '$1'"
+          break
+        else
+          sleep 1
+        fi
+      fi
+    done
+
+    rm ${_PG_CLUSTER_CR_TMP} 2>/dev/null 1>/dev/null
+
+  else
+    echo -e "${_CLR_RED}[✗] ERROR: _deployDBCluster name or namespace empty${_CLR_NC}"
+    exit 1
+  fi
 }
 
 deployDBCluster() {
@@ -192,8 +224,9 @@ waitForClustersPostgresCRD () {
   fi
 
   echo "Wait for pod postgresql-operator-controller-manager creation ..."
-  _PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
-  if [[ -z "${_PSQL_OCM_POD}" ]]; then
+
+  #_PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
+  #if [[ -z "${_PSQL_OCM_POD}" ]]; then
     while [ true ]
     do
       sleep 5
@@ -202,17 +235,33 @@ waitForClustersPostgresCRD () {
         break
       fi
     done
-  fi
+  #fi
 
-  echo "Wait for pod postgresql-operator-controller-manager ready ..."
-  _MAX_WAIT_READY=60000
-  _RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${_PSQL_OCM_POD} --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
-  _IS_READY=$(echo $_RES | grep "condition met" | wc -l)
-  if [ $_IS_READY -eq 0 ]; then
-    echo -e "${_CLR_RED}[✗] ERROR: waitForClustersPostgresCRD pod 'postgresql-operator-controller-manager' not ready in ${_MAX_WAIT_READY}, cannot deploy database${_CLR_NC}"
-    exit 1
-  fi
-  echo "Pod 'postgresql-operator-controller-manager' is ready"
+  echo "Wait for pod 'postgresql-operator-controller-manager...' ready ..."
+  while [ true ]
+  do
+    sleep 5
+    _PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
+    if [[ ! -z "${_PSQL_OCM_POD}" ]]; then
+      _IS_READY=$(oc get pods -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PSQL_OCM_POD} | grep -m 1 "Running" | wc -l)
+      if [ $_IS_READY -gt 0 ]; then
+        echo "Pod 'postgresql-operator-controller-manager...' is ready"
+        break
+      else
+        echo "Pod 'postgresql-operator-controller-manager...' is NOT ready"
+      fi
+    fi
+  done
+
+  #_MAX_WAIT_READY=60000
+  #_RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${_PSQL_OCM_POD} --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
+  #_IS_READY=$(echo $_RES | grep "condition met" | wc -l)
+  #if [ $_IS_READY -eq 0 ]; then
+  #  echo -e "${_CLR_RED}[✗] ERROR: waitForClustersPostgresCRD pod '${_PSQL_OCM_POD}' not ready in ${_MAX_WAIT_READY}, cannot deploy database${_CLR_NC}"
+  #  sleep 5
+  #  exit 1
+  #fi
+  #echo "Pod '${_PSQL_OCM_POD}' is ready"
 }
 
 deployDBClusters() {
@@ -236,7 +285,7 @@ deployDBClusters() {
 
 #==================================
 
-echo -e "=============================================================="
+# echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Deploying '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' DB Clusters in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 deployDBClusters ${CP4BA_INST_SUPPORT_NAMESPACE}
