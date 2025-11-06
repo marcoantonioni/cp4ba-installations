@@ -148,7 +148,7 @@ EOF
       oc apply -n $2 -f ${_PG_CLUSTER_CR_TMP} 2>/dev/null 1>/dev/null
       if [ $? -gt 0 ]; then
         echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
-        echo -e "${_CLR_RED}[✗] Error deploying Postgres CR '${_CLR_YELLOW}${_PG_CLUSTER_CR_TMP}${_CLR_RED}', retry now..."      
+        echo -e "${_CLR_RED}[✗] Error deploying Postgres CR '${_CLR_YELLOW}${_PG_CLUSTER_CR_TMP}${_CLR_RED}'${_CLR_NC}, retry now..."      
         sleep 2
       else
         # -- verify CR existence
