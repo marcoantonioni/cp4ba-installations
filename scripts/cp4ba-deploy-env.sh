@@ -553,6 +553,7 @@ zenCertInTrustedList () {
 }
 
 waitDeploymentReadiness () {
+  echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
   echo -e "${_CLR_GREEN}Configuration and deployment complete for CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
   _seconds=0
