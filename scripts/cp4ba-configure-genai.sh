@@ -237,6 +237,8 @@ _createGenAiConfiguration () {
       done
 
     fi
+
+    echo -e "${_CLR_GREEN}Please wait for patched BAW to restart to enable the workflow assistant${_CLR_NC}"
   else
     
     echo -e "${_CLR_RED}[✗] ERROR: _createGenAiConfiguration GenAI configuration error, ICP4ACluster object not found.${_CLR_NC}"
