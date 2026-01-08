@@ -346,6 +346,9 @@ CONFIG_FILE=../configs/env1-baw.properties
 # v24
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 24.0.1
 
+# v25 with specific cert-kubernetes version (use this option to override latestVersion value in https://github.com/IBM/cloud-pak/blob/master/repo/case/ibm-cp-automation/index.yaml)
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -k 25.0.1
+
 ```
 
 Well, now you have to... no... you don't have to do anything more, just wait for the procedure to finish.
