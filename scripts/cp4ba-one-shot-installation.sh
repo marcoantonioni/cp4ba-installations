@@ -10,6 +10,7 @@ _SCRIPTS=""
 _TEST_CFG=false
 _CPAK_MGR=false
 _CPAK_MGR_VER=""
+_CPAK_MGR_K8CERT_VER=""
 _CPAK_MGR_FOLDER=""
 _CPAK_MGR_FOLDER_REMOVE=false
 _RELEASE_BASE=""
@@ -41,13 +42,14 @@ usage () {
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:p:s:v:d:mt flag
+while getopts c:p:s:v:k:d:mt flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         p) _SCRIPTS=${OPTARG};;
         m) _CPAK_MGR=true;;
         v) _CPAK_MGR_VER=${OPTARG};;
+        k) _CPAK_MGR_K8CERT_VER=${OPTARG};;
         d) _CPAK_MGR_FOLDER=${OPTARG};;
         t) _TEST_CFG=true;;
         \?) # Invalid option
@@ -170,7 +172,14 @@ installAndVerifyCasePkgMgr () {
     if [[ ! -z "${_CPAK_MGR_VER}" ]]; then
       _USE_VER=" -v ${_CPAK_MGR_VER}"
     fi
-    ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -d ${_CPAK_MGR_FOLDER} ${_USE_VER}
+
+    _USE_KVER=""
+    if [[ ! -z "${_CPAK_MGR_K8CERT_VER}" ]]; then
+      _USE_KVER=" -v ${_CPAK_MGR_K8CERT_VER}"
+    fi
+    
+
+    ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -d ${_CPAK_MGR_FOLDER} ${_USE_VER} ${_USE_KVER}
     if [[ $? -gt 0 ]]; then
       _ERR_PKG_MGR=1
     else
