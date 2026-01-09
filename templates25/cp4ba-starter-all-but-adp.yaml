@@ -79,7 +79,7 @@ spec:
 
     business_performance_center:
       all_users_access: ${CP4BA_INST_BAI_BPC_ALLUSER}
-      workforce_insights_secret: ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
+      # workforce_insights_secret: ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
 
     flink:
       create_route: ${CP4BA_INST_BAI_FLINK_ROUTE}
