@@ -35,6 +35,7 @@ usage () {
     -m(optional flag) install-case-package-manager [if set install a fresh package manager]
     -v(optional) case-package-manager-version [install latest version if not set, see 'cp4ba-casemanager-setup' repository for further options]
        (eg: '5.1.0') 
+    -k(optional) cert-kubernetes-version
     -d(optional) full-path-to-target-folder-for-case-package-manager [mandatory if -m is set, created if not exists]
        (eg: '/tmp/my-cmgr')${_CLR_NC}"
 }
@@ -175,10 +176,10 @@ installAndVerifyCasePkgMgr () {
 
     _USE_KVER=""
     if [[ ! -z "${_CPAK_MGR_K8CERT_VER}" ]]; then
-      _USE_KVER=" -v ${_CPAK_MGR_K8CERT_VER}"
+      _USE_KVER=" -k ${_CPAK_MGR_K8CERT_VER}"
     fi
     
-
+    echo ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -d ${_CPAK_MGR_FOLDER} ${_USE_VER} ${_USE_KVER}
     ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -d ${_CPAK_MGR_FOLDER} ${_USE_VER} ${_USE_KVER}
     if [[ $? -gt 0 ]]; then
       _ERR_PKG_MGR=1
@@ -225,28 +226,28 @@ installAndVerifyCasePkgMgr () {
     # Show CP4BA release,version,channel, etc...
     #---------------------
     _GREP_WHAT="CP4BA_PATCH_VERSION"
-    _CP4BA_PATCH_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+    export _CP4BA_PATCH_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
     _GREP_WHAT="CP4BA_CSV_VERSION"
-    _CP4BA_CSV_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+    export _CP4BA_CSV_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
     _GREP_WHAT="CS_OPERATOR_VERSION"
-    _CS_OPERATOR_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+    export _CS_OPERATOR_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
     _GREP_WHAT="CS_CHANNEL_VERSION"
-    _CS_CHANNEL_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+    export _CS_CHANNEL_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
     _GREP_WHAT="CS_CATALOG_VERSION"
-    _CS_CATALOG_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+    export _CS_CATALOG_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
     _GREP_WHAT="ZEN_OPERATOR_VERSION"
-    _ZEN_OPERATOR_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+    export _ZEN_OPERATOR_VERSION=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
     _GREP_WHAT="REQUIREDVER_BTS"
-    _REQUIREDVER_BTS=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+    export _REQUIREDVER_BTS=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
     _GREP_WHAT="REQUIREDVER_POSTGRESQL"
-    _REQUIREDVER_POSTGRESQL=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
+    export _REQUIREDVER_POSTGRESQL=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
     echo -e "${_CLR_GREEN}Using CP4BA Case Manager v${_CPAK_MGR_VER} (Release/Patch version)${_CLR_NC}"
     echo -e "${_CLR_GREEN}Release base                     '${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_GREEN}'${_CLR_NC}"

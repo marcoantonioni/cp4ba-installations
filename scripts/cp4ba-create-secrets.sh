@@ -184,6 +184,192 @@ createSecretBAW () {
 }
 
 #-------------------------------
+createSecretBAS () {
+# $1 username
+# $2 password
+
+  echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
+    --from-literal=dbUsername="$1" \
+    --from-literal=dbPassword="$2" 1> /dev/null
+
+  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
+  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-name=${CP4BA_INST_BAW_1_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
+  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
+
+#---------------------------------------------
+_SECRET_FILE_NAME="/tmp/secret-baw-runtime-$USER-$RANDOM.xml"
+cat <<EOF > ${_SECRET_FILE_NAME}
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- BAW Runtime Liberty server properties -->
+<properties>
+  <server merge="mergeChildren">
+    <!-- Settings related to the BAW runtime server -->
+
+    <!-- CUSTOM DB EXAMPLE -->
+    <dataSource commitOrRollbackOnCleanup="commit" id="jdbc/bawexternal" isolationLevel="TRANSACTION_READ_COMMITTED" jndiName="jdbc/bawexternal" type="javax.sql.XADataSource">
+      <jdbcDriver libraryRef="PostgreSQLLib"/>
+      <connectionManager maxPoolSize="50" minPoolSize="2"/>
+        <properties.postgresql URL="jdbc:postgresql://${CP4BA_INST_DB_1_SERVER_NAME}:${CP4BA_INST_DB_SERVER_PORT}/bawexternal" user="bawexternal" password="dem0s"/>
+    </dataSource>
+
+    <!-- AI Features START -->
+    <authData id="watsonx.ai_auth_alias" user="${CP4BA_INST_GENAI_WX_USERID}" password="${CP4BA_INST_GENAI_WX_APIKEY}" />
+    <!-- AI Features END -->
+  </server>
+</properties>
+EOF
+
+_SECRET_NAME="my-liberty-custom-xml-secret"
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
+#---------------------------------------------
+_AGENT_FQDN_BASE=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
+_AGENT_FQDN_FULL="https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${_FQDN_BASE}"
+
+_SECRET_FILE_NAME="/tmp/secret-100Custom-runtime-$USER-$RANDOM.xml"
+cat <<EOF > ${_SECRET_FILE_NAME}
+<properties>
+  <server merge="mergeChildren">
+    <email merge="mergeChildren">
+      <!-- SMTP server that mail should be sent to -->
+      <smtp-server merge="replace">mail.cp4ba-collateral.svc.cluster.local</smtp-server>
+        <mail-template>
+          <process>externalmailprocesslink_{0}.html</process>
+          <no-process>externalmailnoprocess_{0}.html</no-process> 
+        </mail-template> 
+      <valid-from-required merge="replace">true</valid-from-required>
+      <default-from-address merge="replace">system@cp.internal</default-from-address>
+      <send-external-email merge="replace">true</send-external-email>
+      <send-email-notifications-to-list merge="replace">false</send-email-notifications-to-list>
+      <send-email-notifications-async merge="replace">false</send-email-notifications-async>
+      <send-on-reassignment merge="replace">true</send-on-reassignment>
+    </email>
+    <!-- mime type white list which specifies mime types accepted for -->
+    <!-- upload to document list or document attachment -->
+    <document-attachment-accepted-mime-types merge="mergeChildren">
+    <!-- specifies whether to allow a null mime type for upload-->
+        <allow-null-mime-type>false</allow-null-mime-type>
+        <!-- lists the mime types allowed for upload -->
+        <mime-type>text/plain</mime-type>
+        <mime-type>application/xml</mime-type>
+        <mime-type>image/png</mime-type>
+        <mime-type>image/jpg</mime-type>
+        <mime-type>application/pdf</mime-type>
+        <mime-type>application/vnd.ms-excel</mime-type>
+        <mime-type>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</mime-type>
+        <mime-type>application/msword</mime-type>
+        <mime-type>application/vnd.openxmlformats-officedocument.wordprocessingml.document</mime-type>
+        <mime-type>application/vnd.ms-powerpoint</mime-type>
+        <mime-type>application/vnd.openxmlformats-officedocument.presentationml.presentation</mime-type>
+        <mime-type>audio/mpeg</mime-type>
+        <mime-type>video/mp4</mime-type>
+        <mime-type>text/csv</mime-type>
+        <mime-type>text/html</mime-type>
+        <mime-type>application/json</mime-type>
+        <mime-type>text/markdown</mime-type>
+        <mime-type>application/vnd.oasis.opendocument.presentation</mime-type>
+        <mime-type>application/vnd.oasis.opendocument.spreadsheet</mime-type>
+        <mime-type>application/vnd.oasis.opendocument.text</mime-type>
+        <mime-type>audio/wav</mime-type>
+        <mime-type>application/zip</mime-type>
+        <mime-type>message/rfc822</mime-type>
+    </document-attachment-accepted-mime-types>
+    <!-- extension white list which specifies extensions accepted for -->
+    <!-- upload to document list or document attachment -->
+    <document-attachment-accepted-extensions merge="mergeChildren">
+        <!-- specifies whether to allow a document with no extension for upload -->
+        <allow-null-extension>true</allow-null-extension>
+        <!-- lists the extensions allowed for upload -->
+        <extension>txt</extension>
+        <extension>xml</extension>
+        <extension>png</extension>
+        <extension>jpg</extension>
+        <extension>jpeg</extension>
+        <extension>pdf</extension>
+        <extension>xls</extension>
+        <extension>xlsx</extension>
+        <extension>doc</extension>
+        <extension>docx</extension>
+        <extension>ppt</extension>
+        <extension>pptx</extension>
+        <extension>mp3</extension>
+        <extension>mp4</extension>
+        <extension>m4a</extension>
+        <extension>csv</extension>
+        <extension>htm</extension>
+        <extension>html</extension>
+        <extension>json</extension>
+        <extension>md</extension>
+        <extension>odp</extension>
+        <extension>ods</extension>
+        <extension>odt</extension>
+        <extension>wav</extension>
+        <extension>zip</extension>
+        <extension>eml</extension>
+    </document-attachment-accepted-extensions>
+    <document-attachment-max-file-size-upload merge="replace">5000048576</document-attachment-max-file-size-upload>
+    <case-instance-migration-enabled>true</case-instance-migration-enabled>
+    <gen-ai merge="mergeChildren"> 
+      <project-id>project_id</project-id> 
+      <provider-url>${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}</provider-url> 
+      <auth-alias>watsonx.ai_auth_alias</auth-alias> 
+      <read-timeout>120</read-timeout>
+      <default-foundation-model>meta-llama/llama-3-3-70b-instruct</default-foundation-model>
+    </gen-ai>
+    <portal merge="mergeChildren">
+      <agent-enable merge="replace">true</agent-enable>
+      <agent-endpoint merge="replace">${_AGENT_FQDN_FULL}/agent/runtimeChat</agent-endpoint>
+    </portal>
+    <wxo merge="mergeChildren">
+      <token-url>${CP4BA_INST_WXO_TOKEN_URL}</token-url> 
+      <discovery>
+        <service-instance-url>${CP4BA_INST_WXO_SERVICE_INSTANCE_URL}</service-instance-url> 
+      </discovery>
+    </wxo>
+  </server>
+</properties>
+EOF
+
+_SECRET_NAME="my-lombardi-custom-xml-secret"
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
+
+#---------------------------------------------
+_WX_APIKEY=$(echo ${CP4BA_INST_BAS_GENAI_WX_APIKEY} | base64)
+_WX_PRJID=$(echo ${CP4BA_INST_BAS_GENAI_WX_PRJ_ID} | base64)
+_WX_URL=$(echo ${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER} | base64)
+
+_SECRET_FILE_NAME="/tmp/secret-wf-assistant-$USER-$RANDOM.xml"
+cat <<EOF > ${_SECRET_FILE_NAME}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ibm-workflow-assistant-secrets
+  namespace: ${CP4BA_INST_NAMESPACE}
+data:
+  WATSONX_API_KEY: "${_WX_APIKEY}"
+  WATSONX_PASSWORD: ''
+  WATSONX_PROJECT_ID: "${_WX_PRJID}"
+  WATSONX_TOKEN: ''
+  WATSONX_URL: "${_WX_URL}"
+type: Opaque
+
+EOF
+
+_SECRET_NAME="ibm-workflow-assistant-secrets"
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
+}
+
+#-------------------------------
 createSecretADS () {
   echo -e "Secret '${_CLR_YELLOW}ibm-dba-ads-runtime-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-runtime-secret 2> /dev/null 1> /dev/null
@@ -216,13 +402,6 @@ createSecretADS () {
       echo -e "${_CLR_RED}Secret ibm-dba-ads-mongo-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
     fi
   fi
-
-  # to be investigated
-  #echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
-  #oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
-  #oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
-  #  --from-literal=dbUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
-  #  --from-literal=dbPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 1> /dev/null
 
 }
 
@@ -287,6 +466,83 @@ createConfigMapADS() {
   grabCertificates
 }
 
+createConfigMapBtsImZenForExternalDBs() {
+
+echo "createConfigMapBtsImZenForExternalDBs: config maps not created, used only for external db ..."
+
+# echo -e "ConfigMap '${_CLR_YELLOW}ibm-bts-config-extension${_CLR_NC}'"
+# 
+# cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: ibm-bts-config-extension
+#   namespace: "${CP4BA_INST_NAMESPACE}"
+#   labels:
+#     cp4ba.ibm.com/backup-type: mandatory
+# data:
+#   serverName: "${CP4BA_INST_DB_1_SERVICE}"
+#   portNumber: "5432"
+#   databaseName: bts
+#   ssl: "false"
+#   sslMode: verify-ca
+#   sslSecretName: bts-datastore-edb-secret
+#   customPropertyName1: sslKey
+#   customPropertyValue1: "/opt/ibm/wlp/usr/shared/resources/security/db/tls.key"
+#   customPropertyName2: user
+#   customPropertyValue2: "bts_user"
+# EOF
+
+# echo -e "ConfigMap '${_CLR_YELLOW}im-datastore-edb-cm${_CLR_NC}'"
+
+# cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: im-datastore-edb-cm
+#   namespace: "${CP4BA_INST_NAMESPACE}"
+#   labels:
+#     cp4ba.ibm.com/backup-type: mandatory
+# data:
+#   IS_EMBEDDED: "false"
+#   DATABASE_PORT: "5432"
+#   DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE}"
+#   DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE}"
+#   DATABASE_USER: im_user
+#   DATABASE_NAME: im
+#   DATABASE_CA_CERT: ca.crt
+#   DATABASE_CLIENT_CERT: tls.crt
+#   DATABASE_CLIENT_KEY: tls.key
+# EOF
+
+# echo -e "ConfigMap '${_CLR_YELLOW}ibm-zen-metastore-edb-cm${_CLR_NC}'"
+
+# cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: ibm-zen-metastore-edb-cm
+#   namespace: "${CP4BA_INST_NAMESPACE}"
+#   labels:
+#     cp4ba.ibm.com/backup-type: mandatory
+# data:
+#   IS_EMBEDDED: "false"
+#   DATABASE_CA_CERT: ca.crt
+#   DATABASE_CLIENT_CERT: tls.crt
+#   DATABASE_CLIENT_KEY: tls.key
+#   DATABASE_MONITORING_SCHEMA: watchdog
+#   DATABASE_NAME: zen
+#   DATABASE_PORT: "5432"
+#   DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE}"
+#   DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE}"
+#   DATABASE_SCHEMA: public
+#   DATABASE_USER: zen_user
+#   DATABASE_ENABLE_SSL: "false"
+#   #DATABASE_SSL_MODE: require 
+# EOF
+
+}
+
 #-------------------------------
 createSecrets () {
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
@@ -328,6 +584,10 @@ createSecrets () {
     fi
     ((i = i + 1))
   done  
+
+  createSecretBAS ${CP4BA_INST_DB_BAW_USER} ${CP4BA_INST_DB_BAW_PWD}
+
+  # TBD for external DBs createConfigMapBtsImZenForExternalDBs
 
   # createSecretAE
 

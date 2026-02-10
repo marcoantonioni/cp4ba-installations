@@ -39,7 +39,7 @@ resourceExist () {
 }
 
 
-_deployDBCluster () {
+_deployDBClusterEDB () {
 
   if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
 
@@ -147,9 +147,9 @@ EOF
       # apply CR
       oc apply -n $2 -f ${_PG_CLUSTER_CR_TMP} 2>/dev/null 1>/dev/null
       if [ $? -gt 0 ]; then
-        echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
-        echo -e "${_CLR_RED}[✗] Error deploying Postgres CR '${_CLR_YELLOW}${_PG_CLUSTER_CR_TMP}${_CLR_RED}'${_CLR_NC}, retry now..."      
-        sleep 2
+        # echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
+        # echo -e "${_CLR_RED}[✗] Error deploying Postgres CR '${_CLR_YELLOW}${_PG_CLUSTER_CR_TMP}${_CLR_RED}'${_CLR_NC}, retry now..."      
+        sleep 10
       else
         # -- verify CR existence
         resourceExist $2 "clusters.postgresql.k8s.enterprisedb.io" $1
@@ -167,9 +167,194 @@ EOF
     rm ${_PG_CLUSTER_CR_TMP} 2>/dev/null 1>/dev/null
 
   else
-    echo -e "${_CLR_RED}[✗] ERROR: _deployDBCluster name or namespace empty${_CLR_NC}"
+    echo -e "${_CLR_RED}[✗] ERROR: _deployDBClusterEDB name or namespace empty${_CLR_NC}"
     exit 1
   fi
+}
+
+_deployDBClusterOSS () {
+
+  if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
+
+    resourceExist $2 statefulsets.apps $1
+    if [ $? -eq 1 ]; then
+      oc delete statefulsets.apps -n $2 $1 2>/dev/null 1>/dev/null
+    fi
+
+    _imageName="${CP4BA_INST_DB_OSS_IMAGE}"
+
+    echo "Deploying statefulset name '$1'"
+    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_imageName}
+
+    _PG_SS_CR_TMP="/tmp/cp4ba-pg-statefulset-$USER-$RANDOM"
+
+cat <<EOF > ${_PG_SS_CR_TMP}
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: $1
+  namespace: $2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: $1
+  serviceName: $1
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  volumeClaimTemplates:
+    - kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: $1
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: ${CP4BA_INST_DB_STORAGE_SIZE}
+        storageClassName: ${CP4BA_SC_NAME}
+        volumeMode: Filesystem
+      status:
+        phase: Pending
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: $1
+    spec:
+      containers:
+        - name: postgres
+          image: '${_imageName}'
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "${CP4BA_INST_DB_OSS_ADMIN_PASSWORD}"
+          resources:
+            limits:
+              cpu: "${CP4BA_INST_DB_LIMITS_CPU}"
+              memory: "${CP4BA_INST_DB_LIMITS_MEMORY}"
+            requests:
+              cpu: "${CP4BA_INST_DB_REQS_CPU}"
+              memory: "${CP4BA_INST_DB_REQS_MEMORY}"
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 10
+      dnsPolicy: ClusterFirst
+      serviceAccountName: postgres-anyuid
+      serviceAccount: postgres-anyuid
+      securityContext: {}
+      schedulerName: default-scheduler
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: $1-rw
+  namespace: $2
+spec:
+  selector:
+    app: $1
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  ipFamilies:
+    - IPv4
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: $1-ro
+  namespace: $2
+spec:
+  selector:
+    app: $1
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  ipFamilies:
+    - IPv4
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: $1-r
+  namespace: $2
+spec:
+  selector:
+    app: $1
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  ipFamilies:
+    - IPv4
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: postgres-anyuid
+EOF
+
+
+    # - loop 
+    while [ true ]
+    do
+      # apply CR
+      oc apply -n $2 -f ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
+      if [ $? -gt 0 ]; then
+        # echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
+        # echo -e "${_CLR_RED}[✗] Error deploying Postgres CR '${_CLR_YELLOW}${_PG_SS_CR_TMP}${_CLR_RED}'${_CLR_NC}, retry now..."      
+        sleep 10
+      else
+        # -- verify CR existence
+        resourceExist $2 "statefulsets.apps" $1
+        
+        # -- if OK end loop
+        if [ $? -eq 1 ]; then
+          oc adm policy add-scc-to-user anyuid -z postgres-anyuid -n $2 2>/dev/null 1>/dev/null
+
+          echo "Deployed statefulsets.apps name '$1'"
+          break
+        else
+          sleep 1
+        fi
+      fi
+    done
+
+    rm ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
+
+  else
+    echo -e "${_CLR_RED}[✗] ERROR: _deployDBClusterOSS name or namespace empty${_CLR_NC}"
+    exit 1
+  fi
+}
+
+_deployDBCluster () {
+  if [[ -z "${CP4BA_INST_DB_USE_EDB}" ]] || [[ "${CP4BA_INST_DB_USE_EDB}" = "true" ]]; then
+    _deployDBClusterEDB "$1" "$2"
+  else
+    _deployDBClusterOSS "$1" "$2"
+  fi
+
 }
 
 deployDBCluster() {
@@ -243,8 +428,8 @@ waitForClustersPostgresCRD () {
         TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
         TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
 
-        echo "Pod 'postgresql-operator-controller-manager...' is NOT ready [[${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]]"
-        echo -e -n "${_CLR_GREEN}Wait for Pod 'postgresql-operator-controller-manager...'\033[0K\r"
+        echo -e -n "Pod 'postgresql-operator-controller-manager...' is NOT ready [[${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]]\r"
+        # echo -e -n "${_CLR_GREEN}Wait for Pod 'postgresql-operator-controller-manager...'\033[0K\r"
       fi
     fi
   done
@@ -254,7 +439,9 @@ waitForClustersPostgresCRD () {
 deployDBClusters() {
 # $1: namespace
 
-  waitForClustersPostgresCRD
+  if [[ -z "${CP4BA_INST_DB_USE_EDB}" ]] || [[ "${CP4BA_INST_DB_USE_EDB}" = "true" ]]; then
+    waitForClustersPostgresCRD
+  fi
 
   i=1
   _IDX_END=$CP4BA_INST_DB_INSTANCES

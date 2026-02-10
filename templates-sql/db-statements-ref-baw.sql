@@ -22,10 +22,46 @@ CREATE ROLE §§dbAEowner§§ PASSWORD '§§dbAEowner_password§§' CREATEDB CRE
 Create databases, schemas and tablespaces
 */
 
+/* 
+25.0.1 authoring production external PG zen bts im
+*/
+
+CREATE DATABASE zen;
+CREATE USER zen_user;
+GRANT CONNECT ON DATABASE zen TO public;
+ALTER DATABASE zen OWNER TO zen_user;
+GRANT ALL PRIVILEGES ON DATABASE zen to zen_user;
+CREATE SCHEMA watchdog;
+ALTER SCHEMA watchdog OWNER TO zen_user;
+GRANT ALL ON SCHEMA watchdog TO zen_user;
+ALTER DATABASE zen SET timezone TO 'Etc/UTC';
+
+CREATE DATABASE im;
+CREATE USER im_user;
+GRANT CONNECT ON DATABASE im TO public;
+ALTER DATABASE im OWNER TO im_user;
+GRANT ALL PRIVILEGES ON DATABASE im to im_user;
+ALTER DATABASE im SET timezone TO 'Etc/UTC';
+
+CREATE DATABASE bts;
+CREATE USER bts_user;
+GRANT CONNECT ON DATABASE im TO public;
+ALTER DATABASE bts OWNER TO bts_user;
+GRANT ALL PRIVILEGES ON DATABASE im to bts_user;
+ALTER DATABASE bts SET timezone TO 'Etc/UTC';
+
+
 /* BAW */
 CREATE DATABASE §§dbPrefix§§_baw_1 OWNER §§dbBAWowner§§ ENCODING UTF8;
 GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_baw_1 to §§dbBAWowner§§;
 \c §§dbPrefix§§_baw_1;
+CREATE SCHEMA IF NOT EXISTS §§dbBAWowner§§ AUTHORIZATION §§dbBAWowner§§;
+GRANT ALL ON SCHEMA §§dbBAWowner§§ to §§dbBAWowner§§;
+
+/* APP */
+CREATE DATABASE §§dbPrefix§§_app_1 OWNER §§dbBAWowner§§ ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_app_1 to §§dbBAWowner§§;
+\c §§dbPrefix§§_app_1;
 CREATE SCHEMA IF NOT EXISTS §§dbBAWowner§§ AUTHORIZATION §§dbBAWowner§§;
 GRANT ALL ON SCHEMA §§dbBAWowner§§ to §§dbBAWowner§§;
 
@@ -35,7 +71,7 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_icn to §§dbICNowner§§;
 \c §§dbPrefix§§_icn;
 CREATE SCHEMA IF NOT EXISTS §§dbICNowner§§ AUTHORIZATION §§dbICNowner§§;
 GRANT ALL ON SCHEMA §§dbICNowner§§ to §§dbICNowner§§;
-CREATE TABLESPACE §§dbPrefix§§_icndb_tbs owner §§dbICNowner§§ location '/run/tbs/icn';
+CREATE TABLESPACE §§dbPrefix§§_icndb_tbs owner §§dbICNowner§§ location '/§§dbBasePath§§/tbs/icn';
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_icndb_tbs to §§dbICNowner§§; 
 
 /* GCD */
@@ -44,7 +80,7 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_gcd to §§dbGCDowner§§;
 \c §§dbPrefix§§_gcd;
 CREATE SCHEMA IF NOT EXISTS §§dbGCDowner§§ AUTHORIZATION §§dbGCDowner§§;
 GRANT ALL ON SCHEMA §§dbGCDowner§§ to §§dbGCDowner§§;
-CREATE TABLESPACE §§dbPrefix§§_gcd_tbs owner §§dbGCDowner§§ location '/run/tbs/gcd';
+CREATE TABLESPACE §§dbPrefix§§_gcd_tbs owner §§dbGCDowner§§ location '/§§dbBasePath§§/tbs/gcd';
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_gcd_tbs to §§dbGCDowner§§; 
 
 /* DOCS */
@@ -53,7 +89,7 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_bawdocs to §§dbBAWDOCSowner�
 \c §§dbPrefix§§_bawdocs;
 CREATE SCHEMA IF NOT EXISTS §§dbBAWDOCSowner§§ AUTHORIZATION §§dbBAWDOCSowner§§;
 GRANT ALL ON SCHEMA §§dbBAWDOCSowner§§ to §§dbBAWDOCSowner§§;
-CREATE TABLESPACE §§dbPrefix§§_bawdocs_tbs owner §§dbBAWDOCSowner§§ location '/run/tbs/docs';
+CREATE TABLESPACE §§dbPrefix§§_bawdocs_tbs owner §§dbBAWDOCSowner§§ location '/§§dbBasePath§§/tbs/docs';
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_bawdocs_tbs to §§dbBAWDOCSowner§§; 
 
 /* DOS */
@@ -62,7 +98,7 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_bawdos to §§dbBAWDOSowner§�
 \c §§dbPrefix§§_bawdos;
 CREATE SCHEMA IF NOT EXISTS §§dbBAWDOSowner§§ AUTHORIZATION §§dbBAWDOSowner§§;
 GRANT ALL ON SCHEMA §§dbBAWDOSowner§§ to §§dbBAWDOSowner§§;
-CREATE TABLESPACE §§dbPrefix§§_bawdos_tbs owner §§dbBAWDOSowner§§ location '/run/tbs/dos';
+CREATE TABLESPACE §§dbPrefix§§_bawdos_tbs owner §§dbBAWDOSowner§§ location '/§§dbBasePath§§/tbs/dos';
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_bawdos_tbs to §§dbBAWDOSowner§§; 
 
 /* TOS */
@@ -71,9 +107,9 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_bawtos to §§dbBAWTOSowner§�
 \c §§dbPrefix§§_bawtos;
 CREATE SCHEMA IF NOT EXISTS §§dbBAWTOSowner§§ AUTHORIZATION §§dbBAWTOSowner§§;
 GRANT ALL ON SCHEMA §§dbBAWTOSowner§§ to §§dbBAWTOSowner§§;
-CREATE TABLESPACE §§dbPrefix§§_vwdata_ts owner §§dbBAWTOSowner§§ location '/run/tbs/tosdata';
-CREATE TABLESPACE §§dbPrefix§§_vwindex_ts owner §§dbBAWTOSowner§§ location '/run/tbs/tosindex';
-CREATE TABLESPACE §§dbPrefix§§_vwblob_ts owner §§dbBAWTOSowner§§ location '/run/tbs/tosblob';
+CREATE TABLESPACE §§dbPrefix§§_vwdata_ts owner §§dbBAWTOSowner§§ location '/§§dbBasePath§§/tbs/tosdata';
+CREATE TABLESPACE §§dbPrefix§§_vwindex_ts owner §§dbBAWTOSowner§§ location '/§§dbBasePath§§/tbs/tosindex';
+CREATE TABLESPACE §§dbPrefix§§_vwblob_ts owner §§dbBAWTOSowner§§ location '/§§dbBasePath§§/tbs/tosblob';
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_vwdata_ts to §§dbBAWTOSowner§§; 
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_vwindex_ts to §§dbBAWTOSowner§§; 
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_vwblob_ts to §§dbBAWTOSowner§§; 
@@ -91,7 +127,7 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_os1 to §§dbOSowner§§;
 \c §§dbPrefix§§_os1;
 CREATE SCHEMA IF NOT EXISTS §§dbOSowner§§ AUTHORIZATION §§dbOSowner§§;
 GRANT ALL ON SCHEMA §§dbOSowner§§ to §§dbOSowner§§;
--- CREATE TABLESPACE §§dbPrefix§§_os1_tbs owner §§dbOSowner§§ location '/run/tbs/os1';
+-- CREATE TABLESPACE §§dbPrefix§§_os1_tbs owner §§dbOSowner§§ location '/§§dbBasePath§§/tbs/os1';
 -- GRANT CREATE ON TABLESPACE §§dbPrefix§§_os1_tbs to §§dbOSowner§§; 
 
 /* OS2 */

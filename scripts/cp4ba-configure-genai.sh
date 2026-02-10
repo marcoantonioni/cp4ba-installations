@@ -87,7 +87,7 @@ waitForResourceCreated () {
 
 #-------------------------------
 waitForBawStatefulSetReady () {
-  _SFSET_NAME="${CP4BA_INST_CR_NAME}-$1-baw-server"
+  _SFSET_NAME="${CP4BA_INST_CR_NAME}-$1-$2"
   echo -e -n "${_CLR_GREEN}Wait for ${_CLR_YELLOW}${_SFSET_NAME}${_CLR_GREEN}${_CLR_NC}..."
   waitForResourceCreated ${CP4BA_INST_NAMESPACE} "statefulset" ${_SFSET_NAME} 5
 
@@ -142,26 +142,11 @@ _createGenAiConfiguration () {
       rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
     else
 
-      i=1
-      _MAX_BAW=10
-      while [[ $i -le $_MAX_BAW ]]
-      do
-        __BAW_INST="CP4BA_INST_BAW_${i}"
-        __BAW_NAME="CP4BA_INST_BAW_${i}_NAME"
-        __BAW_GENAI="CP4BA_INST_BAW_${i}_GENAI_ENABLED"
-        __BAW_WX_URL_PROVIDER="CP4BA_INST_BAW_${i}_GENAI_WX_URL_PROVIDER"
-        __BAW_WX_PRJ_ID="CP4BA_INST_BAW_${i}_GENAI_WX_PRJ_ID"
-        __BAW_WX_APIKEY="CP4BA_INST_BAW_${i}_GENAI_WX_APIKEY"
+      if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]]; then
 
-        _INST="${!__BAW_INST}"
-        _GENAI="${!__BAW_GENAI}"
-        _NAME="${!__BAW_NAME}"
-        _URL="${!__BAW_WX_URL_PROVIDER}"
-        _PRJID="${!__BAW_WX_PRJ_ID}"
-        _APIKEY="${!__BAW_WX_APIKEY}"
-        if [[ "${_INST}" = "true" ]] && [[ "${_GENAI}" = "true" ]]; then
-          waitForBawStatefulSetReady "${_NAME}"
-          echo -e "${_CLR_GREEN}Patching BAW '${_CLR_YELLOW}${_NAME}${_CLR_GREEN}'${_CLR_NC}"
+        if [[ "${CP4BA_INST_BAS_GENAI_ENABLED}" = "true" ]]; then
+          waitForBawStatefulSetReady "bastudio" "deployment"
+          echo -e "${_CLR_GREEN}Patching BAW '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
           _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-100Custom-$USER-$RANDOM"
 
@@ -170,8 +155,8 @@ _createGenAiConfiguration () {
           echo '	<!-- Enable GenAI -->' >> ${_WX_GENAI_TMP}
           echo '	<server>' >> ${_WX_GENAI_TMP}
           echo '		<gen-ai merge="mergeChildren">' >> ${_WX_GENAI_TMP}
-          echo '			<provider-url>'${_URL}'</provider-url>' >> ${_WX_GENAI_TMP}
-          echo '			<project-id>'${_PRJID}'</project-id>' >> ${_WX_GENAI_TMP}
+          echo '			<provider-url>'${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}'</provider-url>' >> ${_WX_GENAI_TMP}
+          echo '			<project-id>'${CP4BA_INST_BAS_GENAI_WX_PRJ_ID}'</project-id>' >> ${_WX_GENAI_TMP}
           echo '			<auth-alias>workplace_watsonx.ai_auth_alias</auth-alias>' >> ${_WX_GENAI_TMP}
           echo '			<read-timeout merge="replace">120</read-timeout>' >> ${_WX_GENAI_TMP}
           echo '		</gen-ai>' >> ${_WX_GENAI_TMP}
@@ -184,16 +169,16 @@ _createGenAiConfiguration () {
           echo '	</server>' >> ${_WX_GENAI_TMP}
           echo '</properties>' >> ${_WX_GENAI_TMP}
 
-          oc create secret -n $1 generic custom-config-workplace-assistant-${i} --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
+          oc create secret -n $1 generic custom-config-workplace-assistant-bas --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
           rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
 
           _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-authdata-$USER-$RANDOM"
 
           echo '<server>' >> ${_WX_GENAI_TMP}
-          echo '    <authData id="workplace_watsonx.ai_auth_alias" user="ANY_USER_ID_IS_FINE" password="${_APIKEY}" />' >> ${_WX_GENAI_TMP}
+          echo '    <authData id="workplace_watsonx.ai_auth_alias" user="ANY_USER_ID_IS_FINE" password="${CP4BA_INST_BAS_GENAI_WX_APIKEY}" />' >> ${_WX_GENAI_TMP}
           echo '</server>' >> ${_WX_GENAI_TMP}
 
-          oc create secret -n $1 generic custom-config-assistant-authdata-${i} --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
+          oc create secret -n $1 generic custom-config-assistant-authdata-bas --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
           rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
           
           # replace object BAW[ _NAME ] with new configuration
@@ -207,16 +192,16 @@ _createGenAiConfiguration () {
           oc get icp4acluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o json > ${_FILE_ORIG}
 
           # extract BAW object
-          jq '.spec.baw_configuration[] | select(.name=="'${_NAME}'")' ${_FILE_ORIG} > ${_FILE_BAW_GENAI}
+          jq '.spec.workflow_authoring_configuration' ${_FILE_ORIG} > ${_FILE_BAW_GENAI}
 
           # add workplace assistant attributes to BAW object
-          cat ${_FILE_BAW_GENAI} | jq '. += {"custom_xml_secret_name": "custom-config-assistant-authdata'-${i}'", "lombardi_custom_xml_secret_name": "custom-config-workplace-assistant'-${i}'", "environment_config": {"content_security_policy_additional_script_src": ["*.watson.appdomain.cloud"],"content_security_policy_additional_connect_src": ["*.watson.appdomain.cloud"], "content_security_policy_additional_font_src": ["*.watson.appdomain.cloud"] } }' > ${_FILE_BAW_GENAI_PATCHED}
+          cat ${_FILE_BAW_GENAI} | jq '. += {"custom_xml_secret_name": "custom-config-assistant-authdata'-bas'", "lombardi_custom_xml_secret_name": "custom-config-workplace-assistant'-bas'", "environment_config": {"content_security_policy_additional_script_src": ["*.watson.appdomain.cloud"],"content_security_policy_additional_connect_src": ["*.watson.appdomain.cloud"], "content_security_policy_additional_font_src": ["*.watson.appdomain.cloud"] } }' > ${_FILE_BAW_GENAI_PATCHED}
 
           # remove original BAW object from extracted CR
-          cat ${_FILE_ORIG} | jq 'del(.spec.baw_configuration[] | select(.name=="'${_NAME}'"))' > ${_FILE_ALL_BUT_BAW_GENAI}
+          cat ${_FILE_ORIG} | jq 'del(.spec.workflow_authoring_configuration)' > ${_FILE_ALL_BUT_BAW_GENAI}
 
           # add new BAW object to CR
-          jq --argjson p "$(<${_FILE_BAW_GENAI_PATCHED})" '.spec.baw_configuration += [$p]' ${_FILE_ALL_BUT_BAW_GENAI} > ${_FILE_FINAL}
+          jq --argjson p "$(<${_FILE_BAW_GENAI_PATCHED})" '.spec.workflow_authoring_configuration' ${_FILE_ALL_BUT_BAW_GENAI} > ${_FILE_FINAL}
 
           # apply modified CR
           oc apply --overwrite=true -f ${_FILE_FINAL} 2> /dev/null 1> /dev/null
@@ -225,16 +210,103 @@ _createGenAiConfiguration () {
           rm ${_FILE_ALL_BUT_BAW_GENAI} 2> /dev/null 1> /dev/null
           rm ${_FILE_BAW_GENAI} 2> /dev/null 1> /dev/null
           rm ${_FILE_BAW_GENAI_PATCHED} 2> /dev/null 1> /dev/null
-          rm ${_FILE_FINAL} 2> /dev/null 1> /dev/null
-          
-          _NAME=""
-        else
-          if [[ ! -z "${_NAME}" ]]; then
-            echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_NAME}"${_CLR_GREEN}'${_CLR_NC}"
-          fi 
+          # rm ${_FILE_FINAL} 2> /dev/null 1> /dev/null          
         fi
-        ((i=i+1))
-      done
+      else
+        i=1
+        _MAX_BAW=10
+        while [[ $i -le $_MAX_BAW ]]
+        do
+          __BAW_INST="CP4BA_INST_BAW_${i}"
+          __BAW_NAME="CP4BA_INST_BAW_${i}_NAME"
+          __BAW_GENAI="CP4BA_INST_BAW_${i}_GENAI_ENABLED"
+          __BAW_WX_URL_PROVIDER="CP4BA_INST_BAW_${i}_GENAI_WX_URL_PROVIDER"
+          __BAW_WX_PRJ_ID="CP4BA_INST_BAW_${i}_GENAI_WX_PRJ_ID"
+          __BAW_WX_APIKEY="CP4BA_INST_BAW_${i}_GENAI_WX_APIKEY"
+
+          _INST="${!__BAW_INST}"
+          _GENAI="${!__BAW_GENAI}"
+          _NAME="${!__BAW_NAME}"
+          _URL="${!__BAW_WX_URL_PROVIDER}"
+          _PRJID="${!__BAW_WX_PRJ_ID}"
+          _APIKEY="${!__BAW_WX_APIKEY}"
+          if [[ "${_INST}" = "true" ]] && [[ "${_GENAI}" = "true" ]]; then
+            waitForBawStatefulSetReady "${_NAME}" "baw-server"
+            echo -e "${_CLR_GREEN}Patching BAW '${_CLR_YELLOW}${_NAME}${_CLR_GREEN}'${_CLR_NC}"
+
+            _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-100Custom-$USER-$RANDOM"
+
+            echo '<?xml version="1.0" encoding="UTF-8" ?>' >> ${_WX_GENAI_TMP}
+            echo '<properties>' >> ${_WX_GENAI_TMP}
+            echo '	<!-- Enable GenAI -->' >> ${_WX_GENAI_TMP}
+            echo '	<server>' >> ${_WX_GENAI_TMP}
+            echo '		<gen-ai merge="mergeChildren">' >> ${_WX_GENAI_TMP}
+            echo '			<provider-url>'${_URL}'</provider-url>' >> ${_WX_GENAI_TMP}
+            echo '			<project-id>'${_PRJID}'</project-id>' >> ${_WX_GENAI_TMP}
+            echo '			<auth-alias>workplace_watsonx.ai_auth_alias</auth-alias>' >> ${_WX_GENAI_TMP}
+            echo '			<read-timeout merge="replace">120</read-timeout>' >> ${_WX_GENAI_TMP}
+            echo '		</gen-ai>' >> ${_WX_GENAI_TMP}
+            echo '	</server>' >> ${_WX_GENAI_TMP}
+            echo '	<!-- Enable WatsonX Assistant-->' >> ${_WX_GENAI_TMP}
+            echo '	<server merge="mergeChildren">' >> ${_WX_GENAI_TMP}
+            echo '		<portal merge="mergeChildren">' >> ${_WX_GENAI_TMP}
+            echo '			<assistant-enable merge="replace">true</assistant-enable>' >> ${_WX_GENAI_TMP}
+            echo '		</portal>' >> ${_WX_GENAI_TMP}
+            echo '	</server>' >> ${_WX_GENAI_TMP}
+            echo '</properties>' >> ${_WX_GENAI_TMP}
+
+            oc create secret -n $1 generic custom-config-workplace-assistant-${i} --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
+            rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
+
+            _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-authdata-$USER-$RANDOM"
+
+            echo '<server>' >> ${_WX_GENAI_TMP}
+            echo '    <authData id="workplace_watsonx.ai_auth_alias" user="ANY_USER_ID_IS_FINE" password="${_APIKEY}" />' >> ${_WX_GENAI_TMP}
+            echo '</server>' >> ${_WX_GENAI_TMP}
+
+            oc create secret -n $1 generic custom-config-assistant-authdata-${i} --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
+            rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
+            
+            # replace object BAW[ _NAME ] with new configuration
+            _FILE_ORIG=/tmp/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy.json
+            _FILE_ALL_BUT_BAW_GENAI=/tmp/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-partial.json
+            _FILE_BAW_GENAI=/tmp/cp4ba-wx-genai-$USER-$RANDOM-baw.json
+            _FILE_BAW_GENAI_PATCHED=/tmp/cp4ba-wx-genai-$USER-$RANDOM-baw-patched.json
+            _FILE_FINAL=/tmp/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-final.json
+
+            # extract CR
+            oc get icp4acluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o json > ${_FILE_ORIG}
+
+            # extract BAW object
+            jq '.spec.baw_configuration[] | select(.name=="'${_NAME}'")' ${_FILE_ORIG} > ${_FILE_BAW_GENAI}
+
+            # add workplace assistant attributes to BAW object
+            cat ${_FILE_BAW_GENAI} | jq '. += {"custom_xml_secret_name": "custom-config-assistant-authdata'-${i}'", "lombardi_custom_xml_secret_name": "custom-config-workplace-assistant'-${i}'", "environment_config": {"content_security_policy_additional_script_src": ["*.watson.appdomain.cloud"],"content_security_policy_additional_connect_src": ["*.watson.appdomain.cloud"], "content_security_policy_additional_font_src": ["*.watson.appdomain.cloud"] } }' > ${_FILE_BAW_GENAI_PATCHED}
+
+            # remove original BAW object from extracted CR
+            cat ${_FILE_ORIG} | jq 'del(.spec.baw_configuration[] | select(.name=="'${_NAME}'"))' > ${_FILE_ALL_BUT_BAW_GENAI}
+
+            # add new BAW object to CR
+            jq --argjson p "$(<${_FILE_BAW_GENAI_PATCHED})" '.spec.baw_configuration += [$p]' ${_FILE_ALL_BUT_BAW_GENAI} > ${_FILE_FINAL}
+
+            # apply modified CR
+            oc apply --overwrite=true -f ${_FILE_FINAL} 2> /dev/null 1> /dev/null
+
+            rm ${_FILE_ORIG} 2> /dev/null 1> /dev/null
+            rm ${_FILE_ALL_BUT_BAW_GENAI} 2> /dev/null 1> /dev/null
+            rm ${_FILE_BAW_GENAI} 2> /dev/null 1> /dev/null
+            rm ${_FILE_BAW_GENAI_PATCHED} 2> /dev/null 1> /dev/null
+            rm ${_FILE_FINAL} 2> /dev/null 1> /dev/null
+            
+            _NAME=""
+          else
+            if [[ ! -z "${_NAME}" ]]; then
+              echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+            fi 
+          fi
+          ((i=i+1))
+        done
+      fi
 
     fi
 
@@ -306,7 +378,11 @@ configureGenAI() {
   if [ $? -eq 1 ]; then
     namespaceExist $1
     if [ $? -eq 1 ]; then
-      _createGenAiConfiguration $1
+      if [[ ${CP4BA_INST_DEPL_PATTERNS} == *"workflow"* ]]; then
+        _createGenAiConfiguration $1
+      else
+        echo -e "${_CLR_RED}[✗] Error, deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_RED}' capability.${_CLR_NC}"
+      fi
     else
       echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
       exit 1

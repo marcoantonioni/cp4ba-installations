@@ -9,6 +9,18 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+## [1.3.0] - 2026-02-10
+
+### Added
+
+Configuration and deployment for Authoring production deployment 
+
+### Changed
+Support for v25.0.1
+Support for Common services operator version 'v4.15.0' onward (cp-console route removed)
+
+### Fixed
+
 ## [1.2.0] - 2025-09-17
 
 ### Added

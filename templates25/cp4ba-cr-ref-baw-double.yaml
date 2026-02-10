@@ -35,7 +35,7 @@ metadata:
     app.kubernetes.io/instance: ibm-dba
     app.kubernetes.io/managed-by: ibm-dba
     app.kubernetes.io/name: ibm-dba
-    release: "${CP4BA_INST_APPVER}"
+    release: "${CP4BA_BASE_VER}"
 
     # new v25
     cp4ba.ibm.com/backup-type: mandatory
@@ -44,7 +44,7 @@ metadata:
     kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
 spec:
 
-  appVersion: "${CP4BA_INST_APPVER}"
+  appVersion: "${CP4BA_BASE_VER}"
   ibm_license: accept
 
   shared_configuration:

@@ -335,6 +335,9 @@ generateCR () {
 
 #-------------------------------
 deployEnvironment () {
+
+  export CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
+
   generateCR
 
   # echo -e "=============================================================="
@@ -457,7 +460,7 @@ federateBaw () {
 
 #-------------------------------
 waitForBawStatefulSetReady () {
-  _SFSET_NAME="${CP4BA_INST_CR_NAME}-$1-baw-server"
+  _SFSET_NAME="${CP4BA_INST_CR_NAME}-$1-$2"
   echo -e -n "${_CLR_GREEN}Wait for ${_CLR_YELLOW}${_SFSET_NAME}${_CLR_GREEN}${_CLR_NC}..."
   waitForResourceCreated ${CP4BA_INST_NAMESPACE} "statefulset" ${_SFSET_NAME} 5
 
@@ -502,7 +505,7 @@ federateBawsInDeployment () {
     _NAME="${!__BAW_NAME}"
     _HFP="${!__BAW_HOST_FED_PORTAL}"
     if [[ "${_INST}" = "true" ]] && [[ "${_FEDERATE}" = "true" ]]; then
-      waitForBawStatefulSetReady "${_NAME}"
+      waitForBawStatefulSetReady "${_NAME}" "baw-server"
       federateBaw "${_NAME}" "${_HFP}"
       _NAME=""
     else
@@ -592,8 +595,12 @@ waitDeploymentReadiness () {
       if [[ "${_WAIT_ONLY}" = "false" ]] || [[ "${_FEDERATE_ONLY}" = "true" ]]; then
         resourceExist ${CP4BA_INST_NAMESPACE} "pfs" ${CP4BA_INST_PFS_NAME}
         if [ $? -eq 1 ]; then
-          echo ""
-          federateBawsInDeployment
+          if [[ ${CP4BA_INST_DEPL_PATTERNS} == *"workflow"* ]]; then
+            echo ""
+            federateBawsInDeployment
+          else
+            echo -e "${_CLR_RED}[✗] Error, deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_RED}' capability.${_CLR_NC}"
+          fi
         fi
       fi
       #echo -e "${_CLR_GREEN}Wait for access info config map ...${_CLR_NC}"

@@ -49,13 +49,17 @@ namespaceExist () {
   return 1
 }
 
-
 #--------------------------------------------------------
 _createBAIWorkforceSecret () {
-
   if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
 
     _NS=$1
+
+    _ROUTE_NAME="cp-console"
+    if [ $(oc get routes -n ${_NS} $_ROUTE_NAME --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
+      _ROUTE_NAME="platform-id-provider"
+      echo "Using console route name [${_ROUTE_NAME}]"
+    fi
 
     resourceExist $1 secret $2
     if [ $? -eq 1 ]; then
@@ -71,7 +75,7 @@ _createBAIWorkforceSecret () {
       exit 1
     fi
 
-    iamhost="https://"$(oc get route -n ${_NS} cp-console -o jsonpath="{.spec.host}")
+    iamhost="https://"$(oc get route -n ${_NS} ${_ROUTE_NAME} -o jsonpath="{.spec.host}")
     cp4ahost="https://"$(oc get route -n ${_NS} cpd -o jsonpath="{.spec.host}")
 
     #echo "===> iamhost: " ${iamhost}
