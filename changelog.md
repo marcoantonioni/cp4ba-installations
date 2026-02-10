@@ -18,6 +18,7 @@ Configuration and deployment for Authoring production deployment
 ### Changed
 Support for v25.0.1
 Support for Common services operator version 'v4.15.0' onward (cp-console route removed)
+https://www.ibm.com/support/pages/cp-console-route-customization-changed-cloud-pak-foundational-services-414-and-prior-customizations-are-lost-during-upgrade?view=full
 
 ### Fixed
 
