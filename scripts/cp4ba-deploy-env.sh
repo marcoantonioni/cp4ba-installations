@@ -250,24 +250,6 @@ deployPostEnv () {
     fi
   fi
 
-  # Configure GenAI
-  if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
-    ./cp4ba-configure-genai.sh -c ${_CFG}
-    if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
-      exit 1
-    fi
-  fi
-
-  # Configure BAIWorkforce
-  if [[ "${CP4BA_INST_BAI_BPC_WORKFORCE}" = "true" ]]; then
-    ./cp4ba-configure-bai-workforce.sh -c ${_CFG}
-    if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_RED}[✗] Error, BAIWorkforce not configured.${_CLR_NC}"
-      exit 1
-    fi
-  fi
-
 }
 
 #-------------------------------
@@ -298,6 +280,30 @@ deployPFS () {
   fi
 
 }
+
+#-------------------------------
+postInstallationSteps () {
+
+  # Configure GenAI
+  if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
+    ./cp4ba-configure-genai.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+  # Configure BAIWorkforce
+  if [[ "${CP4BA_INST_BAI_BPC_WORKFORCE}" = "true" ]]; then
+    ./cp4ba-configure-bai-workforce.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      echo -e "${_CLR_RED}[✗] Error, BAIWorkforce not configured.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+}
+
 
 #-------------------------------
 generateCR () {
@@ -735,6 +741,9 @@ if [ $? -eq 1 ]; then
     deployPFS
   fi
   waitDeploymentReadiness
+
+  # 20260212
+  postInstallationSteps
 
   echo -e "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
   exit 0

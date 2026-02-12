@@ -32,7 +32,7 @@ resourceExist () {
 #    echo "namespace name: $1"
 #    echo "resource type: $2"
 #    echo "resource name: $3"
-  if [ $(oc get $2 -n $1 $3 2> /dev/null | grep $3 | wc -l) -lt 1 ];
+  if [ $(oc get $2 -n $1 $3 2> /dev/null | grep $3 2>/dev/null | wc -l 2>/dev/null) -lt 1 ];
   then
       return 0
   fi
@@ -42,11 +42,29 @@ resourceExist () {
 #-------------------------------
 namespaceExist () {
 # ns name: $1
-  if [ $(oc get ns $1 2>/dev/null | grep $1 2>/dev/null | wc -l) -lt 1 ];
+  if [ $(oc get ns $1 2>/dev/null | grep $1 2>/dev/null | wc -l 2>/dev/null ) -lt 1 ];
   then
       return 0
   fi
   return 1
+}
+
+#-------------------------------
+waitForResourceCreated () {
+#    echo "namespace name: $1"
+#    echo "resource type: $2"
+#    echo "resource name: $3"
+#    echo "time to wait: $4"
+
+  while [ true ]
+  do
+      resourceExist $1 $2 $3
+      if [ $? -eq 0 ]; then
+          sleep $4
+      else
+          break
+      fi
+  done
 }
 
 #--------------------------------------------------------
@@ -55,11 +73,24 @@ _createBAIWorkforceSecret () {
 
     _NS=$1
 
+    resourceExist ${CP4BA_INST_NAMESPACE} "routes" "cpd"
+    if [ $? -eq 0 ]; then
+      echo -e "${_CLR_GREEN}Wait for resource '${_CLR_YELLOW}cpd${_CLR_GREEN}'..."
+      waitForResourceCreated ${CP4BA_INST_NAMESPACE} "routes" "cpd" 5
+    fi
+
     _ROUTE_NAME="cp-console"
-    if [ $(oc get routes -n ${_NS} $_ROUTE_NAME --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
+    if [ $(oc get routes -n ${_NS} $_ROUTE_NAME --no-headers 2> /dev/null | wc -l 2>/dev/null) -lt 1 ]; then
       _ROUTE_NAME="platform-id-provider"
       echo "Using console route name [${_ROUTE_NAME}]"
     fi
+
+    resourceExist ${CP4BA_INST_NAMESPACE} "routes" ${_ROUTE_NAME}
+    if [ $? -eq 0 ]; then
+      echo -e "${_CLR_GREEN}Wait for resource '${_CLR_YELLOW}${_ROUTE_NAME}${_CLR_GREEN}'..."
+      waitForResourceCreated ${CP4BA_INST_NAMESPACE} "routes" ${_ROUTE_NAME} 5
+    fi
+
 
     resourceExist $1 secret $2
     if [ $? -eq 1 ]; then
@@ -75,51 +106,78 @@ _createBAIWorkforceSecret () {
       exit 1
     fi
 
-    iamhost="https://"$(oc get route -n ${_NS} ${_ROUTE_NAME} -o jsonpath="{.spec.host}")
-    cp4ahost="https://"$(oc get route -n ${_NS} cpd -o jsonpath="{.spec.host}")
+    #--------------------------------
+    # NEW
+    # echo "wait cm access-info..."
+    while [ true ]
+    do
+      cmName=$(oc get cm -n ${_NS} | grep access-info | awk '{print $1}')
+      if [[ -z "${cmName}" ]]; then
+          sleep 5
+      else
+        # echo "wait for "${cmName}
+        _WFS_URL=$(oc get cm -n ${_NS} ${cmName} -o yaml | grep "Business Automation Workflow .* base URL" | head -1 | awk '{print $7}' | sed s'/.$//')      
+        if [[ ! -z "${_WFS_URL}" ]]; then
+          # echo "Workflow server url: "$_WFS_URL
+          break
+        fi
+      fi
+    done
+    
+    # OLD
+    # _WFS_URL=$(oc get cm -n ${_NS} $(oc get cm -n ${_NS} | grep access-info | awk '{print $1}') -o yaml | grep "Business Automation Workflow .* base _WFS_URL" | head -1 | awk '{print $7}' | sed s'/.$//')
+    #--------------------------
+    
+    iamhost="https://"$(oc get route -n ${_NS} ${_ROUTE_NAME} -o jsonpath="{.spec.host}" )
+    platformauth="https://"$(oc get route -n ${_NS} cpd -o jsonpath="{.spec.host}" )
 
-    #echo "===> iamhost: " ${iamhost}
-    #echo "===> cp4ahost: " ${cp4ahost}
+    # echo "===> iamhost: " ${iamhost}
+    # echo "===> platformauth: " ${platformauth}
 
-    iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${iamhost}/idprovider/v1/auth/identitytoken | jq -r .access_token)
+    if [[ ${_ROUTE_NAME} = "platform-id-provider" ]]; then
+      iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${platformauth}/v1/auth/identitytoken | jq -r .access_token)
+    else
+      iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${iamhost}/idprovider/v1/auth/identitytoken | jq -r .access_token)
+    fi
 
-    #echo "===> iamaccesstoken: " ${iamaccesstoken}
+    # echo "===> iamaccesstoken: " ${iamaccesstoken}
 
-    zentoken=$(curl -sk "https://"$(oc get route -n ${_NS} | grep ^cpd |awk '{print $2}')/v1/preauth/validateAuth -H "username:${username}" -H "iam-token: ${iamaccesstoken}" | jq -r .accessToken)
-    #echo "===> zentoken: " ${zentoken}
+    zentoken=$(curl -sk ${platformauth}/v1/preauth/validateAuth -H "username:${username}" -H "iam-token: ${iamaccesstoken}" | jq -r .accessToken)
+        
+    # echo "===> zentoken: " ${zentoken}
 
     type=$(oc get icp4acluster -n ${_NS} -o yaml | grep -E "sc_deployment_type|olm_deployment_type"| tail -1 |awk '{print $2}')
-    #echo "===> deloyment type: " ${type}
+    
+    # echo "===> deloyment type: " ${type}
 
-    URL=$(oc get cm -n ${_NS} $(oc get cm -n ${_NS} | grep access-info | awk '{print $1}') -o yaml | grep "Business Automation Workflow .* base URL" | head -1 | awk '{print $7}' | sed s'/.$//')
-    bpmSystemID=$(curl -sk -X GET ${URL}/rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}" | jq -r .data.systems[].systemID)
+    bpmSystemID=$(curl -sk -X GET ${_WFS_URL}/rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}" | jq -r .data.systems[].systemID)
 
     # !!! verificare nome secret PROD
     _adminSecret="bas-admin-secret"
     adminUsername=$(oc get secret -n ${_NS} $(oc get secret -n ${_NS} |grep ${_adminSecret} | awk '{print $1}') -o jsonpath='{.data.adminUser}'|base64 -d)
     adminPassword=$(oc get secret -n ${_NS} $(oc get secret -n ${_NS} |grep ${_adminSecret} | awk '{print $1}') -o jsonpath='{.data.adminPassword}'|base64 -d)
 
-    #echo ${URL}
-    #echo "===> bpmSystemID: " $bpmSystemID
-    #echo "===> adminUsername: " $adminUsername
-    #echo "===> adminPassword: " $adminPassword
+    # echo ${_WFS_URL}
+    # echo "===> bpmSystemID: " $bpmSystemID
+    # echo "===> adminUsername: " $adminUsername
+    # echo "===> adminPassword: " $adminPassword
 
     secret_name=$(oc get icp4acluster -n ${_NS} $(oc get icp4acluster -n ${_NS} --no-headers | awk '{print $1}') -o jsonpath='{.spec.bai_configuration.business_performance_center.workforce_insights_secret}')
     if [[ ! -z ${secret_name} ]]; then
       oc delete secret -n ${_NS} ${secret_name} 2>/dev/null 1>/dev/null
-    else
-      echo "INFO: workforce_insights_secret not found"
+    #else
+    #  echo "INFO: workforce_insights_secret not found"
     fi
 
     _BAI_WKF_TMP="/tmp/cp4ba-bai-wkf-secret-$USER-$RANDOM"
 echo "apiVersion: v1
 kind: Secret
 metadata:
-  name: custom-bpc-workforce-secret
+  name: ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
 stringData:
   workforce-insights-configuration.yml: |-
     - bpmSystemId: $bpmSystemID
-      url: $URL 
+      url: $_WFS_URL 
       username: $adminUsername
       password: $adminPassword
 " > ${_BAI_WKF_TMP}
@@ -128,7 +186,6 @@ stringData:
     oc create secret generic -n $1 $2 --from-file=workforce-insights-configuration.yml=${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
 
     rm ${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
-
 
   else
     echo -e "${_CLR_RED}[✗] ERROR: _createBAIWorkforceSecret secret name or namespace empty${_CLR_NC}"

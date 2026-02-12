@@ -346,8 +346,40 @@ spec:
           add_desktop_repo_id: "my_demo_repo1"
           add_desktop_repo_workflow_enable: false
 
-  # IBM Business Automation Workflow Authoring configuration
+  # BAI
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-insights
+  bai_configuration:
+    # bai_secret: custom-bai-secret
+    bpmn:
+      install: ${CP4BA_INST_BAI_BPMN}
+      force_elasticsearch_timeseries: ${CP4BA_INST_BAI_BPMN_TIMESERIES}
+      end_aggregation_delay: ${CP4BA_INST_BAI_END_AGGR_DELAY}
+      force_opensearch_timeseries: ${CP4BA_INST_BAI_FORCE_TIMESERIES}
+    business_performance_center:
+      all_users_access: ${CP4BA_INST_BAI_BPC_ALLUSER}
+      workforce_insights_secret: ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
+    content:
+      install: ${CP4BA_INST_BAI_CONTENT}
+    event_forwarder:
+      install: ${CP4BA_INST_BAI_EVENT_FWD}
+    flink:
+      additional_task_managers: ${CP4BA_INST_BAI_FLINK_ADDITIONAL_TASK_MGRS}
+      create_route: ${CP4BA_INST_BAI_FLINK_ROUTE}
+    icm:
+      install: ${CP4BA_INST_BAI_ICM}
+    navigator:
+      install: ${CP4BA_INST_BAI_NAVIGATOR}
+    bawadv:
+      install: ${CP4BA_INST_BAI_BAWADV}
+    ads:
+      install: ${CP4BA_INST_BAI_ADS}
+    odm:
+      install: ${CP4BA_INST_BAI_ODM}
+    settings:
+      egress: ${CP4BA_INST_BAI_EGRESS}
 
+  # IBM Business Automation Workflow Authoring configuration
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-studio
   bastudio_configuration:
     admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
     bastudio_custom_xml: |
@@ -371,6 +403,8 @@ spec:
     tls:
       tlsTrustList: []
 
+  # Business Automation Workflow Authoring
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-authoring
   workflow_authoring_configuration:
 
     ## The configurations for content integration for attachment in process
@@ -395,11 +429,8 @@ spec:
       ## The tos_list is a list. You can deploy multiple Target Object Stores.
       ## For each Target Object Store, the object_store_name value must be the same as the oc_cpe_obj_store_symb_name value of one of the object stores defined in initialize_configuration.ic_obj_store_creation.object_stores.
       - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
-        # 20260210 fixed
         connection_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
-        # REMOVED desktop_id: "baw"
         target_environment_name: "dev_env_connection_definition"
-        # REMOVED is_default: true
 
       network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
       ## Custom package names for installing custom packages, where the value format is similar to package1.zip, package2.zip.
@@ -539,7 +570,7 @@ spec:
     #  kubectl create secret generic wfs-lombardi-custom-xml-secret --from-file=sensitiveCustomConfig=./100Custom.xml
     lombardi_custom_xml_secret_name: my-lombardi-custom-xml-secret
 
-    ##  IBM Business Automation Insights integration configuration
+    ##  ??? IBM Business Automation Insights integration configuration
     ## business_event:
     ##   ## Whether to enable event monitoring for Dynamic Event Framework events for the Workflow Services container.
     ##   ## If Business Automation Insights and the Machine Learning Server parameters are configured, this parameter must be set to true.
@@ -587,8 +618,13 @@ spec:
     run_authoring_agent: true
     run_workplace_agent: true
 
-  # BAML ???
-  # baml_configuration
+  # BAML
+  baml_configuration:
+    intelligent_task_prioritization: 
+      replicas: 1
+    workforce_insights:
+      replicas: 1
+
 
   # IBM FileNet Content Manager configuration
   ecm_configuration:
@@ -827,7 +863,7 @@ spec:
 
       ## The number of replicas or pods to be deployed.  The default is 1 replica and for high availability in a production env,
       ## it is recommended to have 2 or more.
-      replica_count: 2
+      replica_count: 1
 
       ## This is the image repository and tag that correspond to image registry, which is where the image will be pulled.
       image:
@@ -942,6 +978,8 @@ spec:
       image_pull_secrets:
         name: "ibm-entitlement-key"
 
+  # BAN
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-navigator
   navigator_configuration:
     ## Navigator secret that contains user credentials for LDAP and database
     ban_secret_name: ibm-ban-secret
