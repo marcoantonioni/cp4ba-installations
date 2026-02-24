@@ -58,26 +58,37 @@ _generateSQL () {
   _DB_BASE_PATH=$3
   ENV_STATS="${CP4BA_INST_OUTPUT_FOLDER}/env-statements.$RANDOM.sql"
 
+  # _DB_BASE_PATH may contain / chars so use # in 'sed' line
   cat ${_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' \
     | sed 's/-\{2,\}/@@savecomment@@/g' \
     | sed 's/-/_/g' \
     | sed 's/@@savecomment@@/--/g' \
-    | sed 's/§§dbBasePath§§/'"${_DB_BASE_PATH}"'/g' \
+    | sed 's#§§dbBasePath§§#'"${_DB_BASE_PATH}"'#g' \
+    | sed 's/§§dbPBKowner§§/'"${CP4BA_INST_DB_PBK_USER}"'/g' | sed 's/§§dbPBKowner_password§§/'"${CP4BA_INST_DB_PBK_PWD}"'/g' \
+    | sed 's/§§dbAPPowner§§/'"${CP4BA_INST_DB_APP_USER}"'/g' | sed 's/§§dbAPPowner_password§§/'"${CP4BA_INST_DB_APP_PWD}"'/g' \
+    | sed 's/§§dbAWSowner§§/'"${CP4BA_INST_DB_AWS_USER}"'/g' | sed 's/§§dbAWSowner_password§§/'"${CP4BA_INST_DB_AWS_PWD}"'/g' \
     | sed 's/§§dbBAWowner§§/'"${CP4BA_INST_DB_BAW_USER}"'/g' | sed 's/§§dbBAWowner_password§§/'"${CP4BA_INST_DB_BAW_PWD}"'/g' \
     | sed 's/§§dbBAWDOCSowner§§/'"${CP4BA_INST_DB_BAWDOCS_USER}"'/g' | sed 's/§§dbBAWDOCSowner_password§§/'"${CP4BA_INST_DB_BAWDOCS_PWD}"'/g' \
     | sed 's/§§dbBAWDOSowner§§/'"${CP4BA_INST_DB_BAWDOS_USER}"'/g' | sed 's/§§dbBAWDOSowner_password§§/'"${CP4BA_INST_DB_BAWDOS_PWD}"'/g' \
     | sed 's/§§dbBAWTOSowner§§/'"${CP4BA_INST_DB_BAWTOS_USER}"'/g' | sed 's/§§dbBAWTOSowner_password§§/'"${CP4BA_INST_DB_BAWTOS_PWD}"'/g' \
+    | sed 's/§§dbBAWCNTowner§§/'"${CP4BA_INST_DB_CONTENT_USER}"'/g' | sed 's/§§dbBAWCNTowner_password§§/'"${CP4BA_INST_DB_CONTENT_PWD}"'/g' \
+    | sed 's/§§dbCHOSowner§§/'"${CP4BA_INST_DB_CHOS_USER}"'/g' | sed 's/§§dbCHOSowner_password§§/'"${CP4BA_INST_DB_CHOS_PWD}"'/g' \
     | sed 's/§§dbICNowner§§/'"${CP4BA_INST_DB_ICN_USER}"'/g' | sed 's/§§dbICNowner_password§§/'"${CP4BA_INST_DB_ICN_PWD}"'/g' \
     | sed 's/§§dbGCDowner§§/'"${CP4BA_INST_DB_GCD_USER}"'/g' | sed 's/§§dbGCDowner_password§§/'"${CP4BA_INST_DB_GCD_PWD}"'/g' \
-    | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' \
-    | sed 's/§§dbAEowner§§/'"${CP4BA_INST_DB_AE_USER}"'/g' | sed 's/§§dbAEowner_password§§/'"${CP4BA_INST_DB_AE_PWD}"'/g' > ${ENV_STATS}
+    | sed 's/§§dbAEowner§§/'"${CP4BA_INST_DB_AE_USER}"'/g' | sed 's/§§dbAEowner_password§§/'"${CP4BA_INST_DB_AE_PWD}"'/g' \
+    | sed 's/§§dbODMowner§§/'"${CP4BA_INST_DB_ODM_USER}"'/g' | sed 's/§§dbODMowner_password§§/'"${CP4BA_INST_DB_ODM_PWD}"'/g' \
+    | sed 's/§§dbADSRTowner§§/'"${CP4BA_INST_DB_ADSRT_USER}"'/g' | sed 's/§§dbADSRTowner_password§§/'"${CP4BA_INST_DB_ADSRT_PWD}"'/g' \
+    | sed 's/§§dbADSDESowner§§/'"${CP4BA_INST_DB_ADSDES_USER}"'/g' | sed 's/§§dbADSDESowner_password§§/'"${CP4BA_INST_DB_ADSDES_PWD}"'/g' \
+    | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' > ${ENV_STATS}
 
   mkdir -p ${CP4BA_INST_OUTPUT_FOLDER}
   _T_NAME="${_DB_TEMPLATE##*/}"
   _SQL_FULL_TARGET="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
-  cp ${ENV_STATS} ${_SQL_FULL_TARGET} 2>/dev/null
-  rm ${ENV_STATS}
-  echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_SQL_FULL_TARGET}${_CLR_YELLOW}'${_CLR_NC}"
+  cp ${ENV_STATS} ${_SQL_FULL_TARGET} 2>/dev/null 1>/dev/null
+  rm ${ENV_STATS} 2>/dev/null 1>/dev/null
+  echo -e "${_CLR_GREEN}SQL statements for '${_CLR_YELLOW}${_DB_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_SQL_FULL_TARGET}'${_CLR_NC}"
+  echo -e "${_CLR_GREEN}SQL statements generated using template '${_CLR_YELLOW}${_DB_TEMPLATE}'${_CLR_NC}"
+
 }
 
 #-------------------------------
@@ -91,17 +102,19 @@ _createDatabases () {
   _DB_CR_NAME_SUFFIX=$3
   _FOUND=0
 
-  if [[ -z "${CP4BA_INST_DB_USE_EDB}" ]] || [[ "${CP4BA_INST_DB_USE_EDB}" = "true" ]]; then
-    _PG_BASE_FOLDER="run"
-  else
-    _PG_BASE_FOLDER="tmp"
-  fi
+
+  #if [[ -z "${CP4BA_INST_DB_USE_EDB}" ]] || [[ "${CP4BA_INST_DB_USE_EDB}" = "true" ]]; then
+  #  _PG_BASE_FOLDER="run"
+  #else
+  #  _PG_BASE_FOLDER="tmp"
+  #fi
+  _PG_BASE_FOLDER="tmp/postgresql"
 
   _generateSQL ${_DB_CR_NAME} ${_DB_TEMPLATE} "${_PG_BASE_FOLDER}"
   if [[ "${_GENERATE_SQL_ONLY}" = "true" ]]; then
     return 0
   fi
-  
+
   _FULL_TARGET="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-${_T_NAME}"
 
   if [[ "${_WAIT}" = "false" ]]; then
@@ -141,7 +154,7 @@ _createDatabases () {
       # wait for container ready
       while [ true ]
       do
-        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/setupdb
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/setupdb 2>/dev/null 1>/dev/null
         if [ $? -gt 0 ]; then
           echo -e -n "${_CLR_GREEN}container '${_CLR_YELLOW}postgres${_CLR_GREEN}' not ready in pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_GREEN}'\033[0K\r"
           sleep 5
@@ -153,22 +166,22 @@ _createDatabases () {
 
       if [ $_KO -eq 0 ]; then
         # echo -e "${_CLR_GREEN}... create folders for tablespaces${_CLR_NC}"
-        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/setupdb /${_PG_BASE_FOLDER}/tbs/gcd /${_PG_BASE_FOLDER}/tbs/icn /${_PG_BASE_FOLDER}/tbs/docs /${_PG_BASE_FOLDER}/tbs/dos /${_PG_BASE_FOLDER}/tbs/tosdata /${_PG_BASE_FOLDER}/tbs/tosindex /${_PG_BASE_FOLDER}/tbs/tosblob
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/setupdb /${_PG_BASE_FOLDER}/tbs/gcd /${_PG_BASE_FOLDER}/tbs/icn /${_PG_BASE_FOLDER}/tbs/docs /${_PG_BASE_FOLDER}/tbs/dos /${_PG_BASE_FOLDER}/tbs/tosdata /${_PG_BASE_FOLDER}/tbs/tosindex /${_PG_BASE_FOLDER}/tbs/tosblob /${_PG_BASE_FOLDER}/tbs/aeos /${_PG_BASE_FOLDER}/tbs/adsruntimedb /${_PG_BASE_FOLDER}/tbs/adsdesignerdb /${_PG_BASE_FOLDER}/tbs/awsdocs /${_PG_BASE_FOLDER}/tbs/contentdata /${_PG_BASE_FOLDER}/tbs/contentindex /${_PG_BASE_FOLDER}/tbs/contentblob 2>/dev/null 1>/dev/null
         if [ $? -gt 0 ]; then
           _KO=1
           echo -e "${_CLR_RED}Error creating folders in pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}'${_CLR_NC}"        
         fi
-        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/tbs/os1data /${_PG_BASE_FOLDER}/tbs/os2data /${_PG_BASE_FOLDER}/tbs/os3data /${_PG_BASE_FOLDER}/tbs/os4data /${_PG_BASE_FOLDER}/tbs/os5data
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/tbs/os1data /${_PG_BASE_FOLDER}/tbs/os2data /${_PG_BASE_FOLDER}/tbs/os3data /${_PG_BASE_FOLDER}/tbs/os4data /${_PG_BASE_FOLDER}/tbs/os5data 2>/dev/null 1>/dev/null
         if [ $? -gt 0 ]; then
           _KO=1
           echo -e "${_CLR_RED}Error creating folders in pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}'${_CLR_NC}"        
         fi
-        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/tbs/os1index /${_PG_BASE_FOLDER}/tbs/os2index /${_PG_BASE_FOLDER}/tbs/os3index /${_PG_BASE_FOLDER}/tbs/os4index /${_PG_BASE_FOLDER}/tbs/os5index
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/tbs/os1index /${_PG_BASE_FOLDER}/tbs/os2index /${_PG_BASE_FOLDER}/tbs/os3index /${_PG_BASE_FOLDER}/tbs/os4index /${_PG_BASE_FOLDER}/tbs/os5index 2>/dev/null 1>/dev/null
         if [ $? -gt 0 ]; then
           _KO=1
           echo -e "${_CLR_RED}Error creating folders in pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}'${_CLR_NC}"        
         fi
-        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/tbs/os1blob /${_PG_BASE_FOLDER}/tbs/os2blob /${_PG_BASE_FOLDER}/tbs/os3blob /${_PG_BASE_FOLDER}/tbs/os4blob /${_PG_BASE_FOLDER}/tbs/os5blob
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/tbs/os1blob /${_PG_BASE_FOLDER}/tbs/os2blob /${_PG_BASE_FOLDER}/tbs/os3blob /${_PG_BASE_FOLDER}/tbs/os4blob /${_PG_BASE_FOLDER}/tbs/os5blob 2>/dev/null 1>/dev/null
         if [ $? -gt 0 ]; then
           _KO=1
           echo -e "${_CLR_RED}Error creating folders in pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}'${_CLR_NC}"        
@@ -178,7 +191,7 @@ _createDatabases () {
 
       if [ $_KO -eq 0 ]; then
         # echo -e "${_CLR_GREEN}... copy sql statements file into pod's f.s. (${_PG_BASE_FOLDER}/setupdb/db-statements.sql) ${_CLR_NC}"
-        oc cp ${_FULL_TARGET} ${CP4BA_INST_SUPPORT_NAMESPACE}/${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}:/${_PG_BASE_FOLDER}/setupdb/db-statements.sql -c='postgres'
+        oc cp ${_FULL_TARGET} ${CP4BA_INST_SUPPORT_NAMESPACE}/${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}:/${_PG_BASE_FOLDER}/setupdb/db-statements.sql -c='postgres' 2>/dev/null 1>/dev/null
         if [ $? -gt 0 ]; then
           _KO=1
           echo -e "${_CLR_RED}Error copying SQL statements file if f.s. of pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}'${_CLR_NC}"        
@@ -188,9 +201,7 @@ _createDatabases () {
       if [ $_KO -eq 0 ]; then
         # echo -e "${_CLR_GREEN}... execute sql statements${_CLR_NC}"
 
-        if [[ "$_PG_BASE_FOLDER" = "tmp" ]]; then
-          oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} chown -R postgres:root /${_PG_BASE_FOLDER}
-        fi
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} chown -R postgres:postgres /${_PG_BASE_FOLDER}/setupdb /${_PG_BASE_FOLDER}/tbs 2>/dev/null 1>/dev/null
 
         # execute sql statements
         _retry=0
@@ -202,7 +213,9 @@ _createDatabases () {
             echo -e "${_CLR_RED}Error executing SQL statements in pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}', retry...${_CLR_NC}" 
             sleep 10
           else
-            _KO=0       
+            _KO=0
+            echo -e "${_CLR_GREEN}The SQL statements were executed successfully.${_CLR_NC}" 
+            break  
           fi
           ((_retry = _retry + 1))
         done        
@@ -240,6 +253,7 @@ createDatabases () {
   do
     _INST_ITEM="$1_$i"
     _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
+    _INST_DB_CR_NAME_SSL="CP4BA_INST_DB_"$i"_CR_NAME_SSL"
     _INST_DB_TEMPLATE="CP4BA_INST_DB_"$i"_TEMPLATE"
 
     if [[ ! -f "${!_INST_DB_TEMPLATE}" ]]; then
@@ -251,6 +265,10 @@ createDatabases () {
     if [[ "${!_INST_ITEM}" = "true" ]]; then
       if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_TEMPLATE}" ]]; then
         _createDatabases ${!_INST_DB_CR_NAME} ${!_INST_DB_TEMPLATE} ${_DB_CR_NAME_SUFFIX}
+        if [[ ! -z "${!_INST_DB_CR_NAME_SSL}" ]]; then
+          echo "Installing databases into: ${!_INST_DB_CR_NAME_SSL}"
+          _createDatabases ${!_INST_DB_CR_NAME_SSL} ${!_INST_DB_TEMPLATE} ${_DB_CR_NAME_SUFFIX}
+        fi
       else
         echo -e "${_CLR_RED}ERROR, env var '${_CLR_GREEN}${_INST_DB_CR_NAME}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES value.${_CLR_NC}"
         echo -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< env var '${_CLR_GREEN}${_INST_DB_CR_NAME}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES value.${_CLR_NC}"

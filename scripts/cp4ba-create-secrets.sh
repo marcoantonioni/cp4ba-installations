@@ -60,21 +60,6 @@ createSecretLDAP () {
   fi
 }
 
-#-------------------------------
-createSecretAE () {
-  if [[ ! -z "${CP4BA_INST_AE_1_AD_SECRET_NAME}" ]]; then
-    echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_AE_1_AD_SECRET_NAME}${_CLR_NC}'"
-
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_AE_1_AD_SECRET_NAME} 2> /dev/null 1> /dev/null
-    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_AE_1_AD_SECRET_NAME} \
-      --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
-      --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 1> /dev/null
-    if [[ $? -gt 0 ]]; then
-      _ERROR=1
-      echo -e "${_CLR_RED}Secret ${CP4BA_INST_AE_1_AD_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
-    fi
-  fi
-}
 
 #-------------------------------
 createSecretFNCM () {
@@ -83,8 +68,6 @@ createSecretFNCM () {
   if [[ ! -z "${CP4BA_INST_DB_BAWDOCS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWDOS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWTOS_USER}" ]]; then
     echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectstores users)${_CLR_NC}'"    
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
-      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
-      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
       --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
       --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
       --from-literal="${CP4BA_INST_DB_BAWDOCS_LBL}"DBUsername="${CP4BA_INST_DB_BAWDOCS_USER}" \
@@ -93,10 +76,24 @@ createSecretFNCM () {
       --from-literal="${CP4BA_INST_DB_BAWDOS_LBL}"DBPassword="${CP4BA_INST_DB_BAWDOS_PWD}" \
       --from-literal="${CP4BA_INST_DB_BAWTOS_LBL}"DBUsername="${CP4BA_INST_DB_BAWTOS_USER}" \
       --from-literal="${CP4BA_INST_DB_BAWTOS_LBL}"DBPassword="${CP4BA_INST_DB_BAWTOS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
+      --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_CONTENT_LBL}"DBUsername="${CP4BA_INST_DB_CONTENT_USER}" \
+      --from-literal="${CP4BA_INST_DB_CONTENT_LBL}"DBPassword="${CP4BA_INST_DB_CONTENT_PWD}" \
+      --from-literal="${CP4BA_INST_DB_CHOS_LBL}"DBUsername="${CP4BA_INST_DB_CHOS_USER}" \
+      --from-literal="${CP4BA_INST_DB_CHOS_LBL}"DBPassword="${CP4BA_INST_DB_CHOS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_AE_LBL}"DBUsername="${CP4BA_INST_DB_AE_USER}" \
+      --from-literal="${CP4BA_INST_DB_AE_LBL}"DBPassword="${CP4BA_INST_DB_AE_PWD}" \
+      --from-literal="${CP4BA_INST_DB_PBK_LBL}"DBUsername="${CP4BA_INST_DB_PBK_USER}" \
+      --from-literal="${CP4BA_INST_DB_PBK_LBL}"DBPassword="${CP4BA_INST_DB_PBK_PWD}" \
+      --from-literal="${CP4BA_INST_DB_APP_LBL}"DBUsername="${CP4BA_INST_DB_APP_USER}" \
+      --from-literal="${CP4BA_INST_DB_APP_LBL}"DBPassword="${CP4BA_INST_DB_APP_PWD}" \
+      --from-literal="${CP4BA_INST_DB_AWS_LBL}"DBUsername="${CP4BA_INST_DB_AWS_USER}" \
+      --from-literal="${CP4BA_INST_DB_AWS_LBL}"DBPassword="${CP4BA_INST_DB_AWS_PWD}" \
       --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
       --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
-      --from-literal=ltpaPassword="passw0rd" \
-      --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+      --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
+      --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
     _ERR=$?
   else
     if [[ ! -z "${CP4BA_INST_DB_OS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_GCD_USER}" ]]; then
@@ -108,16 +105,16 @@ createSecretFNCM () {
         --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
         --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
         --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
-        --from-literal=ltpaPassword="passw0rd" \
-        --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+        --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
+        --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
       _ERR=$?
     else
       echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (APP only)${_CLR_NC}'"
       oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
         --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
         --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
-        --from-literal=ltpaPassword="passw0rd" \
-        --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+        --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
+        --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
       _ERR=$?
     fi
   fi
@@ -135,8 +132,8 @@ createSecretFNCMBpmOnly () {
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
     --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
     --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
-    --from-literal=ltpaPassword="passw0rd" \
-    --from-literal=keystorePassword="changeitchangeit" 1> /dev/null
+    --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
+    --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
     echo -e "${_CLR_RED}Secret ibm-fncm-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
@@ -158,8 +155,8 @@ createSecretBAN () {
     --from-literal=navigatorDBPassword="${CP4BA_INST_DB_ICN_PWD}" \
     --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
     --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
-    --from-literal=keystorePassword="changeit" \
-    --from-literal=ltpaPassword="changeit" 1> /dev/null
+    --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
+    --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
     echo -e "${_CLR_RED}Secret ibm-fncm-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
@@ -181,6 +178,84 @@ createSecretBAW () {
     _ERROR=1
     echo -e "${_CLR_RED}Secret '${_CLR_YELLOW}$1${_CLR_RED}' NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
+}
+
+
+#-------------------------------
+#createSecretAE () {
+#  if [[ ! -z "${CP4BA_INST_AE_1_AD_SECRET_NAME}" ]]; then
+#    echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_AE_1_AD_SECRET_NAME}${_CLR_NC}'"
+#
+#    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_AE_1_AD_SECRET_NAME} 2> /dev/null 1> /dev/null
+#    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_AE_1_AD_SECRET_NAME} \
+#      --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
+#      --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 1> /dev/null
+#    if [[ $? -gt 0 ]]; then
+#      _ERROR=1
+#      echo -e "${_CLR_RED}Secret ${CP4BA_INST_AE_1_AD_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+#    fi
+#  fi
+#}
+
+# ??? modificare come sopra
+createSecretAE () {
+
+_AE_DB_USER=$(echo ${CP4BA_INST_DB_AE_USER} | base64)
+_AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
+
+_SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-app-engine-admin-secret"
+_SECRET_FILE_NAME="/tmp/secret-appengine-workspace-admin-$USER-$RANDOM.xml"
+cat <<EOF > ${_SECRET_FILE_NAME}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ${_SECRET_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+data:
+  AE_DATABASE_USER: "${_AE_DB_USER}"
+  AE_DATABASE_PWD: "${_AE_DB_PWD}"
+type: Opaque
+EOF
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
+_SECRET_NAME="${CP4BA_INST_CR_NAME}-pbk-app-engine-admin-secret"
+_SECRET_FILE_NAME="/tmp/secret-appengine-pbk-admin-$USER-$RANDOM.xml"
+cat <<EOF > ${_SECRET_FILE_NAME}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ${_SECRET_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+data:
+  AE_DATABASE_USER: "${_AE_DB_USER}"
+  AE_DATABASE_PWD: "${_AE_DB_PWD}"
+type: Opaque
+
+EOF
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
+_SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-aae-app-engine-admin-secret"
+_SECRET_FILE_NAME="/tmp/secret-appengine-aae-admin-$USER-$RANDOM.xml"
+cat <<EOF > ${_SECRET_FILE_NAME}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ${_SECRET_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+data:
+  AE_DATABASE_USER: "${_AE_DB_USER}"
+  AE_DATABASE_PWD: "${_AE_DB_PWD}"
+type: Opaque
+EOF
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
+
 }
 
 #-------------------------------
@@ -466,82 +541,162 @@ createConfigMapADS() {
   grabCertificates
 }
 
-createConfigMapBtsImZenForExternalDBs() {
+_createConfigMapBts() {
 
-echo "createConfigMapBtsImZenForExternalDBs: config maps not created, used only for external db ..."
+_CM_NAME="ibm-bts-config-extension"
+echo -e "ConfigMap '${_CLR_YELLOW}${_CM_NAME}${_CLR_NC}'"
+oc delete cm -n ${CP4BA_INST_NAMESPACE} ${_CM_NAME} 2>/dev/null 1>/dev/null
 
-# echo -e "ConfigMap '${_CLR_YELLOW}ibm-bts-config-extension${_CLR_NC}'"
-# 
-# cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: ibm-bts-config-extension
-#   namespace: "${CP4BA_INST_NAMESPACE}"
-#   labels:
-#     cp4ba.ibm.com/backup-type: mandatory
-# data:
-#   serverName: "${CP4BA_INST_DB_1_SERVICE}"
-#   portNumber: "5432"
-#   databaseName: bts
-#   ssl: "false"
-#   sslMode: verify-ca
-#   sslSecretName: bts-datastore-edb-secret
-#   customPropertyName1: sslKey
-#   customPropertyValue1: "/opt/ibm/wlp/usr/shared/resources/security/db/tls.key"
-#   customPropertyName2: user
-#   customPropertyValue2: "bts_user"
-# EOF
-
-# echo -e "ConfigMap '${_CLR_YELLOW}im-datastore-edb-cm${_CLR_NC}'"
-
-# cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: im-datastore-edb-cm
-#   namespace: "${CP4BA_INST_NAMESPACE}"
-#   labels:
-#     cp4ba.ibm.com/backup-type: mandatory
-# data:
-#   IS_EMBEDDED: "false"
-#   DATABASE_PORT: "5432"
-#   DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE}"
-#   DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE}"
-#   DATABASE_USER: im_user
-#   DATABASE_NAME: im
-#   DATABASE_CA_CERT: ca.crt
-#   DATABASE_CLIENT_CERT: tls.crt
-#   DATABASE_CLIENT_KEY: tls.key
-# EOF
-
-# echo -e "ConfigMap '${_CLR_YELLOW}ibm-zen-metastore-edb-cm${_CLR_NC}'"
-
-# cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: ibm-zen-metastore-edb-cm
-#   namespace: "${CP4BA_INST_NAMESPACE}"
-#   labels:
-#     cp4ba.ibm.com/backup-type: mandatory
-# data:
-#   IS_EMBEDDED: "false"
-#   DATABASE_CA_CERT: ca.crt
-#   DATABASE_CLIENT_CERT: tls.crt
-#   DATABASE_CLIENT_KEY: tls.key
-#   DATABASE_MONITORING_SCHEMA: watchdog
-#   DATABASE_NAME: zen
-#   DATABASE_PORT: "5432"
-#   DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE}"
-#   DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE}"
-#   DATABASE_SCHEMA: public
-#   DATABASE_USER: zen_user
-#   DATABASE_ENABLE_SSL: "false"
-#   #DATABASE_SSL_MODE: require 
-# EOF
+cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "${_CM_NAME}"
+  namespace: "${CP4BA_INST_NAMESPACE}"
+  labels:
+    cp4ba.ibm.com/backup-type: mandatory
+data:
+  serverName: "${CP4BA_INST_DB_1_SERVICE_SSL}"
+  portNumber: "${CP4BA_INST_DB_SERVER_PORT}"
+  databaseName: bts
+  ssl: "true"
+  sslMode: verify-ca
+  sslSecretName: bts-datastore-edb-secret
+  customPropertyName1: sslKey
+  customPropertyValue1: "/opt/ibm/wlp/usr/shared/resources/security/db/tls.key"
+  customPropertyName2: user
+  customPropertyValue2: "${CP4BA_INST_DB_BTS_USER}"
+EOF
 
 }
+
+_createConfigMapIm() {
+
+_CM_NAME="im-datastore-edb-cm"
+echo -e "ConfigMap '${_CLR_YELLOW}${_CM_NAME}${_CLR_NC}'"
+oc delete cm -n ${CP4BA_INST_NAMESPACE} ${_CM_NAME} 2>/dev/null 1>/dev/null
+
+cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "${_CM_NAME}"
+  namespace: "${CP4BA_INST_NAMESPACE}"
+  labels:
+    cp4ba.ibm.com/backup-type: mandatory
+data:
+  IS_EMBEDDED: "false"
+  DATABASE_USER: "${CP4BA_INST_DB_IM_USER}"
+  DATABASE_NAME: im
+  DATABASE_PORT: "${CP4BA_INST_DB_SERVER_PORT}"
+  DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE_SSL}"
+  DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE_SSL}"
+  DATABASE_ENABLE_SSL: "true"
+  DATABASE_CA_CERT: ca.crt
+  DATABASE_CLIENT_CERT: tls.crt
+  DATABASE_CLIENT_KEY: tls.key
+EOF
+
+# ??????????
+#apiVersion: operator.ibm.com/v1alpha1
+#kind: OperandRequest
+#metadata:
+#  name: common-service
+#  namespace: $<your-foundational-services-namespace>
+#spec:
+#  requests:
+#    - operands:
+#        - name: ibm-im-operator
+#        - name: ibm-events-operator
+#        - name: ibm-platformui-operator
+#        - name: cloud-native-postgresql
+#      registry: common-service
+#      registryNamespace: $<your-foundational-services-namespace>
+ 
+}
+
+_createConfigMapZen() {
+
+_CM_NAME="ibm-zen-metastore-edb-cm"
+echo -e "ConfigMap '${_CLR_YELLOW}${_CM_NAME}${_CLR_NC}'"
+oc delete cm -n ${CP4BA_INST_NAMESPACE} ${_CM_NAME} 2>/dev/null 1>/dev/null
+
+cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "${_CM_NAME}"
+  namespace: "${CP4BA_INST_NAMESPACE}"
+  labels:
+    cp4ba.ibm.com/backup-type: mandatory
+data:
+  IS_EMBEDDED: "false"
+  DATABASE_USER: "${CP4BA_INST_DB_ZEN_USER}"
+  DATABASE_NAME: zen
+  DATABASE_PORT: "${CP4BA_INST_DB_SERVER_PORT}"
+  DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE_SSL}"
+  DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE_SSL}"
+  DATABASE_SCHEMA: public
+  DATABASE_MONITORING_SCHEMA: watchdog
+  DATABASE_ENABLE_SSL: "true"
+  DATABASE_CA_CERT: ca.crt
+  DATABASE_CLIENT_CERT: tls.crt
+  DATABASE_CLIENT_KEY: tls.key
+  DATABASE_SSL_MODE: require 
+EOF
+}
+
+createConfigMapBtsImZenForExternalDBs() {
+  # https://www.ibm.com/docs/en/cloud-paks/foundational-services/4.x_cd?topic=management-configuring-external-postgresql-database-im
+
+  if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
+    echo "Creating config maps for BTS, IM, ZEN external Postgres database"
+
+    _createConfigMapBts
+    _createConfigMapIm
+    _createConfigMapZen
+
+  fi
+}
+
+createSecretsExternalDBs () {
+  if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
+    echo "Creating secrets for external Postgres database"
+    # in install-db.sh
+  fi
+}
+
+
+
+createSecretBAML () {
+
+_SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-itp-admin-secret"
+_SECRET_FILE_NAME="/tmp/secret-mls-itp-admin-$USER-$RANDOM.xml"
+
+_AE_DB_USER=$(echo ${CP4BA_INST_DB_AE_USER} | base64)
+_AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
+
+cat <<EOF > ${_SECRET_FILE_NAME}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ${_SECRET_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+data:
+  AE_DATABASE_USER: "${_AE_DB_USER}"
+  AE_DATABASE_PWD: "${_AE_DB_PWD}"
+type: Opaque
+
+EOF
+
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
+
+# icp4adeploy-ibm-mls-wfi-admin-secret
+
+} 
 
 #-------------------------------
 createSecrets () {
@@ -587,9 +742,13 @@ createSecrets () {
 
   createSecretBAS ${CP4BA_INST_DB_BAW_USER} ${CP4BA_INST_DB_BAW_PWD}
 
-  # TBD for external DBs createConfigMapBtsImZenForExternalDBs
+  createSecretAE
 
-  # createSecretAE
+  createSecretBAML
+
+  # External Postgres DBs 
+  createConfigMapBtsImZenForExternalDBs
+  createSecretsExternalDBs
 
   if [[ $_ERROR = 1 ]]; then
     if [[ "${_SILENT}" = "false" ]]; then

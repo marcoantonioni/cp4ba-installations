@@ -9,6 +9,19 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+## [1.3.1] - 2026-02-24
+
+### Added
+Support for external Postgres database (Zen, BTS, IM)
+
+Configuration and deployment for BAW production deployment 
+
+### Changed
+
+Configuration and deployment for BAW Authoring production deployment 
+
+### Fixed
+
 ## [1.3.0] - 2026-02-10
 
 ### Added
@@ -16,7 +29,7 @@
 Configuration and deployment for Authoring production deployment 
 
 ### Changed
-Support for v25.0.1
+Support for v25.0.1 (WARNING USE AS TECH PREVIEW ONLY)
 Support for Common services operator version 'v4.15.0' onward (cp-console route removed)
 https://www.ibm.com/support/pages/cp-console-route-customization-changed-cloud-pak-foundational-services-414-and-prior-customizations-are-lost-during-upgrade?view=full
 
