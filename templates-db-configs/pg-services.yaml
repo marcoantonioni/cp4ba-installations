@@ -1,0 +1,51 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${_PG_SS_NAME}-rw
+  namespace: ${_PG_TARGET_NS}
+spec:
+  selector:
+    app: ${_PG_SS_NAME}
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  ipFamilies:
+    - IPv4
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${_PG_SS_NAME}-ro
+  namespace: ${_PG_TARGET_NS}
+spec:
+  selector:
+    app: ${_PG_SS_NAME}
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  ipFamilies:
+    - IPv4
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${_PG_SS_NAME}-r
+  namespace: ${_PG_TARGET_NS}
+spec:
+  selector:
+    app: ${_PG_SS_NAME}
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  ipFamilies:
+    - IPv4
+  internalTrafficPolicy: Cluster
+  type: ClusterIP

@@ -683,8 +683,8 @@ metadata:
   name: ${_SECRET_NAME}
   namespace: ${CP4BA_INST_NAMESPACE}
 data:
-  AE_DATABASE_USER: "${_AE_DB_USER}"
-  AE_DATABASE_PWD: "${_AE_DB_PWD}"
+  adminUsername: "${CP4BA_INST_PAKBA_ADMIN_USER}"
+  adminPassword: "${CP4BA_INST_PAKBA_ADMIN_PWD}"
 type: Opaque
 
 EOF
@@ -694,7 +694,24 @@ oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
 
-# icp4adeploy-ibm-mls-wfi-admin-secret
+_SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-wfi-admin-secret"
+_SECRET_FILE_NAME="/tmp/secret-ibm-mls-wfi-admin-secret-$USER-$RANDOM.xml"
+
+_AE_DB_USER=$(echo ${CP4BA_INST_DB_AE_USER} | base64)
+_AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
+
+cat <<EOF > ${_SECRET_FILE_NAME}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ${_SECRET_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+data:
+  adminUsername: "${CP4BA_INST_PAKBA_ADMIN_USER}"
+  adminPassword: "${CP4BA_INST_PAKBA_ADMIN_PWD}"
+type: Opaque
+
+EOF
 
 } 
 

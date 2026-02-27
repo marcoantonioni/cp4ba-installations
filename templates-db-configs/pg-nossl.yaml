@@ -1,0 +1,93 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: ${_PG_SS_NAME}
+  namespace: ${_PG_TARGET_NS}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${_PG_SS_NAME}
+  serviceName: ${_PG_SS_NAME}
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0  
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  volumeClaimTemplates:
+    - kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: ${_PG_SS_NAME}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: ${CP4BA_INST_DB_STORAGE_SIZE}
+        storageClassName: ${CP4BA_SC_NAME}
+        volumeMode: Filesystem
+      status:
+        phase: Pending
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ${_PG_SS_NAME}
+    spec:
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 10
+      dnsPolicy: ClusterFirst
+      serviceAccountName: ibm-cp4ba-anyuid
+      serviceAccount: ibm-cp4ba-anyuid
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999   
+        fsGroup: 999
+      schedulerName: default-scheduler
+
+      # 20260223
+      volumes:
+        - name: data-volume
+          emptyDir: {}
+        - name: config-vol
+          configMap:
+            name: ${_PG_CONFIG_CM}
+            defaultMode: 0640
+
+      containers:
+        - name: postgres
+
+          image: '${_PG_IMAGE_NAME}'
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "${CP4BA_INST_DB_OSS_ADMIN_PASSWORD}"
+          resources:
+            limits:
+              cpu: "${CP4BA_INST_DB_LIMITS_CPU}"
+              memory: "${CP4BA_INST_DB_LIMITS_MEMORY}"
+            requests:
+              cpu: "${CP4BA_INST_DB_REQS_CPU}"
+              memory: "${CP4BA_INST_DB_REQS_MEMORY}"
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+
+          #20260223
+          volumeMounts:
+            - name: config-vol
+              mountPath: /etc/postgresql/
+            - name: data-volume
+              mountPath: /etc/postgresql-data
+                  
+          args:
+            - -c
+            - config_file=/etc/postgresql/postgresql_nossl.conf
+

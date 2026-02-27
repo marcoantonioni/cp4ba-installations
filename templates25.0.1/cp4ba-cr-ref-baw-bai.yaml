@@ -506,39 +506,55 @@ spec:
         ## The default value will be used if it is not set.
         cpe_metadata_cache_time_to_live: ""
         ## The event emitter settings if you want to enable Case Event Emitter. You can configure multiple Target Object Stores if you want to enable the Case Event Emitter for them. The following example shows sample values:
+        ## event_emitter:
+        ## - tos_name: TOS1Name
+        ##   connection_point_name: tos1_connection_point_name
+        ##   date_sql: 20200630T002840Z
+        ##   logical_unique_id: bawinst1
+        ##   solution_list: SampleSolution1,SampleSolution2
+        ## - tos_name: TOS2Name
+        ##   connection_point_name: tos2_connection_point_name
+        ##   date_sql: 20220930T002710Z
+        ##   logical_unique_id: bawinst1
+        ##   solution_list: SampleSolution3,SampleSolution4
 
-        event_emitter:
-        - casetype_list: '*'
-          connection_point_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}
-          date_sql: ${CP4BA_INST_BAI_EVENT_EMITTER_DATE_SQL}
-          logical_unique_id: ${CP4BA_INST_BAI_EVENT_EMITTER_UNIQUE_ID}
-          solution_list: '*'
-          tos_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}
-        case_history_emitter:
-          case_history_store_schema_name: ${CP4BA_INST_DB_CHOS_USER} # schema name = owner name = user name
-          dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
-          enable: true
+        #event_emitter:
+        ### Target Object Store name of CASE
+        #- tos_name: "BAWINS1TOS"
+        #  ## Connection point name for Target Object Store.
+        #  connection_point_name: "TOS_connection"
+        #  ## Creation date of the events.
+        #  ## The emitter starts processing the events from that date. If a bookmark exists, the emitter ignores this parameter and processes #the events from the bookmark.
+        #  date_sql: "<Required>"
+        #  ## An 8-character alphanumeric string without underscores.
+        #  ## This value is always required. While processing, the emitter tracks the events that are processed by using the Content Engine #Audit Processing Bookmark with a display name that is based on this value.
+        #  ## Therefore, if the emitter is restarted and if the bookmark exists, the emitter processes the events from the last bookmark.
+        #  logical_unique_id: "<Required>"
+        #  ## Comma-separated list of all the case solution names that need to be processed, e.g "solution1, solution2". Default value is "*". #Add all the solutions that you want to be processed before you deploy the Case event emitter.
+        #  solution_list: "*"
+        #  ## Comma-separated list of all the case types that need to be processed, e.g "casetype1, casetype2". Default value is "".
+        #  casetype_list: ""
+        #  ## Case event emitter batch size. Default value is 1000.
+        #  emitter_batch_size: 1000
+        #  ## Whether to process FileNet Process Engine events in addition to IBM Business Automation Workflow events. Default value is true.
+        #  process_pe_events: true
 
-      # BAI ???
-      ##  IBM Business Automation Insights integration configuration
-      business_event:
-        enable: true
-        enable_task_record: true
-        enable_task_api: true
-        subscription:
-        - app_name: '*'
-          component_name: '*'
-          component_type: '*'
-          element_name: '*'
-          element_type: '*'
-          nature: '*'
-          version: '*'
+      #  ## The event emitter settings if you want to enable Case History Emitter. The following example shows sample values:
+      #  ## case_history_emitter:
+      #  ##   enable: true
+      #  ##   dc_common_cpe_datasource_name: "CASEHISTORYDS"
+      #  ##   case_history_store_schema_name: "CHSCHEMA"
+      #  ##
+      #  case_history_emitter:
+      #    ## To enable Case History Emitter, this parameter must be set to true.
+      #    enable: false
+      #    ## The name of the non-XA datasource of Case History Store (from dc_common_cpe_datasource_name in the dc_cpe_datasources section)
+      #    ## This value is always required. To enable Case History Emitter, add the Case History database configuration in the dc_cpe_datasources section, and specify the non-XA datasource name(dc_common_cpe_datasource_name) as the value of this parameter.
+      #    dc_common_cpe_datasource_name: "<Required>"
+      #    ## The schema name for Case History Store.
+      #    case_history_store_schema_name: "CHSCHEMA"
 
-  workflow_assistant_configuration:
-    run_workplace_agent: ${CP4BA_RUN_WORKPLACE_AGENT}
-
-  # BAN
-  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-navigator
+  # IBM Business Automation Navigator configuration
   navigator_configuration:
     ## Navigator secret that contains user credentials for LDAP and database
     ban_secret_name: ibm-ban-secret

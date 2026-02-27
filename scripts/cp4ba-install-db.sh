@@ -61,17 +61,17 @@ _deployDBClusterEDB () {
       # check CP4BA version
       case "${CP4BA_INST_APPVER}" in
           25*)
-                  _imageName="icr.io/cpopen/edb/postgresql:14.18-5.16.0@sha256:8ceef1ac05972ab29b026fab3fab741a3c905f17773feee2b34f513e444f0fda";;
+                  _PG_IMAGE_NAME="icr.io/cpopen/edb/postgresql:14.18-5.16.0@sha256:8ceef1ac05972ab29b026fab3fab741a3c905f17773feee2b34f513e444f0fda";;
           *)
-                  _imageName="icr.io/cpopen/edb/postgresql:13.10-4.14.0@sha256:0064d1e77e2f7964d562c5538f0cb3a63058d55e6ff998eb361c03e0ef7a96dd";;
+                  _PG_IMAGE_NAME="icr.io/cpopen/edb/postgresql:13.10-4.14.0@sha256:0064d1e77e2f7964d562c5538f0cb3a63058d55e6ff998eb361c03e0ef7a96dd";;
       esac
 
     else
-      _imageName="${CP4BA_INST_DB_IMAGE}"
+      _PG_IMAGE_NAME="${CP4BA_INST_DB_IMAGE}"
     fi
 
     echo "Deploying cluster postgresql.k8s.enterprisedb.io name '$1'"
-    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_imageName}
+    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_PG_IMAGE_NAME}
 
     _PG_CLUSTER_CR_TMP="/tmp/cp4ba-pg-cluster-$USER-$RANDOM"
 
@@ -93,7 +93,7 @@ spec:
       cpu: "${CP4BA_INST_DB_REQS_CPU}"
       memory: "${CP4BA_INST_DB_REQS_MEMORY}"
   imageName: >-
-    ${_imageName}
+    ${_PG_IMAGE_NAME}
   enableSuperuserAccess: true
   bootstrap:
     initdb:
@@ -190,18 +190,18 @@ _deployPostgresNoSSL () {
       oc delete statefulsets.apps -n $2 $1 2>/dev/null 1>/dev/null
     fi
 
-    _imageName="${CP4BA_INST_DB_OSS_IMAGE}"
+    export _PG_IMAGE_NAME="${CP4BA_INST_DB_OSS_IMAGE}"
+    export _PG_CONFIG_CM=my-postgresql-config    
+    export _PG_SS_NAME=$1
+    export _PG_TARGET_NS=$2
 
-    echo "Deploying statefulset name '$1'"
-    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_imageName}
+    echo "Deploying statefulset name '${_PG_SS_NAME}'"
+    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_PG_IMAGE_NAME}
 
     _PG_SS_CR_TMP="/tmp/cp4ba-pg-statefulset-$USER-$RANDOM"
-
-    _PG_CONFIG_CM=my-postgresql-config    
     _PG_CONF_FOLDER=/tmp/cp4ba-pg-conf-folder-$USER-$RANDOM
     mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
 
-    # copiare template .conf
     if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE}"  ]]; then
       cp ${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE} ${_PG_CONF_FOLDER}/
     else
@@ -213,152 +213,9 @@ _deployPostgresNoSSL () {
     oc delete configmap -n ${CP4BA_INST_NAMESPACE} ${_PG_CONFIG_CM} 2>/dev/null 1>/dev/null
     oc create configmap -n ${CP4BA_INST_NAMESPACE} ${_PG_CONFIG_CM} --from-file=${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
 
-
-cat <<EOF > ${_PG_SS_CR_TMP}
-kind: StatefulSet
-apiVersion: apps/v1
-metadata:
-  name: $1
-  namespace: $2
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: $1
-  serviceName: $1
-  persistentVolumeClaimRetentionPolicy:
-    whenDeleted: Retain
-    whenScaled: Retain
-  volumeClaimTemplates:
-    - kind: PersistentVolumeClaim
-      apiVersion: v1
-      metadata:
-        name: $1
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: ${CP4BA_INST_DB_STORAGE_SIZE}
-        storageClassName: ${CP4BA_SC_NAME}
-        volumeMode: Filesystem
-      status:
-        phase: Pending
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: $1
-    spec:
-      # 20260223
-      volumes:
-        - name: config-vol
-          configMap:
-            name: ${_PG_CONFIG_CM}
-            defaultMode: 0640
-        - name: data-volume
-          emptyDir: {}
-
-      containers:
-        - name: postgres
-          image: '${_imageName}'
-          ports:
-            - name: postgres
-              containerPort: 5432
-              protocol: TCP
-          env:
-            - name: POSTGRES_PASSWORD
-              value: "${CP4BA_INST_DB_OSS_ADMIN_PASSWORD}"
-          resources:
-            limits:
-              cpu: "${CP4BA_INST_DB_LIMITS_CPU}"
-              memory: "${CP4BA_INST_DB_LIMITS_MEMORY}"
-            requests:
-              cpu: "${CP4BA_INST_DB_REQS_CPU}"
-              memory: "${CP4BA_INST_DB_REQS_MEMORY}"
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          imagePullPolicy: IfNotPresent
-
-          #20260223
-          volumeMounts:
-            - name: config-vol
-              mountPath: /etc/postgresql/
-            - name: data-volume
-              mountPath: /etc/postgresql-data
-                  
-          args:
-            - -c
-            - config_file=/etc/postgresql/postgresql_nossl.conf
-
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 10
-      dnsPolicy: ClusterFirst
-      serviceAccountName: ibm-cp4ba-anyuid
-      serviceAccount: ibm-cp4ba-anyuid
-      securityContext:
-        runAsUser: 999
-        runAsGroup: 999   
-        fsGroup: 999
-      schedulerName: default-scheduler
-  podManagementPolicy: OrderedReady
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      partition: 0
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: $1-rw
-  namespace: $2
-spec:
-  selector:
-    app: $1
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-  ipFamilies:
-    - IPv4
-  internalTrafficPolicy: Cluster
-  type: ClusterIP
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: $1-ro
-  namespace: $2
-spec:
-  selector:
-    app: $1
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-  ipFamilies:
-    - IPv4
-  internalTrafficPolicy: Cluster
-  type: ClusterIP
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: $1-r
-  namespace: $2
-spec:
-  selector:
-    app: $1
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-  ipFamilies:
-    - IPv4
-  internalTrafficPolicy: Cluster
-  type: ClusterIP
-EOF
-
+    # create PG CR Statefulset and Services
+    envsubst < ${CP4BA_INST_DB_POSTGRES_CR_TEMPLATE} > ${_PG_SS_CR_TMP}
+    envsubst < ${CP4BA_INST_DB_POSTGRES_SRV_CR_TEMPLATE} >> ${_PG_SS_CR_TMP}
 
     # - loop 
     while [ true ]
@@ -368,15 +225,13 @@ EOF
       if [ $? -gt 0 ]; then
         # echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
         # echo -e "${_CLR_RED}[✗] Error deploying Postgres CR '${_CLR_YELLOW}${_PG_SS_CR_TMP}${_CLR_RED}'${_CLR_NC}, retry now..."      
-        sleep 10
+        sleep 5
       else
         # -- verify CR existence
         resourceExist $2 "statefulsets.apps" $1
         
         # -- if OK end loop
         if [ $? -eq 1 ]; then
-          # oc adm policy add-scc-to-user anyuid -z postgres-anyuid -n $2 2>/dev/null 1>/dev/null
-
           echo "Deployed statefulsets.apps name '$1'"
           break
         else
@@ -497,17 +352,16 @@ _deployPostgresSSL () {
       oc delete statefulsets.apps -n $2 $1 2>/dev/null 1>/dev/null
     fi
 
-    _imageName="${CP4BA_INST_DB_OSS_IMAGE}"
+    export _PG_IMAGE_NAME="${CP4BA_INST_DB_OSS_IMAGE}"
+    export _PG_CONFIG_CM=my-postgresql-config-ssl
+    export _PG_SECRETS=my-postgresql-secrets
+    export _PG_SS_NAME=$1
+    export _PG_TARGET_NS=$2
 
-    echo "Deploying SSL statefulset name '$1'"
-    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_imageName}
+    echo "Deploying SSL statefulset name '${_PG_SS_NAME}'"
+    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_PG_IMAGE_NAME}
 
     _PG_SS_CR_TMP="/tmp/cp4ba-pg-statefulset-$USER-$RANDOM"
-
-
-    _PG_CONFIG_CM=my-postgresql-config-ssl
-    _PG_SECRETS=my-postgresql-secrets
-    
     _PG_CONF_FOLDER=/tmp/cp4ba-pg-conf-folder-$USER-$RANDOM
     _PG_SECRETS_FOLDER=/tmp/cp4ba-pg-secrets-folder-$USER-$RANDOM
 
@@ -519,7 +373,6 @@ _deployPostgresSSL () {
     _PG_HBA_CONF_FILE_TMP=${_PG_CONF_FOLDER}/pg_hba.conf.tmp
     _PG_HBA_CONF_FILE=${_PG_CONF_FOLDER}/pg_hba.conf
 
-    # copiare template .conf
     if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}"  ]]; then
       cp ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE} ${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
     else
@@ -547,158 +400,9 @@ _deployPostgresSSL () {
     oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
     oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
 
-cat <<EOF > ${_PG_SS_CR_TMP}
-kind: StatefulSet
-apiVersion: apps/v1
-metadata:
-  name: $1
-  namespace: $2
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: $1
-  serviceName: $1
-  persistentVolumeClaimRetentionPolicy:
-    whenDeleted: Retain
-    whenScaled: Retain
-  volumeClaimTemplates:
-    - kind: PersistentVolumeClaim
-      apiVersion: v1
-      metadata:
-        name: $1
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: ${CP4BA_INST_DB_STORAGE_SIZE}
-        storageClassName: ${CP4BA_SC_NAME}
-        volumeMode: Filesystem
-      status:
-        phase: Pending
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: $1
-    spec:
-      volumes:
-        - name: config-vol
-          configMap:
-            name: ${_PG_CONFIG_CM}
-            defaultMode: 0640
-        - name: secret-vol
-          secret:
-            secretName: ${_PG_SECRETS}
-            defaultMode: 0640
-        - name: data-volume
-          emptyDir: {}
-
-      containers:
-        - name: postgres
-
-          image: '${_imageName}'
-          ports:
-            - name: postgres
-              containerPort: 5432
-              protocol: TCP
-          env:
-            - name: POSTGRES_PASSWORD
-              value: "${CP4BA_INST_DB_OSS_ADMIN_PASSWORD}"
-          resources:
-            limits:
-              cpu: "${CP4BA_INST_DB_LIMITS_CPU}"
-              memory: "${CP4BA_INST_DB_LIMITS_MEMORY}"
-            requests:
-              cpu: "${CP4BA_INST_DB_REQS_CPU}"
-              memory: "${CP4BA_INST_DB_REQS_MEMORY}"
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          imagePullPolicy: IfNotPresent
-
-          volumeMounts:
-            - name: config-vol
-              mountPath: /etc/postgresql/
-            - name: secret-vol
-              mountPath: /etc/postgresql-secrets
-            - name: data-volume
-              mountPath: /etc/postgresql-data
-                  
-          args:
-            - -c
-            - hba_file=/etc/postgresql/pg_hba.conf
-            - -c
-            - config_file=/etc/postgresql/postgresql_ssl.conf
-
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 10
-      dnsPolicy: ClusterFirst
-      serviceAccountName: ibm-cp4ba-anyuid
-      serviceAccount: ibm-cp4ba-anyuid
-      securityContext:
-        runAsUser: 999
-        runAsGroup: 999   
-        fsGroup: 999
-      schedulerName: default-scheduler
-  podManagementPolicy: OrderedReady
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      partition: 0
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: $1-rw
-  namespace: $2
-spec:
-  selector:
-    app: $1
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-  ipFamilies:
-    - IPv4
-  internalTrafficPolicy: Cluster
-  type: ClusterIP
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: $1-ro
-  namespace: $2
-spec:
-  selector:
-    app: $1
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-  ipFamilies:
-    - IPv4
-  internalTrafficPolicy: Cluster
-  type: ClusterIP
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: $1-r
-  namespace: $2
-spec:
-  selector:
-    app: $1
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-  ipFamilies:
-    - IPv4
-  internalTrafficPolicy: Cluster
-  type: ClusterIP
-EOF
-
+    # create PG CR Statefulset and Services
+    envsubst < ${CP4BA_INST_DB_POSTGRES_CR_SSL_TEMPLATE} > ${_PG_SS_CR_TMP}
+    envsubst < ${CP4BA_INST_DB_POSTGRES_SRV_CR_TEMPLATE} >> ${_PG_SS_CR_TMP}
 
     # - loop 
     while [ true ]
@@ -706,7 +410,7 @@ EOF
       # apply CR
       oc apply -n $2 -f ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
       if [ $? -gt 0 ]; then
-        sleep 10
+        sleep 5
       else
         # -- verify CR existence
         resourceExist $2 "statefulsets.apps" $1
@@ -752,7 +456,6 @@ EOF
       --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
       --from-file=tls.key="${_PG_SECRETS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
     oc label secret -n "$2" ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
-
 
     rm ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
 
