@@ -22,6 +22,16 @@ Configuration and deployment for BAW Authoring production deployment
 
 ### Fixed
 
+## [1.3.2] - 2026-02-27
+
+### Added
+
+### Changed
+
+Minor optimizations
+
+### Fixed
+
 ## [1.3.0] - 2026-02-10
 
 ### Added
