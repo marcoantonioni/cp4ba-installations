@@ -269,7 +269,7 @@ createDatabases () {
       if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_TEMPLATE}" ]]; then
         _createDatabases ${!_INST_DB_CR_NAME} ${!_INST_DB_TEMPLATE} ${_DB_CR_NAME_SUFFIX}
         if [[ ! -z "${!_INST_DB_CR_NAME_SSL}" ]]; then
-          echo -e "${_CLR_GREEN}Installing databases into server '${_CLR_YELLOW}${!_INST_DB_CR_NAME_SSL}${_CLR_GREEN}'${_CLR_NC}"
+          # echo -e "${_CLR_GREEN}Installing databases into server '${_CLR_YELLOW}${!_INST_DB_CR_NAME_SSL}${_CLR_GREEN}'${_CLR_NC}"
           _createDatabases ${!_INST_DB_CR_NAME_SSL} ${!_INST_DB_TEMPLATE} ${_DB_CR_NAME_SUFFIX}
         fi
       else

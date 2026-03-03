@@ -232,7 +232,7 @@ _deployPostgresNoSSL () {
         
         # -- if OK end loop
         if [ $? -eq 1 ]; then
-          echo "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
+          echo -e "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
           break
         else
           sleep 1
@@ -414,7 +414,7 @@ _deployPostgresSSL () {
         
         # -- if OK end loop
         if [ $? -eq 1 ]; then
-          echo "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
+          echo -e "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
           break
         else
           sleep 1
