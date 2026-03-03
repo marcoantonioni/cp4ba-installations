@@ -519,21 +519,6 @@ spec:
           dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
           enable: true
 
-      # BAI ???
-      ##  IBM Business Automation Insights integration configuration
-      business_event:
-        enable: true
-        enable_task_record: true
-        enable_task_api: true
-        subscription:
-        - app_name: '*'
-          component_name: '*'
-          component_type: '*'
-          element_name: '*'
-          element_type: '*'
-          nature: '*'
-          version: '*'
-
   workflow_assistant_configuration:
     run_workplace_agent: ${CP4BA_RUN_WORKPLACE_AGENT}
 

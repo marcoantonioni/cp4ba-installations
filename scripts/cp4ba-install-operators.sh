@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set -euo pipefail
+
+
 _me=$(basename "$0")
 
 _CFG=""
@@ -8,7 +11,7 @@ _SCRIPTS=""
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
-_CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
+_CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
@@ -22,8 +25,17 @@ do
     esac
 done
 
+usage () {
+  echo ""
+  echo -e "${_CLR_GREEN}usage: $_me
+    -c full-path-to-config-file
+       (eg: '../configs/env1.properties')
+    -s full-path-to-folder-for-case-package-manager${_CLR_NC}"
+}
+
 if [[ -z "${_CFG}" ]]; then
-  echo "usage: $_me -c path-of-config-file -s cp4ba-case-pkg-scripts-folder"
+  echo "Configuration file name empty"
+  usage
   exit 1
 fi
 
@@ -33,12 +45,12 @@ if [[ ! -f "${_CFG}" ]]; then
   exit 1
 fi
 
-source ${_CFG}
+source "${_CFG}"
 
 
 
 #-------------------------------
-checkPrepreqTools () {
+checkPrereqTools () {
   which jq &>/dev/null
   if [[ $? -ne 0 ]]; then
     echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
@@ -125,13 +137,13 @@ checkPrereqVars () {
 }
 
 
-echo -e "${_CLR_YELLOW}=============================================================="
-echo -e "Install CP4BA Operators in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
+echo -e "${_CLR_NC}=============================================================="
+echo -e "Install CP4BA Operators in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
 echo -e "==============================================================${_CLR_NC}"
 
 START_SECONDS=$SECONDS
 
-checkPrepreqTools
+checkPrereqTools
 checkPrereqVars
 
 # verify logged in OCP
@@ -158,26 +170,43 @@ _OK=false
 if [[ ! -z "${_SCRIPTS}" ]]; then
   if [[ -d "${_SCRIPTS}" ]]; then
     if [[ -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
-      echo "Executing 'cp4a-clusteradmin-setup.sh' script for namespace '${CP4BA_INST_NAMESPACE}'"
+      echo -e "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
       _ACT_DIR=$(pwd)
       cd ${_SCRIPTS}
       export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
-      /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
+
+      # 20260302
+      _CAS="./cp4a-clusteradmin-setup.sh"
+      _CAS2="./cp4a-clusteradmin-setup-240.sh"
+      cat "${_CAS}" | sed 's/ATTEMPTS -eq 120/ATTEMPTS -eq 240/g' > "${_CAS2}"
+
+      cat ./deployOperator.sh | sed 's/local maxRetry=20/local maxRetry=100/g' > ./deployOperator-mod.sh
+      cat ./deployOperator-mod.sh | sed 's/Waiting for CP4A Operator Catalog pod initialization/Waiting for CP4A Operator Catalog pod initialization (maxRetry=100)/g' > ./deployOperator.sh
+      #cp ./deployOperator-mod.sh ./deployOperator.sh
+
+      #echo "Executing scripts with modified retries/timeouts"
+      /bin/bash "${_CAS2}" &> ./_clusteradmin.out
+
       if [ $? -eq 0 ]; then
         rm ./_clusteradmin.out
         cd ${_ACT_DIR}
-        echo "Ready to deploy CR in namespace '${CP4BA_INST_NAMESPACE}'"
+        echo -e "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
         _OK=true
       else
-        cat ./_clusteradmin.out
+        cp ./_clusteradmin.out "${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
+        echo -e "${_CLR_RED}*****************************************************************${_CLR_NC}"
+        echo -e "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
+        echo -e "${_CLR_RED}*****************************************************************${_CLR_NC}"
+        # cat ./_clusteradmin.out
+        echo "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
+        echo -e "${_CLR_RED}*****************************************************************${_CLR_NC}"
       fi
     fi
   fi
 fi
 
 if [[ "${_OK}" = "false" ]]; then
-  echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
-  echo "CP4BA Operators not installed."
+  echo -e ">>> ${_CLR_RED}\x1b[5m[✗] ERROR\x1b[25m${_CLR_NC} <<< ${_CLR_RED}CP4BA Operators not installed.${_CLR_NC}"
   exit 1
 fi
 

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set -euo pipefail
+
+
 _me=$(basename "$0")
 
 CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -20,7 +23,7 @@ _ERR_PKG_MGR=0
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
-_CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
+_CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
@@ -72,9 +75,9 @@ if [[ ! -f "${_CFG}" ]]; then
   exit 1
 fi
 
-source ${_CFG}
+source "${_CFG}"
 
-checkPrepreqTools () {
+checkPrereqTools () {
   which jq &>/dev/null
   if [[ $? -ne 0 ]]; then
     echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
@@ -98,7 +101,7 @@ testConfiguration () {
 }
 
 if [[ "${_TEST_CFG}" = "true" ]]; then
-  checkPrepreqTools
+  checkPrereqTools
   testConfiguration
   exit 0
 fi
@@ -162,6 +165,35 @@ onboardUsers () {
   ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -s -o add
 }
 
+#-------------------------------
+storageClassExist () {
+    if [ $(oc get sc $1 2>/dev/null | grep $1 2>/dev/null | wc -l) -lt 1 ];
+    then
+        return 0
+    fi
+    return 1
+}
+
+checkStorageClasses () {
+  _OK_VARS=1
+
+  storageClassExist ${CP4BA_INST_SC_FILE}
+  if [ $? -eq 0 ]; then
+    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not present in your OCP cluster${_CLR_NC}"
+    _OK_VARS=0
+  fi
+
+  storageClassExist ${CP4BA_INST_SC_BLOCK}
+  if [ $? -eq 0 ]; then
+    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_BLOCK}' not present in your OCP cluster${_CLR_NC}"
+    _OK_VARS=0
+  fi
+
+  if [ $_OK_VARS -eq 0 ]; then
+    exit 1
+  fi
+}
+
 installAndVerifyCasePkgMgr () {
   if [[ -z "${_CPAK_MGR_FOLDER}" ]]; then
     _CPAK_MGR_FOLDER_REMOVE=true
@@ -179,7 +211,6 @@ installAndVerifyCasePkgMgr () {
       _USE_KVER=" -k ${_CPAK_MGR_K8CERT_VER}"
     fi
     
-    echo ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -d ${_CPAK_MGR_FOLDER} ${_USE_VER} ${_USE_KVER}
     ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -d ${_CPAK_MGR_FOLDER} ${_USE_VER} ${_USE_KVER}
     if [[ $? -gt 0 ]]; then
       _ERR_PKG_MGR=1
@@ -263,96 +294,124 @@ installAndVerifyCasePkgMgr () {
   fi
 }
 
-echo ""
-echo -e "${_CLR_YELLOW}***********************************************************************"
-echo -e "Install CP4BA version '${_CLR_GREEN}${CP4BA_INST_APPVER}${_CLR_YELLOW}' complete environment in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'"
-echo -e "Started at ${_CLR_GREEN}"$(date)"${_CLR_YELLOW}"
-echo -e "***********************************************************************${_CLR_NC}"
+initialChecks () {
 
-checkPrepreqTools
+  checkPrereqTools
 
-# verify logged in OCP
-oc whoami 2>/dev/null 1>/dev/null
-if [ $? -gt 0 ]; then
-  echo -e "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
-  exit 1
-fi
-
-START_SECONDS=$SECONDS
-
-installAndVerifyCasePkgMgr
-
-if [[ $_ERR_PKG_MGR -eq 0 ]]; then
-  ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
-  if [[ $? -eq 0 ]]; then
-
-    _LDAP_PARAMS=""
-    if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
-      _LDAP_PARAMS="-l ${CP4BA_INST_LDAP_CFG_FILE}"
-    fi
-
-    ./cp4ba-deploy-env.sh -c ${_CFG} ${_LDAP_PARAMS}
-    if [[ $? -eq 0 ]]; then
-      if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
-        onboardUsers
-      fi
-      _OK=1
-    fi
+  # verify logged in OCP
+  oc whoami 2>/dev/null 1>/dev/null
+  if [ $? -gt 0 ]; then
+    echo -e "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
+    exit 1
   fi
+
+  checkStorageClasses
+}
+
+oneShotInstallation () {
+
+  initialChecks
+
+  START_SECONDS=$SECONDS
+
+  installAndVerifyCasePkgMgr
+
+  if [[ $_ERR_PKG_MGR -eq 0 ]]; then
+    ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
+    if [[ $? -eq 0 ]]; then
+
+      _LDAP_PARAMS=""
+      if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
+        _LDAP_PARAMS="-l ${CP4BA_INST_LDAP_CFG_FILE}"
+      fi
+
+      ./cp4ba-deploy-env.sh -c ${_CFG} ${_LDAP_PARAMS}
+      if [[ $? -eq 0 ]]; then
+        if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
+          onboardUsers
+        fi
+        _OK=1
+      fi
+    fi
+    #  # if pckgmgr dinamico rm folder
+    #  if [[ "${_CPAK_MGR_FOLDER_REMOVE}" = "true" ]]; then
+    #    if [[ -d "${_CPAK_MGR_FOLDER}" ]]; then 
+    #      echo -e "Removing temporary folder: '${_CLR_GREEN}${_CPAK_MGR_FOLDER}${_CLR_NC}'"    
+    #      rm -fR ${_CPAK_MGR_FOLDER}
+    #    fi
+    #  fi
+  fi
+
+  STOP_SECONDS=$SECONDS
+
+  if [[ "${_OK}" = "0" ]]; then
+    echo ""
+    echo -e "${_CLR_RED}[✗] Installation error, environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_RED}' not installed !!!${_CLR_NC}"
+    echo "Verify the configuration and/or run parameters."
+    echo "If the installation was started and subsequently interrupted it is recommended to remove the entire namespace"
+    echo "using the 'remove-cp4ba' tool."
+    echo "See link https://github.com/marcoantonioni/cp4ba-utilities"
+  else
+    ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
+    TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
+    TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+
+    echo -e "${_CLR_YELLOW}***********************************************************************"
+    echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
+    echo -e "Terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+
+    echo -e "${_CLR_GREEN}Verifying pod status and Case initialization logs...${_CLR_NC}"
+    _CASE_INIT_ERRORS=0
+    _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
+    if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
+      _CASE_INIT_ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') 2>/dev/null | egrep "SEVERE|Exception" | wc -l)
+    fi
+    if [[ $_PENDING -gt 0 ]]; then
+      echo -e "\x1B[1mPlease note${_CLR_NC}, some pods may be not yet ready. Check before using the system."
+      oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
+      echo ""
+      echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_YELLOW}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
+    fi
+
+    if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
+      if [[ $_CASE_INIT_ERRORS -gt 0 ]]; then
+        echo -e "\x1B[1mPlease note${_CLR_NC}, some errors in Case initialization. May be a transient problem."
+        echo ""
+        oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep 'SEVERE|Exception'
+        echo ""
+      fi
+
+      echo -e "${_CLR_GREEN}PAY ATTENTION: The case completion job may take more time to complete${_CLR_NC}"
+      echo -e "${_CLR_GREEN}To verify the completion of Case subsys. installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
+      echo -e "${_CLR_GREEN}For Case initialization log/status/errors run manually:${_CLR_GREEN}"
+      echo -e "  logs   : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
+      echo -e "  errors : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | egrep 'SEVERE|Exception'${_CLR_GREEN}"
+      echo -e "  success: ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | grep 'INFO: Configuration Completed'${_CLR_GREEN}"
+      echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
+
+    fi
+
+  fi
+}
+
+onExit () {
   # if pckgmgr dinamico rm folder
   if [[ "${_CPAK_MGR_FOLDER_REMOVE}" = "true" ]]; then
-    echo -e "Removing temporary folder: '${_CLR_GREEN}${_CPAK_MGR_FOLDER}${_CLR_NC}'"
-    rm -fR ${_CPAK_MGR_FOLDER}
-  fi
-fi
-
-STOP_SECONDS=$SECONDS
-
-if [[ "${_OK}" = "0" ]]; then
-  echo ""
-  echo -e "${_CLR_RED}[✗] Installation error, environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_RED}' not installed !!!${_CLR_NC}"
-  echo "Verify the configuration and/or run parameters."
-  echo "If the installation was started and subsequently interrupted it is recommended to remove the entire namespace"
-  echo "using the 'remove-cp4ba' tool."
-  echo "See link https://github.com/marcoantonioni/cp4ba-utilities"
-else
-  ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
-  TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
-  TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
-
-  echo -e "${_CLR_YELLOW}***********************************************************************"
-  echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
-  echo -e "Terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
-
-  echo -e "${_CLR_GREEN}Verifying pod status and Case initialization logs...${_CLR_NC}"
-  _CASE_INIT_ERRORS=0
-  _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
-  if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
-    _CASE_INIT_ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') 2>/dev/null | egrep "SEVERE|Exception" | wc -l)
-  fi
-  if [[ $_PENDING -gt 0 ]]; then
-    echo -e "\x1B[1mPlease note${_CLR_NC}, some pods may be not yet ready. Check before using the system."
-    oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
-    echo ""
-    echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_YELLOW}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
-  fi
-
-  if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
-    if [[ $_CASE_INIT_ERRORS -gt 0 ]]; then
-      echo -e "\x1B[1mPlease note${_CLR_NC}, some errors in Case initialization. May be a transient problem."
-      echo ""
-      oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep 'SEVERE|Exception'
-      echo ""
+    if [[ -d "${_CPAK_MGR_FOLDER}" ]]; then 
+      echo -e "\n"
+      echo -e "Removing temporary folder: '${_CLR_GREEN}${_CPAK_MGR_FOLDER}${_CLR_NC}'"    
+      rm -fR ${_CPAK_MGR_FOLDER}
     fi
-
-    echo -e "${_CLR_GREEN}PAY ATTENTION: The case completion job may take more time to complete${_CLR_NC}"
-    echo -e "${_CLR_GREEN}To verify the completion of Case subsys. installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
-    echo -e "${_CLR_GREEN}For Case initialization log/status/errors run manually:${_CLR_GREEN}"
-    echo -e "  logs   : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
-    echo -e "  errors : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | egrep 'SEVERE|Exception'${_CLR_GREEN}"
-    echo -e "  success: ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | grep 'INFO: Configuration Completed'${_CLR_GREEN}"
-    echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
-
   fi
+}
 
-fi
+
+echo ""
+echo -e "${_CLR_GREEN}***********************************************************************"
+echo -e "Install CP4BA version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}' complete environment in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'"
+echo -e "Started at ${CLR_YELLOW}"$(date)"${_CLR_GREEN}"
+echo -e "***********************************************************************${_CLR_NC}"
+
+trap 'onExit' EXIT
+
+oneShotInstallation

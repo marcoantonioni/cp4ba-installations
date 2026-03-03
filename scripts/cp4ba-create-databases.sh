@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set -euo pipefail
+
+
 _me=$(basename "$0")
 
 _CFG=""
@@ -9,7 +12,7 @@ _GENERATE_SQL_ONLY=false
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
-_CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
+_CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
@@ -33,7 +36,7 @@ if [[ ! -f "${_CFG}" ]]; then
   echo "Configuration file not found: "${_CFG}
 fi
 
-source ${_CFG}
+source "${_CFG}"
 
 #-------------------------------
 resourceExist () {
@@ -152,7 +155,7 @@ _createDatabases () {
       echo -e "${_CLR_GREEN}Database pod is ready, load and execute sql statements in '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_GREEN}' db server${_CLR_NC}"
 
       # wait for container ready
-      while [ true ]
+      while true 
       do
         oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} mkdir -p /${_PG_BASE_FOLDER}/setupdb 2>/dev/null 1>/dev/null
         if [ $? -gt 0 ]; then
@@ -276,7 +279,7 @@ createDatabases () {
         exit 1
       fi
     else
-      echo -e "${_CLR_YELLOW}Warning: ${_INST_ITEM} DB '${_CLR_GREEN}${!_INST_DB_CR_NAME}${_CLR_YELLOW}' is disabled, skipping configuration${_CLR_NC}"
+      echo -e "${_CLR_YELLOW}Warning${_CLR_NC}: ${_INST_ITEM} for db '${_CLR_YELLOW}${!_INST_DB_CR_NAME}${_CLR_NC}' is disabled, skipping configuration."
     fi
     ((i = i + 1))
   done  

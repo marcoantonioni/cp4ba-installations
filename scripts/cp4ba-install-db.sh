@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set -euo pipefail
+
+
 _me=$(basename "$0")
 
 _CFG=""
@@ -7,7 +10,7 @@ _CFG=""
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
-_CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
+_CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
@@ -25,7 +28,7 @@ if [[ -z "${_CFG}" ]]; then
   exit 1
 fi
 
-source ${_CFG}
+source "${_CFG}"
 
 resourceExist () {
 #    echo "namespace name: $1"
@@ -144,7 +147,7 @@ spec:
 EOF
 
     # - loop 
-    while [ true ]
+    while true 
     do
       # apply CR
       oc apply -n $2 -f ${_PG_CLUSTER_CR_TMP} 2>/dev/null 1>/dev/null
@@ -195,9 +198,6 @@ _deployPostgresNoSSL () {
     export _PG_SS_NAME=$1
     export _PG_TARGET_NS=$2
 
-    echo "Deploying statefulset name '${_PG_SS_NAME}'"
-    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_PG_IMAGE_NAME}
-
     _PG_SS_CR_TMP="/tmp/cp4ba-pg-statefulset-$USER-$RANDOM"
     _PG_CONF_FOLDER=/tmp/cp4ba-pg-conf-folder-$USER-$RANDOM
     mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
@@ -218,7 +218,7 @@ _deployPostgresNoSSL () {
     envsubst < ${CP4BA_INST_DB_POSTGRES_SRV_CR_TEMPLATE} >> ${_PG_SS_CR_TMP}
 
     # - loop 
-    while [ true ]
+    while true 
     do
       # apply CR
       oc apply -n $2 -f ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
@@ -228,11 +228,11 @@ _deployPostgresNoSSL () {
         sleep 5
       else
         # -- verify CR existence
-        resourceExist $2 "statefulsets.apps" $1
+        resourceExist $2 "statefulsets.apps" ${_PG_SS_NAME}
         
         # -- if OK end loop
         if [ $? -eq 1 ]; then
-          echo "Deployed statefulsets.apps name '$1'"
+          echo "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
           break
         else
           sleep 1
@@ -358,9 +358,6 @@ _deployPostgresSSL () {
     export _PG_SS_NAME=$1
     export _PG_TARGET_NS=$2
 
-    echo "Deploying SSL statefulset name '${_PG_SS_NAME}'"
-    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_PG_IMAGE_NAME}
-
     _PG_SS_CR_TMP="/tmp/cp4ba-pg-statefulset-$USER-$RANDOM"
     _PG_CONF_FOLDER=/tmp/cp4ba-pg-conf-folder-$USER-$RANDOM
     _PG_SECRETS_FOLDER=/tmp/cp4ba-pg-secrets-folder-$USER-$RANDOM
@@ -405,7 +402,7 @@ _deployPostgresSSL () {
     envsubst < ${CP4BA_INST_DB_POSTGRES_SRV_CR_TEMPLATE} >> ${_PG_SS_CR_TMP}
 
     # - loop 
-    while [ true ]
+    while true 
     do
       # apply CR
       oc apply -n $2 -f ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
@@ -413,11 +410,11 @@ _deployPostgresSSL () {
         sleep 5
       else
         # -- verify CR existence
-        resourceExist $2 "statefulsets.apps" $1
+        resourceExist $2 "statefulsets.apps" ${_PG_SS_NAME}
         
         # -- if OK end loop
         if [ $? -eq 1 ]; then
-          echo "Deployed statefulsets.apps name '$1'"
+          echo "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
           break
         else
           sleep 1
@@ -501,7 +498,7 @@ waitForClustersPostgresCRD () {
   echo "Wait for CR and Operator of 'clusters.postgresql.k8s.enterprisedb.io' (may take minutes)"
 
   if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
-    while [ true ]
+    while true 
     do
       if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
         sleep 5
@@ -513,7 +510,7 @@ waitForClustersPostgresCRD () {
 
   _READY_ITEMS=$(oc get crd clusters.postgresql.k8s.enterprisedb.io -o jsonpath='{.status.conditions}' | jq '.[] | select(.status=="True") ' | jq .status | wc -l)
   if [ $_READY_ITEMS -lt 2 ]; then
-    while [ true ]
+    while true 
     do
       _READY_ITEMS=$(oc get crd clusters.postgresql.k8s.enterprisedb.io -o jsonpath='{.status.conditions}' | jq '.[] | select(.status=="True") ' | jq .status | wc -l)
       if [ $_READY_ITEMS -lt 2 ]; then
@@ -528,7 +525,7 @@ waitForClustersPostgresCRD () {
 
   echo "Wait for pod 'postgresql-operator-controller-manager' creation ..."
 
-  while [ true ]
+  while true 
   do
     sleep 5
     _PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')
@@ -540,7 +537,7 @@ waitForClustersPostgresCRD () {
   echo "Wait for pod 'postgresql-operator-controller-manager...' ready ..."
   START_SECONDS=$SECONDS
 
-  while [ true ]
+  while true 
   do
     sleep 3
     _PSQL_OCM_POD=$(oc get pod --no-headers -n ${CP4BA_INST_SUPPORT_NAMESPACE} 2>/dev/null | grep postgresql-operator-controller-manager | awk '{print $1}')

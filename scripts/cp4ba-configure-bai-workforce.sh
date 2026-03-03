@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set -euo pipefail
+
+
 _me=$(basename "$0")
 
 _CFG=""
@@ -7,7 +10,7 @@ _CFG=""
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
-_CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
+_CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
@@ -25,7 +28,7 @@ if [[ -z "${_CFG}" ]]; then
   exit 1
 fi
 
-source ${_CFG}
+source "${_CFG}"
 
 #--------------------------------------------------------
 resourceExist () {
@@ -56,7 +59,7 @@ waitForResourceCreated () {
 #    echo "resource name: $3"
 #    echo "time to wait: $4"
 
-  while [ true ]
+  while true 
   do
       resourceExist $1 $2 $3
       if [ $? -eq 0 ]; then
@@ -109,7 +112,7 @@ _createBAIWorkforceSecret () {
     #--------------------------------
     # NEW
     # echo "wait cm access-info..."
-    while [ true ]
+    while true 
     do
       cmName=$(oc get cm -n ${_NS} | grep access-info | awk '{print $1}')
       if [[ -z "${cmName}" ]]; then

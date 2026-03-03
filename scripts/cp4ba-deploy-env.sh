@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set -euo pipefail
+
+
 _me=$(basename "$0")
 
 _CFG=""
@@ -11,7 +14,7 @@ _FEDERATE_ONLY=false
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
-_CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
+_CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
@@ -58,10 +61,10 @@ if [[ ! -f "${_CFG}" ]]; then
   exit 1
 fi
 
-source ${_CFG}
+source "${_CFG}"
 
 #-------------------------------
-checkPrepreqTools () {
+checkPrereqTools () {
   which jq &>/dev/null
   if [[ $? -ne 0 ]]; then
     echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
@@ -111,7 +114,7 @@ waitForResourceCreated () {
 #    echo "resource name: $3"
 #    echo "time to wait: $4"
 
-  while [ true ]
+  while true 
   do
       resourceExist $1 $2 $3
       if [ $? -eq 0 ]; then
@@ -316,7 +319,7 @@ generateCR () {
 
   if [[ -f "${_INST_ENV_FULL_PATH}" ]]; then
     MISSED_TRANSFORMATIONS=$(cat ${_INST_ENV_FULL_PATH} | grep "\${" | wc -l)
-    if [[ MISSED_TRANSFORMATIONS -gt 0 ]]; then
+    if [[ $MISSED_TRANSFORMATIONS -gt 0 ]]; then
       echo -e "${_CLR_RED}[✗] Error, env var missed in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
       echo "++++++++++++++++++++++++++++++++++++++++"
       cat ${_INST_ENV_FULL_PATH} | grep "\${"
@@ -360,12 +363,12 @@ deployEnvironment () {
 }
 
 #-------------------------------
-waitForPfsReady () {
+loopWaitForPfsReady () {
 #    echo "namespace name: $1"
 #    echo "resource name: $2"
 #    echo "time to wait: $3"
 
-    while [ true ]
+    while true 
     do
       _PFS_COMPONENTS=$(oc get pfs -n $1 $2 -o jsonpath='{.status.components.pfs}')
       _pfsDeployment=$(echo $_PFS_COMPONENTS | jq .pfsDeployment | sed 's/"//g' )
@@ -378,6 +381,17 @@ waitForPfsReady () {
       fi
     done
     return 0
+}
+#-------------------------------
+checkForPfsReady () {
+  _PFS_COMPONENTS=$(oc get pfs -n ${CP4BA_INST_PFS_NAMESPACE} ${CP4BA_INST_PFS_NAME} -o jsonpath='{.status.components.pfs}')
+  _pfsDeployment=$(echo $_PFS_COMPONENTS | jq .pfsDeployment 2>/dev/null | sed 's/"//g' )
+  _pfsService=$(echo $_PFS_COMPONENTS | jq .pfsService 2>/dev/null | sed 's/"//g' )
+  _pfsZenIntegration=$(echo $_PFS_COMPONENTS | jq .pfsZenIntegration 2>/dev/null | sed 's/"//g' )
+  if [[ "${_pfsDeployment}" = "Ready" ]] && [[ "${_pfsService}" = "Ready" ]] && [[ "${_pfsZenIntegration}" = "Ready" ]]; then
+      return 1
+  fi
+  return 0
 }
 
 #-------------------------------
@@ -406,7 +420,7 @@ federateBaw () {
   waitForResourceCreated ${CP4BA_INST_NAMESPACE} "pfs" ${_PFS_CR_NAME} 5
 
   if [[ ! -z "${_PFS_CR_NAME}" ]]; then
-    waitForPfsReady ${CP4BA_INST_NAMESPACE} ${_PFS_CR_NAME} 5
+    loopWaitForPfsReady ${CP4BA_INST_NAMESPACE} ${_PFS_CR_NAME} 5
 
     _RND_PART=$RANDOM
     _FILE_ORIG="/tmp/icp4-${_PFS_CR_NAME}-${_RND_PART}.json.orig"
@@ -471,7 +485,7 @@ waitForBawStatefulSetReady () {
   waitForResourceCreated ${CP4BA_INST_NAMESPACE} "statefulset" ${_SFSET_NAME} 5
 
   _SFS_READY=0
-  while [ true ]; 
+  while true ; 
   do   
     _SFS_READY=$(oc get statefulset -n ${CP4BA_INST_NAMESPACE} ${_SFSET_NAME} -o jsonpath="{.status.readyReplicas}")
     if [[ "${_SFS_READY}" = "0" ]]; then
@@ -481,18 +495,6 @@ waitForBawStatefulSetReady () {
     fi
   done
   echo -e "${_CLR_YELLOW}READY${_CLR_GREEN}${_CLR_NC}"
-}
-
-#-------------------------------
-waitForPfsReady () {
-  _PFS_COMPONENTS=$(oc get pfs -n ${CP4BA_INST_PFS_NAMESPACE} ${CP4BA_INST_PFS_NAME} -o jsonpath='{.status.components.pfs}')
-  _pfsDeployment=$(echo $_PFS_COMPONENTS | jq .pfsDeployment 2>/dev/null | sed 's/"//g' )
-  _pfsService=$(echo $_PFS_COMPONENTS | jq .pfsService 2>/dev/null | sed 's/"//g' )
-  _pfsZenIntegration=$(echo $_PFS_COMPONENTS | jq .pfsZenIntegration 2>/dev/null | sed 's/"//g' )
-  if [[ "${_pfsDeployment}" = "Ready" ]] && [[ "${_pfsService}" = "Ready" ]] && [[ "${_pfsZenIntegration}" = "Ready" ]]; then
-      return 1
-  fi
-  return 0
 }
 
 federateBawsInDeployment () {
@@ -516,7 +518,7 @@ federateBawsInDeployment () {
       _NAME=""
     else
       if [[ ! -z "${_NAME}" ]]; then
-        echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+        echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${__BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
       fi 
     fi
     ((i=i+1))
@@ -574,10 +576,10 @@ waitDeploymentReadiness () {
   START_SECONDS=$SECONDS
 
   _PFS_READY=1
-  while [ true ]; 
+  while true ; 
   do   
     if [[ "${CP4BA_INST_PFS}" = "true" ]] || [[ "${_FEDERATE_ONLY}" = "true" ]]; then
-      waitForPfsReady
+      checkForPfsReady
       _PFS_READY=$?
     fi
     
@@ -610,7 +612,7 @@ waitDeploymentReadiness () {
         fi
       fi
       #echo -e "${_CLR_GREEN}Wait for access info config map ...${_CLR_NC}"
-      while [ true ]
+      while true 
       do
         _ACC_INFO_FOUND=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep "access-info" 2>/dev/null | wc -l)
         if [ $_ACC_INFO_FOUND -lt 1 ]; then
@@ -696,11 +698,11 @@ waitDeploymentReadiness () {
 }
 
 
-echo -e "${_CLR_YELLOW}=============================================================="
-echo -e "${_CLR_YELLOW}Deploying CP4BA environment '${_CLR_GREEN}${CP4BA_INST_ENV}${_CLR_YELLOW}' in namespace '${_CLR_GREEN}${CP4BA_INST_NAMESPACE}${_CLR_YELLOW}'${_CLR_NC}"
+echo -e "${_CLR_GREEN}=============================================================="
+echo -e "Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 echo -e "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
-echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
-checkPrepreqTools
+# echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+checkPrereqTools
 checkPrereqVars
 
 if [[ "${_GENERATE_ONLY}" = "true" ]]; then

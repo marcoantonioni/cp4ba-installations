@@ -191,6 +191,20 @@ spec:
 
     dc_os_datasources:
       - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_os_label: "${CP4BA_INST_DB_OS_LBL}"
+        dc_common_os_datasource_name: "FNOS1DS"
+        dc_common_os_xa_datasource_name: "FNOS1DSXA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+        database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_os1"
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+      - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWDOCS_LBL}"
         dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
         dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}XA"
@@ -290,6 +304,16 @@ spec:
 
       object_stores:
 
+        - oc_cpe_obj_store_display_name: "OS01"
+          oc_cpe_obj_store_symb_name: "OS01"
+          oc_cpe_obj_store_conn:
+            name: "objectstore1_connection"
+            dc_os_datasource_name: "FNOS1DS"
+            dc_os_xa_datasource_name: "FNOS1DSXA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_conn:
@@ -321,7 +345,7 @@ spec:
             - "${CP4BA_INST_PAKBA_ADMIN_USER}"
             - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_enable_compression: false
-          oc_cpe_obj_store_enable_content_event_emitter: false
+          oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
           oc_cpe_obj_store_enable_workflow: true
           oc_cpe_obj_store_workflow_locale: en
           oc_cpe_obj_store_workflow_region_number: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}
@@ -354,7 +378,7 @@ spec:
           oc_cpe_obj_store_admin_user_groups:
             - "${CP4BA_INST_PAKBA_ADMIN_USER}"
             - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          oc_cpe_obj_store_enable_content_event_emitter: false
+          oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
           oc_cpe_obj_store_enable_workflow: true
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
@@ -519,13 +543,9 @@ spec:
         target_environment_name: "dev_env_connection_definition"
 
       network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
-      ## Custom package names for installing custom packages, where the value format is similar to package1.zip, package2.zip.
       custom_package_names: ""
-      ## Custom extension names for installing custom packages, where the value format is similar to extension1.zip, extension2.zip.
       custom_extension_names: ""
       cpe_metadata_cache_time_to_live: ""
-
-      ## The event emitter settings if you want to enable Case Event Emitter. The following example shows sample values:
 
       event_emitter:
       - casetype_list: '*'
@@ -678,7 +698,6 @@ spec:
     graphql:
       graphql_production_setting:
         enable_graph_iql: ${CP4BA_INST_GRAPHQL}
-
 
   # BAN
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-navigator

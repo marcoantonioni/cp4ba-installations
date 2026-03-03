@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set -euo pipefail
+
+
 _me=$(basename "$0")
 
 _CFG=""
@@ -12,7 +15,7 @@ _maxWait=5
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
-_CLR_YELLOW="\033[1;32m"   #'1;32' is Yellow's ANSI color code
+_CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
@@ -33,7 +36,7 @@ if [[ -z "${_CFG}" ]]; then
   exit
 fi
 
-source ${_CFG}
+source "${_CFG}"
 
 #-------------------------------
 resourceExist () {
@@ -159,7 +162,7 @@ createSecretBAN () {
     --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
-    echo -e "${_CLR_RED}Secret ibm-fncm-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+    echo -e "${_CLR_RED}Secret ibm-ban-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
 }
 
@@ -303,7 +306,7 @@ rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
 #---------------------------------------------
 _AGENT_FQDN_BASE=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
-_AGENT_FQDN_FULL="https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${_FQDN_BASE}"
+_AGENT_FQDN_FULL="https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${_AGENT_FQDN_BASE}"
 
 _SECRET_FILE_NAME="/tmp/secret-100Custom-runtime-$USER-$RANDOM.xml"
 cat <<EOF > ${_SECRET_FILE_NAME}
@@ -670,11 +673,9 @@ createSecretsExternalDBs () {
 
 createSecretBAML () {
 
+# ibm-mls-itp-admin-secret
 _SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-itp-admin-secret"
 _SECRET_FILE_NAME="/tmp/secret-mls-itp-admin-$USER-$RANDOM.xml"
-
-_AE_DB_USER=$(echo ${CP4BA_INST_DB_AE_USER} | base64)
-_AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
 
 cat <<EOF > ${_SECRET_FILE_NAME}
 kind: Secret
@@ -694,11 +695,9 @@ oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
 
+# ibm-mls-wfi-admin-secret
 _SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-wfi-admin-secret"
 _SECRET_FILE_NAME="/tmp/secret-ibm-mls-wfi-admin-secret-$USER-$RANDOM.xml"
-
-_AE_DB_USER=$(echo ${CP4BA_INST_DB_AE_USER} | base64)
-_AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
 
 cat <<EOF > ${_SECRET_FILE_NAME}
 kind: Secret
@@ -712,6 +711,10 @@ data:
 type: Opaque
 
 EOF
+
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
 } 
 
