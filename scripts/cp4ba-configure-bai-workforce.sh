@@ -2,6 +2,7 @@
 
 #set -euo pipefail
 
+_TRACE=0
 
 _me=$(basename "$0")
 
@@ -103,7 +104,7 @@ _createBAIWorkforceSecret () {
     username=$(oc get secret -n ${_NS} ibm-ban-secret -ojsonpath='{.data.appLoginUsername}'|base64 -d)
     password=$(oc get secret -n ${_NS} ibm-ban-secret -ojsonpath='{.data.appLoginPassword}'|base64 -d)
 
-    #echo "===> ibm-ban-secret: " $username " / " $password
+    [[ ${_TRACE} -eq 1 ]] && echo "===> ibm-ban-secret: " $username " / " $password
     if [[ -z "$username" ]] || [[ -z "$password" ]]; then
       echo -e "${_CLR_RED}[✗] Error, secret ibm-ban-secret not found or username or password is empty.${_CLR_NC}"
       exit 1
@@ -119,9 +120,11 @@ _createBAIWorkforceSecret () {
           sleep 5
       else
         # echo "wait for "${cmName}
-        _WFS_URL=$(oc get cm -n ${_NS} ${cmName} -o yaml | grep "Business Automation Workflow .* base URL" | head -1 | awk '{print $7}' | sed s'/.$//')      
+        # _WFS_URL=$(oc get cm -n ${_NS} ${cmName} -o yaml | grep "Business Automation Workflow .* base URL" | head -1 | awk '{print $7}' | sed s'/.$//')  
+        _WFS_URL=$(oc get cm -n ${_NS} ${cmName} -o yaml | grep "Business Automation Workflow .* base URL:" | sed 's/.*URL://g' | sed 's/ //g')
+
         if [[ ! -z "${_WFS_URL}" ]]; then
-          # echo "Workflow server url: "$_WFS_URL
+          [[ ${_TRACE} -eq 1 ]] && echo "Workflow server url: "$_WFS_URL
           break
         fi
       fi
@@ -134,8 +137,8 @@ _createBAIWorkforceSecret () {
     iamhost="https://"$(oc get route -n ${_NS} ${_ROUTE_NAME} -o jsonpath="{.spec.host}" )
     platformauth="https://"$(oc get route -n ${_NS} cpd -o jsonpath="{.spec.host}" )
 
-    # echo "===> iamhost: " ${iamhost}
-    # echo "===> platformauth: " ${platformauth}
+    [[ ${_TRACE} -eq 1 ]] && echo "===> iamhost: " ${iamhost}
+    [[ ${_TRACE} -eq 1 ]] && echo "===> platformauth: " ${platformauth}
 
     if [[ ${_ROUTE_NAME} = "platform-id-provider" ]]; then
       iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${platformauth}/v1/auth/identitytoken | jq -r .access_token)
@@ -143,27 +146,58 @@ _createBAIWorkforceSecret () {
       iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${iamhost}/idprovider/v1/auth/identitytoken | jq -r .access_token)
     fi
 
-    # echo "===> iamaccesstoken: " ${iamaccesstoken}
+    [[ ${_TRACE} -eq 1 ]] && echo "===> iamaccesstoken: " ${iamaccesstoken}
 
     zentoken=$(curl -sk ${platformauth}/v1/preauth/validateAuth -H "username:${username}" -H "iam-token: ${iamaccesstoken}" | jq -r .accessToken)
         
-    # echo "===> zentoken: " ${zentoken}
+    [[ ${_TRACE} -eq 1 ]] && echo "===> zentoken: " ${zentoken}
 
     type=$(oc get icp4acluster -n ${_NS} -o yaml | grep -E "sc_deployment_type|olm_deployment_type"| tail -1 |awk '{print $2}')
     
-    # echo "===> deloyment type: " ${type}
+    [[ ${_TRACE} -eq 1 ]] && echo "===> deloyment type: " ${type}
 
-    bpmSystemID=$(curl -sk -X GET ${_WFS_URL}/rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}" | jq -r .data.systems[].systemID)
+    _IS_SLASH=""
+    if [[ "${_WFS_URL}" != */ ]]; then
+      _IS_SLASH="/"
+    fi
 
-    # !!! verificare nome secret PROD
+    bpmSystemID=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}" | jq -r .data.systems[].systemID)
+
     _adminSecret="bas-admin-secret"
+    _DEV_ENV=$(oc get secret --no-headers -n ${_NS} | grep "${CP4BA_INST_CR_NAME}-bas" | wc -l)
+    if [[ ${_DEV_ENV} -eq 0 ]]; then
+      #echo "TBD: ===>>> get baw name "
+      _BAW_NAME=$(echo "${_WFS_URL}" | awk -F / -v OFS=/ '{ print $(NF-1), $NF }' | sed 's#/##g')
+      _adminSecret="${CP4BA_INST_CR_NAME}-${_BAW_NAME}-admin-secret"
+      [[ ${_TRACE} -eq 1 ]] && echo "===> try secret: " ${_adminSecret}
+      resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_adminSecret} 
+      if [[ $? -eq 0 ]]; then
+        arrIN=(${_BAW_NAME//-/ })
+        _BAW_NAME="${arrIN[1]}-${arrIN[0]}"
+        _adminSecret="${CP4BA_INST_CR_NAME}-${_BAW_NAME}-admin-secret"
+        [[ ${_TRACE} -eq 1 ]] && echo "===> try secret: " ${_adminSecret}
+        resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_adminSecret} 
+        if [[ $? -eq 0 ]]; then
+          echo -e "${_CLR_RED}[✗] ERROR: _createBAIWorkforceSecret admin secret name not found${_CLR_NC}"
+          exit 1
+        fi
+      fi
+
+      [[ ${_TRACE} -eq 1 ]] && echo "admin secret name: ${_adminSecret}"
+    fi
+
     adminUsername=$(oc get secret -n ${_NS} $(oc get secret -n ${_NS} |grep ${_adminSecret} | awk '{print $1}') -o jsonpath='{.data.adminUser}'|base64 -d)
+
+    if [[ -z "${adminUsername}" ]]; then
+      adminUsername=$(oc get secret -n ${_NS} $(oc get secret -n ${_NS} |grep ${_adminSecret} | awk '{print $1}') -o jsonpath='{.data.adminUsername}'|base64 -d)
+    fi
+
     adminPassword=$(oc get secret -n ${_NS} $(oc get secret -n ${_NS} |grep ${_adminSecret} | awk '{print $1}') -o jsonpath='{.data.adminPassword}'|base64 -d)
 
-    # echo ${_WFS_URL}
-    # echo "===> bpmSystemID: " $bpmSystemID
-    # echo "===> adminUsername: " $adminUsername
-    # echo "===> adminPassword: " $adminPassword
+    [[ ${_TRACE} -eq 1 ]] && echo ${_WFS_URL}
+    [[ ${_TRACE} -eq 1 ]] && echo "===> bpmSystemID: " $bpmSystemID
+    [[ ${_TRACE} -eq 1 ]] && echo "===> adminUsername: " $adminUsername
+    [[ ${_TRACE} -eq 1 ]] && echo "===> adminPassword: " $adminPassword
 
     secret_name=$(oc get icp4acluster -n ${_NS} $(oc get icp4acluster -n ${_NS} --no-headers | awk '{print $1}') -o jsonpath='{.spec.bai_configuration.business_performance_center.workforce_insights_secret}')
     if [[ ! -z ${secret_name} ]]; then
@@ -202,29 +236,34 @@ _createBAIWorkforceConfiguration () {
   BA_DN=$(oc get ICP4ACluster -n $1 --no-headers | awk '{print $1}')
 
   if [[ ! -z "${BA_DN}" ]]; then
-    echo "Patching ICP4ACluster: "${BA_DN}
+    # echo "Patching ICP4ACluster: "${BA_DN}
 
     _WX_BAI_WKF_TMP="/tmp/cp4ba-bai-workforce-$USER-$RANDOM"
+    _OK_TO_PATCH=0
+    if [[ "${CP4BA_INST_TYPE}" = "starter" ]]; then
+      echo 'spec:' > ${_WX_BAI_WKF_TMP}
+      echo '  bastudio_configuration:' >> ${_WX_BAI_WKF_TMP}
+      echo '    custom_secret_name: '${CP4BA_INST_GENAI_WX_AUTH_SECRET} >> ${_WX_BAI_WKF_TMP}
+      echo '    bastudio_custom_xml: |' >> ${_WX_BAI_WKF_TMP}
+      echo '      <properties>' >> ${_WX_BAI_WKF_TMP}
+      echo '        <server>' >> ${_WX_BAI_WKF_TMP}
+      echo '          <gen-ai merge="mergeChildren">' >> ${_WX_BAI_WKF_TMP} 
+      echo '            <project-id>'${CP4BA_INST_GENAI_WX_PRJ_ID}'</project-id>' >> ${_WX_BAI_WKF_TMP}
+      echo '            <provider-url>'${CP4BA_INST_GENAI_WX_URL_PROVIDER}'</provider-url>' >> ${_WX_BAI_WKF_TMP}
+      echo '            <auth-alias>watsonx.ai_auth_alias</auth-alias>' >> ${_WX_BAI_WKF_TMP}
+      echo '          </gen-ai>' >> ${_WX_BAI_WKF_TMP}
+      echo '        </server>' >> ${_WX_BAI_WKF_TMP}
+      echo '      </properties>' >> ${_WX_BAI_WKF_TMP}
 
-#    if [[ "${CP4BA_INST_TYPE}" = "starter" ]]; then
-#      echo 'spec:' > ${_WX_BAI_WKF_TMP}
-#      echo '  bastudio_configuration:' >> ${_WX_BAI_WKF_TMP}
-#      echo '    custom_secret_name: '${CP4BA_INST_GENAI_WX_AUTH_SECRET} >> ${_WX_BAI_WKF_TMP}
-#      echo '    bastudio_custom_xml: |' >> ${_WX_BAI_WKF_TMP}
-#      echo '      <properties>' >> ${_WX_BAI_WKF_TMP}
-#      echo '        <server>' >> ${_WX_BAI_WKF_TMP}
-#      echo '          <gen-ai merge="mergeChildren">' >> ${_WX_BAI_WKF_TMP} 
-#      echo '            <project-id>'${CP4BA_INST_GENAI_WX_PRJ_ID}'</project-id>' >> ${_WX_BAI_WKF_TMP}
-#      echo '            <provider-url>'${CP4BA_INST_GENAI_WX_URL_PROVIDER}'</provider-url>' >> ${_WX_BAI_WKF_TMP}
-#      echo '            <auth-alias>watsonx.ai_auth_alias</auth-alias>' >> ${_WX_BAI_WKF_TMP}
-#      echo '          </gen-ai>' >> ${_WX_BAI_WKF_TMP}
-#      echo '        </server>' >> ${_WX_BAI_WKF_TMP}
-#      echo '      </properties>' >> ${_WX_BAI_WKF_TMP}
-#    else
-#      echo -e "${_CLR_RED}[✗] ERROR: _createBAIWorkforceConfiguration GenAI not yet implemented for 'production' type deployment.${_CLR_NC}"
-#    fi
-#
-#    oc patch ICP4ACluster ${BA_DN} -n $1 --type=merge --patch-file=${_WX_BAI_WKF_TMP}
+      _OK_TO_PATCH=1
+    else
+      echo -e "${_CLR_YELLOW}[✗] WARNING: _createBAIWorkforceConfiguration GenAI not yet implemented for 'production' type deployment.${_CLR_NC}"
+    fi
+
+    if [[ ${_OK_TO_PATCH} -eq 1 ]]; then
+      oc patch ICP4ACluster ${BA_DN} -n $1 --type=merge --patch-file=${_WX_BAI_WKF_TMP}
+      rm "${_WX_BAI_WKF_TMP}" 2>/dev/null 1>/dev/null
+    fi
   else
     echo -e "${_CLR_RED}[✗] ERROR: _createBAIWorkforceConfiguration GenAI configuration error, ICP4ACluster object not found.${_CLR_NC}"
     exit 1
@@ -241,17 +280,21 @@ _verifyVars() {
 
 #--------------------------------------------------------
 configureBAIWorkforce() {
-  _verifyVars
-  if [ $? -eq 1 ]; then
-    namespaceExist $1
+  if [[ "${CP4BA_INST_BAI_ENABLE}" = "true" && "${CP4BA_INST_BAI_BPC_WORKFORCE}" = "true" ]]; then
+    _verifyVars
     if [ $? -eq 1 ]; then
-      _createBAIWorkforceSecret $1 ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
-      _createBAIWorkforceConfiguration $1
-    else
-      echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
-      exit 1
+      namespaceExist $1
+      if [ $? -eq 1 ]; then
+        _createBAIWorkforceSecret $1 ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
+        _createBAIWorkforceConfiguration $1
+      else
+        echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
+        exit 1
+      fi
     fi
-  fi  
+  else
+    echo -e "${_CLR_YELLOW}[✗] Warning, BAI or BPC WORKFORCE not enabled${_CLR_NC}"
+  fi
 }
 
 #==================================
@@ -259,5 +302,6 @@ configureBAIWorkforce() {
 echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Configuring BAI Workforce '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
 
+echo -e "${_CLR_YELLOW}TBD: if runtime deployment iterate on BAWs if more than one...${_CLR_NC}"
 configureBAIWorkforce ${CP4BA_INST_NAMESPACE}
 

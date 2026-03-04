@@ -189,18 +189,21 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
 
       if [ $? -eq 0 ]; then
         rm ./_clusteradmin.out
-        cd ${_ACT_DIR}
         echo -e "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
         _OK=true
       else
-        cp ./_clusteradmin.out "${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
+        if [[ -f "./_clusteradmin.out" ]]; then
+          cp ./_clusteradmin.out "${_ACT_DIR}/${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
+        fi
         echo -e "${_CLR_RED}*****************************************************************${_CLR_NC}"
         echo -e "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
         echo -e "${_CLR_RED}*****************************************************************${_CLR_NC}"
         # cat ./_clusteradmin.out
-        echo "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
+        echo -e "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
         echo -e "${_CLR_RED}*****************************************************************${_CLR_NC}"
       fi
+      cd ${_ACT_DIR}
+      
     fi
   fi
 fi
