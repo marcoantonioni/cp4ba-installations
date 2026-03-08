@@ -183,6 +183,40 @@ createSecretBAW () {
   fi
 }
 
+createSecretWFAssistantBAW () {
+# $1=APIKEY
+# $2=PRJID
+# $3=URL
+
+_WX_APIKEY=$(echo "$1" | base64)
+_WX_PRJID=$(echo "$2" | base64)
+_WX_URL=$(echo "$3" | base64)
+
+_SECRET_NAME="ibm-workflow-assistant-secrets"
+_SECRET_FILE_NAME="/tmp/secret-wf-assistant-$USER-$RANDOM.xml"
+cat <<EOF > ${_SECRET_FILE_NAME}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ${_SECRET_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+data:
+  WATSONX_API_KEY: "${_WX_APIKEY}"
+  WATSONX_PASSWORD: ''
+  WATSONX_PROJECT_ID: "${_WX_PRJID}"
+  WATSONX_TOKEN: ''
+  WATSONX_URL: "${_WX_URL}"
+type: Opaque
+
+EOF
+
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
+}
+
 
 #-------------------------------
 #createSecretAE () {
@@ -266,19 +300,48 @@ createSecretBAS () {
 # $1 username
 # $2 password
 
-  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]]; then
+if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]]; then
 
-    echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
-    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
-      --from-literal=dbUsername="$1" \
-      --from-literal=dbPassword="$2" 1> /dev/null
+  echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
+    --from-literal=dbUsername="$1" \
+    --from-literal=dbPassword="$2" 1> /dev/null
 
-    oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
-    oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-name=${CP4BA_INST_BAW_1_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
-    oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
-  
-  fi
+  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
+  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-name=${CP4BA_INST_BAW_1_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
+  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
+
+fi
+
+#---------------------------------------------
+# BAS WF Assistant
+_WX_APIKEY=$(echo ${CP4BA_INST_BAS_GENAI_WX_APIKEY} | base64)
+_WX_PRJID=$(echo ${CP4BA_INST_BAS_GENAI_WX_PRJ_ID} | base64)
+_WX_URL=$(echo ${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER} | base64)
+
+_SECRET_FILE_NAME="/tmp/secret-wf-assistant-$USER-$RANDOM.xml"
+cat <<EOF > ${_SECRET_FILE_NAME}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: ibm-workflow-assistant-secrets
+  namespace: ${CP4BA_INST_NAMESPACE}
+data:
+  WATSONX_API_KEY: "${_WX_APIKEY}"
+  WATSONX_PASSWORD: ''
+  WATSONX_PROJECT_ID: "${_WX_PRJID}"
+  WATSONX_TOKEN: ''
+  WATSONX_URL: "${_WX_URL}"
+type: Opaque
+
+EOF
+
+_SECRET_NAME="ibm-workflow-assistant-secrets"
+echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
 
 #---------------------------------------------
 _SECRET_FILE_NAME="/tmp/secret-baw-runtime-$USER-$RANDOM.xml"
@@ -419,34 +482,6 @@ EOF
 _SECRET_NAME="my-lombardi-custom-xml-secret"
 echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
 oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-
-
-#---------------------------------------------
-_WX_APIKEY=$(echo ${CP4BA_INST_BAS_GENAI_WX_APIKEY} | base64)
-_WX_PRJID=$(echo ${CP4BA_INST_BAS_GENAI_WX_PRJ_ID} | base64)
-_WX_URL=$(echo ${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER} | base64)
-
-_SECRET_FILE_NAME="/tmp/secret-wf-assistant-$USER-$RANDOM.xml"
-cat <<EOF > ${_SECRET_FILE_NAME}
-kind: Secret
-apiVersion: v1
-metadata:
-  name: ibm-workflow-assistant-secrets
-  namespace: ${CP4BA_INST_NAMESPACE}
-data:
-  WATSONX_API_KEY: "${_WX_APIKEY}"
-  WATSONX_PASSWORD: ''
-  WATSONX_PROJECT_ID: "${_WX_PRJID}"
-  WATSONX_TOKEN: ''
-  WATSONX_URL: "${_WX_URL}"
-type: Opaque
-
-EOF
-
-_SECRET_NAME="ibm-workflow-assistant-secrets"
-echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
 }
@@ -760,11 +795,24 @@ createSecrets () {
       else
         echo -e "${_CLR_RED}ERROR, env var '${_CLR_GREEN}${_DB_SECRET}${_CLR_RED}' not defined, verify CP4BA_INST_DB_INSTANCES and CP4BA_INST_BAW_* values.${_CLR_NC}"
       fi
+
+      # WF Assistant
+      _APIKEY="CP4BA_INST_BAW_"$i"_GENAI_WX_APIKEY"
+      _PRJID="CP4BA_INST_BAW_"$i"_GENAI_WX_PRJ_ID"
+      _URLPRVD="CP4BA_INST_BAW_"$i"_GENAI_WX_URL_PROVIDER"
+      _WX_APIKEY=$(echo "${!_APIKEY}" | base64)
+      _WX_PRJID=$(echo "${!_PRJID}" | base64)
+      _WX_URL=$(echo "${!_URLPRVD}" | base64)
+
+      createSecretWFAssistantBAW "${_WX_APIKEY}" "${_WX_PRJID}" "${_WX_URL}" 
+
     fi
     ((i = i + 1))
   done  
 
-  createSecretBAS ${CP4BA_INST_DB_BAW_USER} ${CP4BA_INST_DB_BAW_PWD}
+  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]]; then
+    createSecretBAS ${CP4BA_INST_DB_BAW_USER} ${CP4BA_INST_DB_BAW_PWD}
+  fi
 
   createSecretAE
 

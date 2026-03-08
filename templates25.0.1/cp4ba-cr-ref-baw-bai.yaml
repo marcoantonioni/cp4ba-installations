@@ -381,7 +381,7 @@ spec:
             - "${CP4BA_INST_PAKBA_ADMIN_USER}"
             - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
-          oc_cpe_obj_store_enable_workflow: true
+          oc_cpe_obj_store_enable_workflow: false
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_CONTENT_SCHEMA_DATA}"
