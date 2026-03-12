@@ -176,16 +176,29 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
       export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
 
       # 20260302
-      _CAS="./cp4a-clusteradmin-setup.sh"
-      _CAS2="./cp4a-clusteradmin-setup-240.sh"
-      cat "${_CAS}" | sed 's/ATTEMPTS -eq 120/ATTEMPTS -eq 240/g' > "${_CAS2}"
+      # _CAS="./cp4a-clusteradmin-setup.sh"
+      # _CAS2="./cp4a-clusteradmin-setup-240.sh"
+      # cat "${_CAS}" | sed 's/ATTEMPTS -eq 120/ATTEMPTS -eq 240/g' > "${_CAS2}"
+# 
+      # if [[ -f ./deployOperator.sh ]]; then
+      #   echo "BEFORE:"
+      #   cat ./deployOperator.sh | grep "Timeout waiting for CP4BA operator to start"        
+      #   cat ./deployOperator.sh | grep "local maxRetry"
+      # fi
+# 
+      # cat ./deployOperator.sh | sed 's/local maxRetry=20/local maxRetry=100/g' > ./deployOperator-mod.sh
+      # cat ./deployOperator-mod.sh | sed 's/Waiting for CP4A Operator Catalog pod initialization/Waiting for CP4A Operator Catalog pod initialization (maxRetry=100)/g' | sed 's/Timeout waiting for CP4BA operator to start/Timeout waiting for CP4BA operator to start (retries: 100)/g' > ./deployOperator.sh
+      # #cp ./deployOperator-mod.sh ./deployOperator.sh
+# 
+      # if [[ -f ./deployOperator.sh ]]; then
+      #   echo "BEFORE:"
+      #   cat ./deployOperator.sh | grep "Timeout waiting for CP4BA operator to start"
+      #   cat ./deployOperator.sh | grep "local maxRetry"
+      # fi
+      # echo "Executing scripts with modified retries/timeouts"
+      # /bin/bash "${_CAS2}" &> ./_clusteradmin.out
 
-      cat ./deployOperator.sh | sed 's/local maxRetry=20/local maxRetry=100/g' > ./deployOperator-mod.sh
-      cat ./deployOperator-mod.sh | sed 's/Waiting for CP4A Operator Catalog pod initialization/Waiting for CP4A Operator Catalog pod initialization (maxRetry=100)/g' > ./deployOperator.sh
-      #cp ./deployOperator-mod.sh ./deployOperator.sh
-
-      #echo "Executing scripts with modified retries/timeouts"
-      /bin/bash "${_CAS2}" &> ./_clusteradmin.out
+      /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
 
       if [ $? -eq 0 ]; then
         rm ./_clusteradmin.out

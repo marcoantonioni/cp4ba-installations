@@ -188,32 +188,13 @@ createSecretWFAssistantBAW () {
 # $2=PRJID
 # $3=URL
 
-_WX_APIKEY=$(echo "$1" | base64)
-_WX_PRJID=$(echo "$2" | base64)
-_WX_URL=$(echo "$3" | base64)
-
-_SECRET_NAME="ibm-workflow-assistant-secrets"
-_SECRET_FILE_NAME="/tmp/secret-wf-assistant-$USER-$RANDOM.xml"
-cat <<EOF > ${_SECRET_FILE_NAME}
-kind: Secret
-apiVersion: v1
-metadata:
-  name: ${_SECRET_NAME}
-  namespace: ${CP4BA_INST_NAMESPACE}
-data:
-  WATSONX_API_KEY: "${_WX_APIKEY}"
-  WATSONX_PASSWORD: ''
-  WATSONX_PROJECT_ID: "${_WX_PRJID}"
-  WATSONX_TOKEN: ''
-  WATSONX_URL: "${_WX_URL}"
-type: Opaque
-
-EOF
-
-echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
-oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+  _SECRET_NAME="ibm-workflow-assistant-secrets"
+  echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=WATSONX_API_KEY="$1" \
+    --from-literal=WATSONX_PROJECT_ID="$2" \
+    --from-literal=WATSONX_URL="$3" 1> /dev/null
 
 }
 
@@ -240,58 +221,32 @@ createSecretAE () {
 _AE_DB_USER=$(echo ${CP4BA_INST_DB_AE_USER} | base64)
 _AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
 
-_SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-app-engine-admin-secret"
-_SECRET_FILE_NAME="/tmp/secret-appengine-workspace-admin-$USER-$RANDOM.xml"
-cat <<EOF > ${_SECRET_FILE_NAME}
-kind: Secret
-apiVersion: v1
-metadata:
-  name: ${_SECRET_NAME}
-  namespace: ${CP4BA_INST_NAMESPACE}
-data:
-  AE_DATABASE_USER: "${_AE_DB_USER}"
-  AE_DATABASE_PWD: "${_AE_DB_PWD}"
-type: Opaque
-EOF
-echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+#---------------------------
 
-_SECRET_NAME="${CP4BA_INST_CR_NAME}-pbk-app-engine-admin-secret"
-_SECRET_FILE_NAME="/tmp/secret-appengine-pbk-admin-$USER-$RANDOM.xml"
-cat <<EOF > ${_SECRET_FILE_NAME}
-kind: Secret
-apiVersion: v1
-metadata:
-  name: ${_SECRET_NAME}
-  namespace: ${CP4BA_INST_NAMESPACE}
-data:
-  AE_DATABASE_USER: "${_AE_DB_USER}"
-  AE_DATABASE_PWD: "${_AE_DB_PWD}"
-type: Opaque
+  _SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-app-engine-admin-secret"
+  echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
+    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 1> /dev/null
 
-EOF
-echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+#---------------------------
 
-_SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-aae-app-engine-admin-secret"
-_SECRET_FILE_NAME="/tmp/secret-appengine-aae-admin-$USER-$RANDOM.xml"
-cat <<EOF > ${_SECRET_FILE_NAME}
-kind: Secret
-apiVersion: v1
-metadata:
-  name: ${_SECRET_NAME}
-  namespace: ${CP4BA_INST_NAMESPACE}
-data:
-  AE_DATABASE_USER: "${_AE_DB_USER}"
-  AE_DATABASE_PWD: "${_AE_DB_PWD}"
-type: Opaque
-EOF
-echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+  _SECRET_NAME="${CP4BA_INST_CR_NAME}-pbk-app-engine-admin-secret"
+  echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
+    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 1> /dev/null
 
+#---------------------------
+
+  _SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-aae-app-engine-admin-secret"
+  echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
+    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 1> /dev/null
 
 }
 
@@ -316,32 +271,15 @@ fi
 
 #---------------------------------------------
 # BAS WF Assistant
-_WX_APIKEY=$(echo ${CP4BA_INST_BAS_GENAI_WX_APIKEY} | base64)
-_WX_PRJID=$(echo ${CP4BA_INST_BAS_GENAI_WX_PRJ_ID} | base64)
-_WX_URL=$(echo ${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER} | base64)
 
-_SECRET_FILE_NAME="/tmp/secret-wf-assistant-$USER-$RANDOM.xml"
-cat <<EOF > ${_SECRET_FILE_NAME}
-kind: Secret
-apiVersion: v1
-metadata:
-  name: ibm-workflow-assistant-secrets
-  namespace: ${CP4BA_INST_NAMESPACE}
-data:
-  WATSONX_API_KEY: "${_WX_APIKEY}"
-  WATSONX_PASSWORD: ''
-  WATSONX_PROJECT_ID: "${_WX_PRJID}"
-  WATSONX_TOKEN: ''
-  WATSONX_URL: "${_WX_URL}"
-type: Opaque
-
-EOF
-
-_SECRET_NAME="ibm-workflow-assistant-secrets"
-echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-
+#---------------------------------------------
+  _SECRET_NAME="ibm-workflow-assistant-secrets"
+  echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=WATSONX_API_KEY="${CP4BA_INST_BAS_GENAI_WX_APIKEY}" \
+    --from-literal=WATSONX_PROJECT_ID="${CP4BA_INST_BAS_GENAI_WX_PRJ_ID}" \
+    --from-literal=WATSONX_URL="${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}" 1> /dev/null
 
 #---------------------------------------------
 _SECRET_FILE_NAME="/tmp/secret-baw-runtime-$USER-$RANDOM.xml"
@@ -712,48 +650,24 @@ createSecretsExternalDBs () {
 
 createSecretBAML () {
 
-# ibm-mls-itp-admin-secret
-_SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-itp-admin-secret"
-_SECRET_FILE_NAME="/tmp/secret-mls-itp-admin-$USER-$RANDOM.xml"
+#---------------------------------------------
 
-cat <<EOF > ${_SECRET_FILE_NAME}
-kind: Secret
-apiVersion: v1
-metadata:
-  name: ${_SECRET_NAME}
-  namespace: ${CP4BA_INST_NAMESPACE}
-data:
-  adminUsername: "${CP4BA_INST_PAKBA_ADMIN_USER}"
-  adminPassword: "${CP4BA_INST_PAKBA_ADMIN_PWD}"
-type: Opaque
-
-EOF
-
-echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+  _SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-itp-admin-secret"
+  echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+    --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 1> /dev/null
 
 
-# ibm-mls-wfi-admin-secret
-_SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-wfi-admin-secret"
-_SECRET_FILE_NAME="/tmp/secret-ibm-mls-wfi-admin-secret-$USER-$RANDOM.xml"
+#---------------------------------------------
 
-cat <<EOF > ${_SECRET_FILE_NAME}
-kind: Secret
-apiVersion: v1
-metadata:
-  name: ${_SECRET_NAME}
-  namespace: ${CP4BA_INST_NAMESPACE}
-data:
-  adminUsername: "${CP4BA_INST_PAKBA_ADMIN_USER}"
-  adminPassword: "${CP4BA_INST_PAKBA_ADMIN_PWD}"
-type: Opaque
-
-EOF
-
-echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc apply -f ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+  _SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-wfi-admin-secret"
+  echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
+    --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 1> /dev/null
 
 } 
 

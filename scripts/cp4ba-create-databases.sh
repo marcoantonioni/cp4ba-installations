@@ -9,6 +9,8 @@ _CFG=""
 _WAIT=false
 _GENERATE_SQL_ONLY=false
 
+_VERBOSE="false"
+
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
@@ -18,12 +20,13 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:wg flag
+while getopts c:wgv flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         w) _WAIT=true;;
         g) _GENERATE_SQL_ONLY=true;;
+        v) _VERBOSE=true;;
     esac
 done
 
@@ -202,7 +205,6 @@ _createDatabases () {
       fi
 
       if [ $_KO -eq 0 ]; then
-        # echo -e "${_CLR_GREEN}... execute sql statements${_CLR_NC}"
 
         oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} chown -R postgres:postgres /${_PG_BASE_FOLDER}/setupdb /${_PG_BASE_FOLDER}/tbs 2>/dev/null 1>/dev/null
 
@@ -210,7 +212,17 @@ _createDatabases () {
         _retry=0
         while [[ $_retry -le 10 ]]
         do
-          oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} psql -U postgres -f /${_PG_BASE_FOLDER}/setupdb/db-statements.sql 2>/dev/null 1>/dev/null
+          echo -e "${_CLR_GREEN}... execute sql statements${_CLR_NC}"
+          
+          if [[ "${_VERBOSE}" == "true" ]]; then
+            echo "SQL Statements BEGIN ---------------------------"
+            oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} psql -U postgres -f /${_PG_BASE_FOLDER}/setupdb/db-statements.sql
+            echo "SQL Statements END ---------------------------"
+          else
+            oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} psql -U postgres -f /${_PG_BASE_FOLDER}/setupdb/db-statements.sql 2>/dev/null 1>/dev/null
+          fi
+
+          
           if [ $? -gt 0 ]; then
             _KO=1
             echo -e "${_CLR_RED}Error executing SQL statements in pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}', retry...${_CLR_NC}" 

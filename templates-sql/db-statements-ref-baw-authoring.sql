@@ -226,12 +226,12 @@ ALTER DATABASE bts SET timezone TO 'Etc/UTC';
 
 /* 
 Db AE1 (not used)
-*/
 CREATE DATABASE §§dbPrefix§§_ae1 OWNER §§dbAEowner§§ ENCODING UTF8;
 GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_ae1 TO §§dbAEowner§§;
 \c §§dbPrefix§§_ae1;
 CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
 GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
+*/
 
 /* ---------------------------------- */
 /* DECISIONS */

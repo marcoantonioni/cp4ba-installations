@@ -277,19 +277,19 @@ spec:
         dc_hadr_retry_interval_for_client_reroute: 15
         dc_hadr_max_retries_for_client_reroute: 3
 
-      - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-        dc_os_label: "${CP4BA_INST_DB_AE_LBL}"
-        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
-        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-        database_name: "${CP4BA_INST_AE_DB_NAME}"
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-        database_ssl_secret_name: ""
-        dc_hadr_validation_timeout: 15
-        dc_hadr_standby_servername: ""
-        dc_hadr_standby_port: ""
-        dc_hadr_retry_interval_for_client_reroute: 15
-        dc_hadr_max_retries_for_client_reroute: 3
+      # - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      #   dc_os_label: "${CP4BA_INST_DB_AE_LBL}"
+      #   dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+      #   dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
+      #   database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      #   database_name: "${CP4BA_INST_AE_DB_NAME}"
+      #   database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      #   database_ssl_secret_name: ""
+      #   dc_hadr_validation_timeout: 15
+      #   dc_hadr_standby_servername: ""
+      #   dc_hadr_standby_port: ""
+      #   dc_hadr_retry_interval_for_client_reroute: 15
+      #   dc_hadr_max_retries_for_client_reroute: 3
 
   # IBM FileNet Content Manager initialize configuration
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-initialization
