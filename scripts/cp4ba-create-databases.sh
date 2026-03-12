@@ -212,7 +212,7 @@ _createDatabases () {
         _retry=0
         while [[ $_retry -le 10 ]]
         do
-          echo -e "${_CLR_GREEN}... execute sql statements${_CLR_NC}"
+          # echo -e "${_CLR_GREEN}... execute sql statements${_CLR_NC}"
           
           if [[ "${_VERBOSE}" == "true" ]]; then
             echo "SQL Statements BEGIN ---------------------------"

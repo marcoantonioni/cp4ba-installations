@@ -18,10 +18,8 @@
 ## DEPLOYMENT CONTENTS
 ## 
 ## patterns: foundation,workflow
-## BAW: 1 servers (baw1 is baw full)
-## BAW 1 - content: yes
-## BAW 1 - case: yes
-## BAW 1 - navigator: yes
+##
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-runtime-workstream-services
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
@@ -359,7 +357,7 @@ spec:
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
-            
+
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
           oc_cpe_obj_store_conn:
