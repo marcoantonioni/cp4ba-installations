@@ -596,12 +596,12 @@ spec:
         - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
           connection_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
           ## Navigator desktop name for Target Object Store.
-          #desktop_id: "baw"
+          desktop_id: "baw"
           ## Name of the target environment or project area to register with the case components and associate with an IBM Content Navigator desktop.
           target_environment_name: "env_connection_definition"          
           ## Whether to use the Target Object Store as the default Target Object Store.
           ## If none of the Target Object Stores is set as default, the first one in the tos_list will be set as the default Target Object Store.
-          #is_default: true
+          is_default: true
 
         ## Persistent volume claim (PVC) name for case network shared directory.
         ## This parameter must be set to the same value as the Business Automation Navigator pvc_for_icn_pluginstore parameter.

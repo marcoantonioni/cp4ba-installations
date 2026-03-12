@@ -459,12 +459,10 @@ spec:
         target_environment_name: "dev_env_connection_definition"
 
       network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
-      ## Custom package names for installing custom packages, where the value format is similar to package1.zip, package2.zip.
       custom_package_names: ""
-      ## Custom extension names for installing custom packages, where the value format is similar to extension1.zip, extension2.zip.
       custom_extension_names: ""
       cpe_metadata_cache_time_to_live: ""
-   
+
     ## Application engine configuration, because application engine is an array,
     ## when there is only one Application engine deployed along with this CR, below four parameters are not required.
     ## when there is more then one application engine deployed, below four parameters are required.
@@ -556,49 +554,6 @@ spec:
     #  kubectl create secret generic wfs-lombardi-custom-xml-secret --from-file=sensitiveCustomConfig=./100Custom.xml
     lombardi_custom_xml_secret_name: my-lombardi-custom-xml-secret
 
-    ##  ??? IBM Business Automation Insights integration configuration
-    ## business_event:
-    ##   ## Whether to enable event monitoring for Dynamic Event Framework events for the Workflow Services container.
-    ##   ## If Business Automation Insights and the Machine Learning Server parameters are configured, this parameter must be set to true.
-    ##   enable: false
-    ##   ## Whether to enable the task record in generated events. This optional parameter is equivalent to the task-record-enabled parameter,
-    ##   ## Also see https://www.ibm.com/support/knowledgecenter/SSYHZ8_20.0.x/com.ibm.dba.bai/topics/ref_bai_bpmn_summary_formats.html
-    ##   enable_task_record: true
-    ##   ## Whether to record additional task information in generated events.
-    ##   ## If Business Automation Insights and the Machine Learning Server parameters are configured, this parameter must be set to true.
-    ##   ## This parameter is equivalent to the enable_task_api_def parameter.
-    ##   ## Also see https://www.ibm.com/support/knowledgecenter/SSYHZ8_20.0.x/com.ibm.dba.bai/topics/ref_bai_bpmn_summary_formats.html
-    ##   enable_task_api: false
-    ##   ## List of the subscription configurations. Each subscription attribute is listed in the rest of this table.
-    ##   ## app_name: Name of the application that is the source of the events that are to be monitored.
-    ##   ## version: Version of the application to be monitored.
-    ##   ## component_type: Type of the component to be monitored.
-    ##   ## component_name: Name of the component to be monitored.
-    ##   ## element_type: Type of element to be monitored. BPMN types are PROCESS, ACTIVITY, EVENT, and GATEWAY.
-    ##   ## element_name: Name of the element to be monitored.
-    ##   ## nature: Nature of the event. One element can send events of various natures, such as STARTED, ACTIVE, COMPLETED.
-    ##   ##         The BPMN nature categories are STARTED, COMPLETED, TERMINATED, DELETED, FAILED, CAUGHT, THROWN, EXPECTED, ACTIVE, READY, RESOURCE_ASSIGNED, ACTIVE, LOOP_CONDITION_TRUE, LOOP_CONDITION_FALSE, and MULTIPLE_INSTANCES_STARTED.
-    ##   subscription:
-    ##   - {'app_name': '*','version': '*','component_type': '*','component_name': '*','element_type': '*','element_name': '*','nature': '*'}
-
-    ## elasticsearch:
-    ##   ## Required only when you want to use external elasticsearch/opensearch for "data collector and data indexer" function. Endpoint of external elasticsearch/opensearch, such as: https://<external_es_host>:<external_es_port>.
-    ##   endpoint: ""
-    ##   ## Required only when you want to use external elasticsearch/opensearch for "data collector and data indexer" function. The external elasticsearch/opensearch administrative secret that contains the keys: username and password.
-    ##   ## If your instance does not have basic authentication, leave this parameter empty.
-    ##   admin_secret_name: ""
-    ##   ## Optionally specify the number of seconds for elasticsearch/opensearch connection timeout.
-    ##   connect_timeout: 10s
-    ##   ## Optionally specify the number of seconds for elasticsearch/opensearch read timeout.
-    ##   read_timeout: 30s
-    ##   ## Optionally specify elasticsearch/opensearch thread count.
-    ##   thread_count: 0
-    ##   ## Optionally specify the maximum number of connections allowed across all routes when workflow authoring service connects to the elasticsearch/opensearch cluster to call its REST API.
-    ##   ## Specify a positive integer. If the provided value is less than or equal to 0, then the default Elasticsearch/Opensearch High Level REST Client value will be used.
-    ##   max_connection_total: -1
-    ##   ## Optionally specify the maximum number of connections allowed for a route when workflow authoring service connects to the elasticsearch/opensearch cluster to call its REST API.
-    ##   ## Specify a positive integer. If the provided value is less than or equal to 0, then the default Elasticsearch/Opensearch High Level REST Client value will be used.
-    ##   max_connection_per_route: -1
 
   workflow_assistant_configuration:
     run_authoring_agent: ${CP4BA_RUN_AUTHORING_AGENT}
@@ -635,7 +590,6 @@ spec:
       graphql_production_setting:
         enable_graph_iql: ${CP4BA_INST_GRAPHQL}
 
-
   # BAN
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-navigator
   navigator_configuration:
@@ -671,8 +625,6 @@ spec:
     monitor_enabled: false
     logging_enabled: false
 
-    ## Persistent Volume Claims for ICN.  If the storage_configuration in the shared_configuration is configured,
-    ## the Operator will create the PVC using the names below.
     datavolume:
       existing_pvc_for_icn_cfgstore: 
         name: "icn-cfgstore"
@@ -693,7 +645,6 @@ spec:
         name: "icn-asperastore" 
         size: 1Gi
 
-    ## Default values for both rediness and liveness probes.  Modify these values to meet your requirements.
     probe:
       startup:
         initial_delay_seconds: 120
@@ -709,8 +660,6 @@ spec:
         timeout_seconds: 5
         failure_threshold: 6
 
-    ## Only use this parameter if you want to override the image_pull_secrets setting in the shared_configuration above.
     image_pull_secrets:
       name: "ibm-entitlement-key"
-    ## BAN Sync services work with Zen URL by default, change it to false to use BAN Route URL.
     use_sync_with_zen_url: true

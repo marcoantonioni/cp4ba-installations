@@ -357,7 +357,7 @@ spec:
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
-            
+
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
           oc_cpe_obj_store_conn:
@@ -558,7 +558,7 @@ spec:
         case_history_store_schema_name: ${CP4BA_INST_DB_CHOS_USER} # schema name = owner name = user name
         dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
         enable: true
-  
+
     ## Application engine configuration, because application engine is an array,
     ## when there is only one Application engine deployed along with this CR, below four parameters are not required.
     ## when there is more then one application engine deployed, below four parameters are required.
