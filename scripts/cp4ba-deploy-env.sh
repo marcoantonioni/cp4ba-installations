@@ -578,6 +578,7 @@ waitDeploymentReadiness () {
   _PFS_READY=1
   while true ; 
   do   
+
     if [[ "${CP4BA_INST_PFS}" = "true" ]] || [[ "${_FEDERATE_ONLY}" = "true" ]]; then
       checkForPfsReady
       _PFS_READY=$?
@@ -611,7 +612,7 @@ waitDeploymentReadiness () {
           fi
         fi
       fi
-      #echo -e "${_CLR_GREEN}Wait for access info config map ...${_CLR_NC}"
+      echo -e "${_CLR_GREEN}Setup almost done, wait for access info config map ...${_CLR_NC}"
       while true 
       do
         _ACC_INFO_FOUND=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep "access-info" 2>/dev/null | wc -l)
@@ -627,7 +628,7 @@ waitDeploymentReadiness () {
       if [[ ! -z "${ACC_INFO}" ]]; then
         NUM_KEYS=$(echo $ACC_INFO | jq length)
         echo "" > ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt
-        echo 
+        # echo 
         for (( i=0; i<$NUM_KEYS; i++ ));
         do
           KEY=$(echo $ACC_INFO | jq keys[$i])
