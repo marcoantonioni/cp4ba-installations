@@ -200,6 +200,12 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
 
       /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
 
+      if [ $? -ne 0 ]; then
+        # retry once, since v25, timeouts have been noted during operator setup...
+        echo -e "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try again once...'"
+        /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
+      fi
+
       if [ $? -eq 0 ]; then
         rm ./_clusteradmin.out
         echo -e "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"

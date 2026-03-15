@@ -457,6 +457,7 @@ spec:
       - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
         connection_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
         target_environment_name: "dev_env_connection_definition"
+        is_default: true
 
       network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
       custom_package_names: ""

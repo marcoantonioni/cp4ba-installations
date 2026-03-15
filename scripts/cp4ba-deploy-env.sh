@@ -612,15 +612,27 @@ waitDeploymentReadiness () {
           fi
         fi
       fi
-      echo -e "${_CLR_GREEN}Setup almost done, wait for access info config map ...${_CLR_NC}"
+      # echo ""
+      # echo -e "${_CLR_GREEN}Setup almost done, wait for access info config map ...${_CLR_NC}"
       while true 
       do
         _ACC_INFO_FOUND=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep "access-info" 2>/dev/null | wc -l)
         if [ $_ACC_INFO_FOUND -lt 1 ]; then
-          sleep 5
+          sleep 1
         else
           break
         fi
+
+        # ???
+        NOW_SECONDS=$SECONDS
+        ELAPSED_SECONDS=$(( $NOW_SECONDS - $START_SECONDS ))
+        TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+        TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
+        TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
+
+        echo -e -n "${_CLR_GREEN}Wait for CP4BA CRs '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' to be ready (${_CLR_YELLOW} ${_ROTOR_CHAR} ${_CLR_GREEN}) warnings [${_CLR_RED}${_WARNING_PENDING}${_CLR_GREEN}] elapsed time [${_CLR_YELLOW}$TOT_HOURS${_CLR_GREEN}h:${_CLR_YELLOW}$TOT_MINUTES${_CLR_GREEN}m:${_CLR_YELLOW}$TOT_SECONDS${_CLR_GREEN}s]${_CLR_NC}\033[0K\r"
+        ((_seconds=_seconds+1))
+
       done
       sleep 5
       _FULL_TXT_NAME="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"
