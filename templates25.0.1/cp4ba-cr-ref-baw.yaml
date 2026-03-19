@@ -75,7 +75,6 @@ spec:
     no_log: false
     show_sensitive_log: true
 
-    # new v25
     sc_is_multiple_az: false
     sc_generate_sample_network_policies: false
     images:
@@ -97,6 +96,7 @@ spec:
 
     sc_drivers_url:
 
+  # type: OpenLDAP
   ldap_configuration:
     lc_selected_ldap_type: "Custom"
     lc_ldap_server: "${CP4BA_INST_LDAP_HOST}"
@@ -119,7 +119,7 @@ spec:
       lc_user_filter: "(&(cn=%v)(objectclass=person))"
       lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
 
-    # new v25 (to be verified...)
+    # OpenLDAP compatible
     scim_configuration_iam:
       user_unique_id_attribute: "uid"
       user_name_attribute: "cn"

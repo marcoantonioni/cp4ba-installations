@@ -278,6 +278,7 @@ createDatabases () {
     fi
     
     if [[ "${!_INST_ITEM}" = "true" ]]; then
+      echo -e "Installing '${_CLR_YELLOW}${_INST_ITEM}${_CLR_NC}' "
       if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_TEMPLATE}" ]]; then
         _createDatabases ${!_INST_DB_CR_NAME} ${!_INST_DB_TEMPLATE} ${_DB_CR_NAME_SUFFIX}
         if [[ ! -z "${!_INST_DB_CR_NAME_SSL}" ]]; then
@@ -291,7 +292,7 @@ createDatabases () {
         exit 1
       fi
     else
-      echo -e "${_CLR_YELLOW}Warning${_CLR_NC}: ${_INST_ITEM} for db '${_CLR_YELLOW}${!_INST_DB_CR_NAME}${_CLR_NC}' is disabled, skipping configuration."
+      echo -e "Warning '${_CLR_YELLOW}${_INST_ITEM}${_CLR_NC}' for db '${_CLR_YELLOW}${!_INST_DB_CR_NAME}${_CLR_NC}' is disabled, skipping configuration."
     fi
     ((i = i + 1))
   done  
@@ -303,6 +304,7 @@ if [[ "${CP4BA_INST_DB}" = "true" ]]; then
   if [[ "${_GENERATE_SQL_ONLY}" = "false" ]]; then
     echo -e "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers${_CLR_NC}"
   fi
+  createDatabases "CP4BA_INST_DB_ZENBTSIM_EXT"
   createDatabases "CP4BA_INST_BAS"
   createDatabases "CP4BA_INST_BAW"
   createDatabases "CP4BA_INST_CONTENT"

@@ -17,9 +17,8 @@
 ##
 ## DEPLOYMENT CONTENTS
 ## 
-## patterns: foundation,workflow
+## patterns: foundation (for WfPS)
 ##
-## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-runtime-workstream-services
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
@@ -43,25 +42,23 @@ spec:
   ibm_license: accept
 
   shared_configuration:
-    sc_deployment_fncm_license: "non-production"
-    sc_deployment_baw_license: "non-production"
     sc_deployment_license: "non-production"
+    sc_deployment_type: "${CP4BA_INST_TYPE}"
+    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
     sc_deployment_context: "CP4A"
     sc_image_repository: cp.icr.io
     root_ca_secret: icp4a-root-ca
     sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
     sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
-    sc_deployment_type: "Production"
-    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
     sc_deployment_profile_size: "${CP4BA_INST_DEPL_PROFILE_SIZE}"
-    sc_ingress_enable: false
-    trusted_certificate_list: []
     storage_configuration:
       sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
+    sc_ingress_enable: false
+    trusted_certificate_list: []
     sc_iam:
       default_admin_username: "${CP4BA_INST_IAM_ADMIN_USER}"
     enable_fips: false
@@ -75,7 +72,6 @@ spec:
     no_log: false
     show_sensitive_log: true
 
-    # new v25
     sc_is_multiple_az: false
     sc_generate_sample_network_policies: false
     images:
@@ -97,6 +93,7 @@ spec:
 
     sc_drivers_url:
 
+  # type: OpenLDAP
   ldap_configuration:
     lc_selected_ldap_type: "Custom"
     lc_ldap_server: "${CP4BA_INST_LDAP_HOST}"
@@ -119,7 +116,7 @@ spec:
       lc_user_filter: "(&(cn=%v)(objectclass=person))"
       lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
 
-    # new v25 (to be verified...)
+    # OpenLDAP compatible
     scim_configuration_iam:
       user_unique_id_attribute: "uid"
       user_name_attribute: "cn"
@@ -149,92 +146,5 @@ spec:
       group_object_class_attribute: "groupOfNames"
       group_members_attribute: "member"
 
-  # IBM Business Automation Workflow configuration
-  baw_configuration:
-
-    - name: ${CP4BA_INST_BAW_1_NAME} 
-      capabilities: "workflow"
-      host_federated_portal: false
-      admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
-      database:
-        enable_ssl: false
-        db_cert_secret_name: ""
-        type: ${CP4BA_INST_DB_SERVER_TYPE}
-        server_name: "${CP4BA_INST_BAW_1_DB_HOST}"
-        port: "${CP4BA_INST_DB_SERVER_PORT}"
-        database_name: "${CP4BA_INST_BAW_1_DB_NAME}"
-        secret_name: "${CP4BA_INST_BAW_1_DB_SECRET}"
-        use_custom_jdbc_drivers: false
-        cm_max_pool_size: ${CP4BA_INST_BAW_1_MAX_POOL_SIZE}
-      security_context:
-        selinux_options:
-        fs_groupchangepolicy:
-      # Production, Staging, Test, Development
-      env_type: Test
-      
-      # 'replicas' commented out just as workaround for operator bug (25.0.1) 
-      # replicas: ${CP4BA_INST_BAW_1_REPLICAS}
-      
-      resources:
-        limits:
-          cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"
-          memory: "${CP4BA_INST_BAW_1_LIMITS_MEMORY}"
-        requests:
-          cpu: "500m"
-          memory: "1048Mi"
-
-      ## Resource configuration for init job
-      resources_init:
-        limits:
-          cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"
-          memory: 512Mi
-        requests:
-          cpu: "200m"
-          memory: 128Mi
-
-      ## Resource configuration for heavy init job such as database init job
-      resources_init_heavy_job:
-        limits:
-          cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"
-          memory: 2048Mi
-        requests:
-          cpu: "500m"
-          memory: 512Mi
-      logs:
-        trace_specification: "${CP4BA_INST_BAW_1_LOGS_TRACE}"
-      jms:
-        storage:
-          use_dynamic_provisioning: true
-          storage_class: "${CP4BA_INST_SC_FILE}"
-      storage:
-        use_dynamic_provisioning: true
-        sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-        sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-      tls:
-        tls_secret_name: ''
-        tls_trust_list: []
-        tls_trust_store: ''
-
-      # new v25
-      image:
-        repository: cp.icr.io/cp/cp4a/baw/workflow-server
-        tag: "${CP4BA_INST_IMGTAG}"
-        pull_policy: IfNotPresent
-        
-      # new v25
-      upgrade_job:
-        repository: cp.icr.io/cp/cp4a/baw/workflow-server-dbhandling
-        tag: "${CP4BA_INST_IMGTAG}"
-        pull_policy: IfNotPresent
-        trace_specification: ""
-
-      # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
-      #process_federation_server:
-      #  hostname:
-      #  port:
-      #  context_root_prefix:
-
-  workflow_assistant_configuration:
-    run_authoring_agent: ${CP4BA_RUN_AUTHORING_AGENT}
-    run_workplace_agent: ${CP4BA_RUN_WORKPLACE_AGENT}
-
+  resource_registry_configuration:
+    replica_size: ${CP4BA_INST_REGISTRY_REPLICA_SIZE}
