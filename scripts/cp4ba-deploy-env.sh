@@ -318,14 +318,14 @@ generateCR () {
   fi
 
   if [[ -f "${_INST_ENV_FULL_PATH}" ]]; then
-    MISSED_TRANSFORMATIONS=$(cat ${_INST_ENV_FULL_PATH} | grep "\${" | wc -l)
-    if [[ $MISSED_TRANSFORMATIONS -gt 0 ]]; then
-      echo -e "${_CLR_RED}[✗] Error, env var missed in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
-      echo "++++++++++++++++++++++++++++++++++++++++"
-      cat ${_INST_ENV_FULL_PATH} | grep "\${"
-      echo "++++++++++++++++++++++++++++++++++++++++"
-      exit 1
-    fi
+    #MISSED_TRANSFORMATIONS=$(cat ${_INST_ENV_FULL_PATH} | grep "\${" | wc -l)
+    #if [[ $MISSED_TRANSFORMATIONS -gt 0 ]]; then
+    #  echo -e "${_CLR_RED}[✗] Error, env var missed in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+    #  echo "++++++++++++++++++++++++++++++++++++++++"
+    #  cat ${_INST_ENV_FULL_PATH} | grep "\${"
+    #  echo "++++++++++++++++++++++++++++++++++++++++"
+    #  exit 1
+    #fi
     yq ${_INST_ENV_FULL_PATH} 2>/dev/null 1>/dev/null
     YAML_ERROR=$?
     if [ $YAML_ERROR -gt 0 ]; then

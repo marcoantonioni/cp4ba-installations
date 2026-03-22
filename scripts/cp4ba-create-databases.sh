@@ -309,6 +309,7 @@ if [[ "${CP4BA_INST_DB}" = "true" ]]; then
   createDatabases "CP4BA_INST_BAW"
   createDatabases "CP4BA_INST_CONTENT"
   createDatabases "CP4BA_INST_ICN"
+  createDatabases "CP4BA_INST_DB_WFPS_EXT"
 else
   echo -e "${_CLR_GREEN}Skipping creation of databases${_CLR_NC}"
 fi
