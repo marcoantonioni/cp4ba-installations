@@ -43,9 +43,9 @@ spec:
   ibm_license: accept
 
   shared_configuration:
-    sc_deployment_fncm_license: "non-production"
-    sc_deployment_baw_license: "non-production"
-    sc_deployment_license: "non-production"
+    sc_deployment_fncm_license: "production"
+    sc_deployment_baw_license: "production"
+    sc_deployment_license: "production"
     sc_deployment_context: "CP4A"
     sc_image_repository: cp.icr.io
     root_ca_secret: icp4a-root-ca
@@ -521,6 +521,11 @@ spec:
         type: ${CP4BA_INST_DB_SERVER_TYPE}
     tls:
       tlsTrustList: []
+    resources:
+      bastudio:
+        limits:          
+          cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
+          memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
 
   # Business Automation Workflow Authoring
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-authoring

@@ -437,6 +437,11 @@ spec:
         type: ${CP4BA_INST_DB_SERVER_TYPE}
     tls:
       tlsTrustList: []
+    resources:
+      bastudio:
+        limits:          
+          cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
+          memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
 
   # Business Automation Workflow Authoring
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-authoring

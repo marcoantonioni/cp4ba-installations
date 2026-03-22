@@ -43,9 +43,9 @@ spec:
   ibm_license: accept
 
   shared_configuration:
-    sc_deployment_fncm_license: "non-production"
-    sc_deployment_baw_license: "non-production"
-    sc_deployment_license: "non-production"
+    sc_deployment_fncm_license: "production"
+    sc_deployment_baw_license: "production"
+    sc_deployment_license: "production"
     sc_deployment_context: "CP4A"
     sc_image_repository: cp.icr.io
     root_ca_secret: icp4a-root-ca
