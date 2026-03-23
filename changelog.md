@@ -9,6 +9,17 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+## [1.3.2] - 2026-03-23
+
+### Added
+
+### Changed
+
+
+### Fixed
+
+GenAI configuration.
+
 ## [1.3.1] - 2026-02-24
 
 ### Added
