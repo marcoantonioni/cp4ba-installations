@@ -671,6 +671,16 @@ createSecretBAML () {
     --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
     --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 1> /dev/null
 
+#---------------------------------------------
+  _SECRET_NAME="${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}"
+  [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=bpmSystemId="to-be-defined" \
+    --from-literal=url="https://to-be-defined" \
+    --from-literal=adminUsername="to-be-defined" \
+    --from-literal=adminPassword="to-be-defined" 1> /dev/null
+
 } 
 
 #-------------------------------
