@@ -15,6 +15,7 @@ _CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
+
 #--------------------------------------------------------
 # read command line params
 while getopts c:s: flag
@@ -30,6 +31,37 @@ if [[ -z "${_CFG}" ]]; then
 fi
 
 source "${_CFG}"
+
+#--------------------------------------------------------
+_INST_TMP_FOLDER="/tmp"
+setTemporaryFolder () {
+  _OK=0
+  _ERR_MSG_FOLDER="is a folder"
+  _ERR_MSG_PERMISSIONS=""
+  if [[ ! -z "${CP4BA_INST_TMP_FOLDER}" ]]; then
+    if [[ -d "${CP4BA_INST_TMP_FOLDER}" ]]; then
+      if [[ -r "${CP4BA_INST_TMP_FOLDER}" ]] && [[ -w "${CP4BA_INST_TMP_FOLDER}" ]]; then 
+        _OK=1
+      else
+        _ERR_MSG_PERMISSIONS=", you have not rights to read and/or write"
+        _OK=-1
+      fi
+    else
+      _ERR_MSG_FOLDER="is NOT a folder"
+    fi
+
+    if [[ $_OK -lt 1 ]]; then
+      echo -e "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
+      echo -e "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
+      exit 1
+    fi
+    export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
+  fi
+  echo -e "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+
+}
+
+
 
 #--------------------------------------------------------
 resourceExist () {
@@ -206,7 +238,7 @@ _createBAIWorkforceSecret () {
     #  echo "INFO: workforce_insights_secret not found"
     fi
 
-    _BAI_WKF_TMP="/tmp/cp4ba-bai-wkf-secret-$USER-$RANDOM"
+    _BAI_WKF_TMP="${_INST_TMP_FOLDER}/cp4ba-bai-wkf-secret-$USER-$RANDOM"
 echo "apiVersion: v1
 kind: Secret
 metadata:
@@ -238,7 +270,7 @@ _createBAIWorkforceConfiguration () {
   if [[ ! -z "${BA_DN}" ]]; then
     # echo "Patching ICP4ACluster: "${BA_DN}
 
-    _WX_BAI_WKF_TMP="/tmp/cp4ba-bai-workforce-$USER-$RANDOM"
+    _WX_BAI_WKF_TMP="${_INST_TMP_FOLDER}/cp4ba-bai-workforce-$USER-$RANDOM"
     _OK_TO_PATCH=0
     if [[ "${CP4BA_INST_TYPE}" = "starter" ]]; then
       echo 'spec:' > ${_WX_BAI_WKF_TMP}
@@ -293,7 +325,7 @@ configureBAIWorkforce() {
       fi
     fi
   else
-    echo -e "${_CLR_YELLOW}[✗] Warning, BAI or BPC WORKFORCE not enabled${_CLR_NC}"
+    echo -e "${_CLR_YELLOW}[✗] Warning, BAI or BPC WORKFORCE not enabled in configuration file.${_CLR_NC}"
   fi
 }
 
@@ -301,6 +333,8 @@ configureBAIWorkforce() {
 
 echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Configuring BAI Workforce '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
+
+setTemporaryFolder
 
 echo -e "${_CLR_YELLOW}TBD: if runtime deployment iterate on BAWs if more than one...${_CLR_NC}"
 configureBAIWorkforce ${CP4BA_INST_NAMESPACE}

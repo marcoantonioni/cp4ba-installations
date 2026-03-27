@@ -15,6 +15,35 @@ _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
+_INST_TMP_FOLDER="/tmp"
+setTemporaryFolder () {
+  _OK=0
+  _ERR_MSG_FOLDER="is a folder"
+  _ERR_MSG_PERMISSIONS=""
+  if [[ ! -z "${CP4BA_INST_TMP_FOLDER}" ]]; then
+    if [[ -d "${CP4BA_INST_TMP_FOLDER}" ]]; then
+      if [[ -r "${CP4BA_INST_TMP_FOLDER}" ]] && [[ -w "${CP4BA_INST_TMP_FOLDER}" ]]; then 
+        _OK=1
+      else
+        _ERR_MSG_PERMISSIONS=", you have not rights to read and/or write"
+        _OK=-1
+      fi
+    else
+      _ERR_MSG_FOLDER="is NOT a folder"
+    fi
+
+    if [[ $_OK -lt 1 ]]; then
+      echo -e "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
+      echo -e "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
+      exit 1
+    fi
+    export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
+  fi
+  echo -e "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+
+}
+
+#--------------------------------------------------------
 # read command line params
 while getopts c:s: flag
 do
@@ -52,7 +81,7 @@ _createWxSecret () {
       oc delete secret -n $1 $2 2>/dev/null 1>/dev/null
     fi
 
-    _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-$USER-$RANDOM"
+    _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM"
 
     # create payload secret
     echo '<server>' > ${_WX_GENAI_TMP}
@@ -114,7 +143,7 @@ _createGenAiConfiguration () {
   if [[ ! -z "${BA_DN}" ]]; then
     echo -e "${_CLR_GREEN}Patching ICP4ACluster '${_CLR_YELLOW}${BA_DN}${_CLR_GREEN}'${_CLR_NC}"
 
-    _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-$USER-$RANDOM"
+    _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM"
 
     if [[ "${CP4BA_INST_TYPE}" = "starter" ]]; then
 
@@ -152,7 +181,7 @@ _createGenAiConfiguration () {
           waitForBawStatefulSetReady "bastudio" "deployment"
           echo -e "${_CLR_GREEN}Patching BAS section in CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
-          _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-100Custom-$USER-$RANDOM"
+          _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-100Custom-$USER-$RANDOM"
 
           echo '<?xml version="1.0" encoding="UTF-8" ?>' >> ${_WX_GENAI_TMP}
           echo '<properties>' >> ${_WX_GENAI_TMP}
@@ -177,7 +206,7 @@ _createGenAiConfiguration () {
           oc create secret -n $1 generic custom-config-workplace-assistant-bas --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
           rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
 
-          _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-authdata-$USER-$RANDOM"
+          _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-authdata-$USER-$RANDOM"
 
           echo '<server>' >> ${_WX_GENAI_TMP}
           echo '    <authData id="workplace_watsonx.ai_auth_alias" user="ANY_USER_ID_IS_FINE" password="'${CP4BA_INST_BAS_GENAI_WX_APIKEY}'" />' >> ${_WX_GENAI_TMP}
@@ -188,11 +217,11 @@ _createGenAiConfiguration () {
           rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
           
           # replace object BAW[ _NAME ] with new configuration
-          _FILE_ORIG=/tmp/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy.json
-          _FILE_ALL_BUT_BAW_GENAI=/tmp/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-partial.json
-          _FILE_BAW_GENAI=/tmp/cp4ba-wx-genai-$USER-$RANDOM-baw.json
-          _FILE_BAW_GENAI_PATCHED=/tmp/cp4ba-wx-genai-$USER-$RANDOM-baw-patched.json
-          _FILE_FINAL=/tmp/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-final.json
+          _FILE_ORIG=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy.json
+          _FILE_ALL_BUT_BAW_GENAI=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-partial.json
+          _FILE_BAW_GENAI=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-baw.json
+          _FILE_BAW_GENAI_PATCHED=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-baw-patched.json
+          _FILE_FINAL=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-final.json
 
           # extract CR
           oc get icp4acluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o json | jq 'del(.status)' > ${_FILE_ORIG}
@@ -240,7 +269,7 @@ _createGenAiConfiguration () {
             waitForBawStatefulSetReady "${_NAME}" "baw-server"
             echo -e "${_CLR_GREEN}Patching BAW section in CR '${_CLR_YELLOW}${_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
-            _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-100Custom-$USER-$RANDOM"
+            _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-100Custom-$USER-$RANDOM"
 
             echo '<?xml version="1.0" encoding="UTF-8" ?>' >> ${_WX_GENAI_TMP}
             echo '<properties>' >> ${_WX_GENAI_TMP}
@@ -264,7 +293,7 @@ _createGenAiConfiguration () {
             oc create secret -n $1 generic custom-config-workplace-assistant-${i} --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
             rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
 
-            _WX_GENAI_TMP="/tmp/cp4ba-wx-genai-authdata-$USER-$RANDOM"
+            _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-authdata-$USER-$RANDOM"
 
             echo '<server>' >> ${_WX_GENAI_TMP}
             echo '    <authData id="workplace_watsonx.ai_auth_alias" user="ANY_USER_ID_IS_FINE" password="'${_APIKEY}'" />' >> ${_WX_GENAI_TMP}
@@ -274,11 +303,11 @@ _createGenAiConfiguration () {
             rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
             
             # replace object BAW[ _NAME ] with new configuration
-            _FILE_ORIG=/tmp/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy.json
-            _FILE_ALL_BUT_BAW_GENAI=/tmp/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-partial.json
-            _FILE_BAW_GENAI=/tmp/cp4ba-wx-genai-$USER-$RANDOM-baw.json
-            _FILE_BAW_GENAI_PATCHED=/tmp/cp4ba-wx-genai-$USER-$RANDOM-baw-patched.json
-            _FILE_FINAL=/tmp/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-final.json
+            _FILE_ORIG=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy.json
+            _FILE_ALL_BUT_BAW_GENAI=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-partial.json
+            _FILE_BAW_GENAI=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-baw.json
+            _FILE_BAW_GENAI_PATCHED=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-baw-patched.json
+            _FILE_FINAL=${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM-icp4adeploy-final.json
 
             # extract CR
             oc get icp4acluster -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME} -o json | jq 'del(.status)' > ${_FILE_ORIG}
@@ -396,10 +425,12 @@ configureGenAI() {
   fi  
 }
 
+
 #==================================
 
 echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
 echo -e "${_CLR_GREEN}Configuring GenAI in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
+setTemporaryFolder
 configureGenAI ${CP4BA_INST_NAMESPACE}
 

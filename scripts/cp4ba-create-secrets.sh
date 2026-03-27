@@ -21,6 +21,35 @@ _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
+_INST_TMP_FOLDER="/tmp"
+setTemporaryFolder () {
+  _OK=0
+  _ERR_MSG_FOLDER="is a folder"
+  _ERR_MSG_PERMISSIONS=""
+  if [[ ! -z "${CP4BA_INST_TMP_FOLDER}" ]]; then
+    if [[ -d "${CP4BA_INST_TMP_FOLDER}" ]]; then
+      if [[ -r "${CP4BA_INST_TMP_FOLDER}" ]] && [[ -w "${CP4BA_INST_TMP_FOLDER}" ]]; then 
+        _OK=1
+      else
+        _ERR_MSG_PERMISSIONS=", you have not rights to read and/or write"
+        _OK=-1
+      fi
+    else
+      _ERR_MSG_FOLDER="is NOT a folder"
+    fi
+
+    if [[ $_OK -lt 1 ]]; then
+      echo -e "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
+      echo -e "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
+      exit 1
+    fi
+    export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
+  fi
+  echo -e "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+
+}
+
+#--------------------------------------------------------
 # read command line params
 while getopts c:t:wsv flag
 do
@@ -284,7 +313,7 @@ fi
     --from-literal=WATSONX_URL="${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}" 1> /dev/null
 
 #---------------------------------------------
-_SECRET_FILE_NAME="/tmp/secret-baw-runtime-$USER-$RANDOM.xml"
+_SECRET_FILE_NAME="${_INST_TMP_FOLDER}/secret-baw-runtime-$USER-$RANDOM.xml"
 cat <<EOF > ${_SECRET_FILE_NAME}
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- BAW Runtime Liberty server properties -->
@@ -315,7 +344,7 @@ rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 _AGENT_FQDN_BASE=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
 _AGENT_FQDN_FULL="https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${_AGENT_FQDN_BASE}"
 
-_SECRET_FILE_NAME="/tmp/secret-100Custom-runtime-$USER-$RANDOM.xml"
+_SECRET_FILE_NAME="${_INST_TMP_FOLDER}/secret-100Custom-runtime-$USER-$RANDOM.xml"
 cat <<EOF > ${_SECRET_FILE_NAME}
 <properties>
   <server merge="mergeChildren">
@@ -470,7 +499,7 @@ createSecretADS () {
 getCertificate () {
 
   echo "Getting certificate from: "$1  
-  _FILE_TMP="/tmp/cp4ba-ads-cert-$USER-$RANDOM"
+  _FILE_TMP="${_INST_TMP_FOLDER}/cp4ba-ads-cert-$USER-$RANDOM"
   openssl s_client -showcerts -connect $1 < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ${_FILE_TMP}
   
   echo "  $2: |" >> $3
@@ -485,7 +514,7 @@ getCertificate () {
 #--------------------------------------------------------------
 grabCertificates () {
 
-  _CFGMAP_FILE_TMP="/tmp/cp4ba-ads-cfgmap-$USER-$RANDOM"
+  _CFGMAP_FILE_TMP="${_INST_TMP_FOLDER}/cp4ba-ads-cfgmap-$USER-$RANDOM"
 
 echo "
 apiVersion: v1
@@ -761,4 +790,7 @@ createSecrets () {
 
 echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Creating secrets in '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
+
+setTemporaryFolder
+
 createSecrets

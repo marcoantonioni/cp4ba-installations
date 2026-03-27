@@ -15,6 +15,35 @@ _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
+_INST_TMP_FOLDER="/tmp"
+setTemporaryFolder () {
+  _OK=0
+  _ERR_MSG_FOLDER="is a folder"
+  _ERR_MSG_PERMISSIONS=""
+  if [[ ! -z "${CP4BA_INST_TMP_FOLDER}" ]]; then
+    if [[ -d "${CP4BA_INST_TMP_FOLDER}" ]]; then
+      if [[ -r "${CP4BA_INST_TMP_FOLDER}" ]] && [[ -w "${CP4BA_INST_TMP_FOLDER}" ]]; then 
+        _OK=1
+      else
+        _ERR_MSG_PERMISSIONS=", you have not rights to read and/or write"
+        _OK=-1
+      fi
+    else
+      _ERR_MSG_FOLDER="is NOT a folder"
+    fi
+
+    if [[ $_OK -lt 1 ]]; then
+      echo -e "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
+      echo -e "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
+      exit 1
+    fi
+    export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
+  fi
+  echo -e "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+
+}
+
+#--------------------------------------------------------
 # read command line params
 while getopts c:s: flag
 do
@@ -76,7 +105,7 @@ _deployDBClusterEDB () {
     echo "Deploying cluster postgresql.k8s.enterprisedb.io name '$1'"
     echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_PG_IMAGE_NAME}
 
-    _PG_CLUSTER_CR_TMP="/tmp/cp4ba-pg-cluster-$USER-$RANDOM"
+    _PG_CLUSTER_CR_TMP="${_INST_TMP_FOLDER}/cp4ba-pg-cluster-$USER-$RANDOM"
 
 cat <<EOF > ${_PG_CLUSTER_CR_TMP}
 apiVersion: postgresql.k8s.enterprisedb.io/v1
@@ -198,8 +227,8 @@ _deployPostgresNoSSL () {
     export _PG_SS_NAME=$1
     export _PG_TARGET_NS=$2
 
-    _PG_SS_CR_TMP="/tmp/cp4ba-pg-statefulset-$USER-$RANDOM"
-    _PG_CONF_FOLDER=/tmp/cp4ba-pg-conf-folder-$USER-$RANDOM
+    _PG_SS_CR_TMP="${_INST_TMP_FOLDER}/cp4ba-pg-statefulset-$USER-$RANDOM"
+    _PG_CONF_FOLDER=${_INST_TMP_FOLDER}/cp4ba-pg-conf-folder-$USER-$RANDOM
     mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
 
     if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE}"  ]]; then
@@ -358,9 +387,9 @@ _deployPostgresSSL () {
     export _PG_SS_NAME=$1
     export _PG_TARGET_NS=$2
 
-    _PG_SS_CR_TMP="/tmp/cp4ba-pg-statefulset-$USER-$RANDOM"
-    _PG_CONF_FOLDER=/tmp/cp4ba-pg-conf-folder-$USER-$RANDOM
-    _PG_SECRETS_FOLDER=/tmp/cp4ba-pg-secrets-folder-$USER-$RANDOM
+    _PG_SS_CR_TMP="${_INST_TMP_FOLDER}/cp4ba-pg-statefulset-$USER-$RANDOM"
+    _PG_CONF_FOLDER=${_INST_TMP_FOLDER}/cp4ba-pg-conf-folder-$USER-$RANDOM
+    _PG_SECRETS_FOLDER=${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM
 
     mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
     mkdir -p ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
@@ -587,6 +616,8 @@ deployDBClusters() {
 
 # echo -e "=============================================================="
 echo -e "${_CLR_GREEN}Deploying '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' DB Clusters in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
+
+setTemporaryFolder
 
 deployDBClusters ${CP4BA_INST_SUPPORT_NAMESPACE}
 
