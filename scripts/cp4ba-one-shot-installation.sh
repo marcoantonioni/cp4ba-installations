@@ -19,6 +19,7 @@ _CPAK_MGR_FOLDER_REMOVE=false
 _RELEASE_BASE=""
 _OK=0
 _ERR_PKG_MGR=0
+_TRACE=0
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -40,13 +41,14 @@ usage () {
        (eg: '5.1.0') 
     -k(optional) cert-kubernetes-version
     -d(optional) full-path-to-target-folder-for-case-package-manager [mandatory if -m is set, created if not exists]
-       (eg: '/tmp/my-cmgr')${_CLR_NC}"
+       (eg: '/tmp/my-cmgr')
+    -x(optional) trace enabled${_CLR_NC}"
 }
 
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:p:s:v:k:d:mt flag
+while getopts c:p:s:v:k:d:mtx flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
@@ -56,6 +58,7 @@ do
         k) _CPAK_MGR_K8CERT_VER=${OPTARG};;
         d) _CPAK_MGR_FOLDER=${OPTARG};;
         t) _TEST_CFG=true;;
+        x) _TRACE=1;;
         \?) # Invalid option
             echo "Invalid option: "${flag}
             usage
@@ -310,6 +313,14 @@ initialChecks () {
 
 oneShotInstallation () {
 
+  _TRACE_PARAM=""
+  if [[ $_TRACE -gt 0 ]]; then
+    echo -e "===>>> ${_CLR_YELLOW}RUNNING WITH TRACE ENABLED${_CLR_GREEN} <<<===${_CLR_NC}"
+
+    _TRACE_PARAM="-t"
+  fi
+
+
   initialChecks
 
   START_SECONDS=$SECONDS
@@ -319,13 +330,13 @@ oneShotInstallation () {
   if [[ $_ERR_PKG_MGR -eq 0 ]]; then
     ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
     if [[ $? -eq 0 ]]; then
-
+    
       _LDAP_PARAMS=""
       if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
         _LDAP_PARAMS="-l ${CP4BA_INST_LDAP_CFG_FILE}"
       fi
 
-      ./cp4ba-deploy-env.sh -c ${_CFG} ${_LDAP_PARAMS}
+      ./cp4ba-deploy-env.sh -c ${_CFG} ${_TRACE_PARAM} ${_LDAP_PARAMS}
       if [[ $? -eq 0 ]]; then
         if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
           onboardUsers

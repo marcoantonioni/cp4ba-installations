@@ -661,7 +661,6 @@ createSecretBAML () {
     --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
     --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 1> /dev/null
 
-
 #---------------------------------------------
 
   _SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-wfi-admin-secret"
@@ -672,6 +671,7 @@ createSecretBAML () {
     --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 1> /dev/null
 
 #---------------------------------------------
+# empty values, to let the 'insights' installation progress
   _SECRET_NAME="${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}"
   [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null

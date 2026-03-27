@@ -11,6 +11,8 @@ _WAIT_ONLY=false
 _GENERATE_ONLY=false
 _FEDERATE_ONLY=false
 
+_TRACE=1
+
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
@@ -20,7 +22,7 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:l:wgf flag
+while getopts c:l:wgft flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
@@ -28,6 +30,7 @@ do
         w) _WAIT_ONLY=true;;
         g) _GENERATE_ONLY=true;;
         f) _FEDERATE_ONLY=true;;
+        t) _TRACE=1;;
     esac
 done
 
@@ -40,7 +43,8 @@ usage () {
        (eg: '../configs/_cfg-production-ldap-domain.properties')
     -w(optional) wait only, skip deployment and create access info file
     -g(optional) generate yaml only, skip deployment
-    -f(optional) federate only, skip deployment${_CLR_NC}"
+    -f(optional) federate only, skip deployment
+    -t(optional) trace enabled${_CLR_NC}"
 }
 
 if [[ -z "${_CFG}" ]]; then
@@ -270,10 +274,10 @@ deployPFS () {
       echo "CP4BA_INST_PFS_APP_VER=\"${CP4BA_INST_PFS_APP_VER}\"" >> ${_PFS_PARAMS_FILE}
       echo "CP4BA_INST_PFS_ADMINUSER=\"${CP4BA_INST_PFS_ADMINUSER}\"" >> ${_PFS_PARAMS_FILE}
 
-      echo -e "${_CLR_GREEN}Wait for PFS deployment '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' to complete${_CLR_NC}"
+      echo -e "${_CLR_GREEN}Deploy PFS: '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}'${_CLR_NC}"
       # launch in embedded mode, no wait
       /bin/bash ${_PFS_SCRIPT} -c ${_PFS_PARAMS_FILE} -e 1>/dev/null
-      echo -e "${_CLR_GREEN}PFS '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' deployment complete${_CLR_NC}"
+      # echo -e "${_CLR_GREEN}PFS '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' deployment complete${_CLR_NC}"
 
       rm ${_PFS_PARAMS_FILE}
     else
@@ -374,6 +378,9 @@ loopWaitForPfsReady () {
       _pfsDeployment=$(echo $_PFS_COMPONENTS | jq .pfsDeployment | sed 's/"//g' )
       _pfsService=$(echo $_PFS_COMPONENTS | jq .pfsService | sed 's/"//g' )
       _pfsZenIntegration=$(echo $_PFS_COMPONENTS | jq .pfsZenIntegration | sed 's/"//g' )
+
+      [[ ${_TRACE} -eq 1 ]] && echo -e "[DEBUG] PFS readiness: _pfsDeployment[${_CLR_YELLOW}${_pfsDeployment}${_CLR_GREEN}] _pfsService[${_CLR_YELLOW}${_pfsService}${_CLR_GREEN}] _pfsZenIntegration[${_CLR_YELLOW}${_pfsZenIntegration}${_CLR_GREEN}]"
+
       if [[ "${_pfsDeployment}" = "Ready" ]] && [[ "${_pfsService}" = "Ready" ]] && [[ "${_pfsZenIntegration}" = "Ready" ]]; then
           return 1
       else
@@ -623,7 +630,6 @@ waitDeploymentReadiness () {
           break
         fi
 
-        # ???
         NOW_SECONDS=$SECONDS
         ELAPSED_SECONDS=$(( $NOW_SECONDS - $START_SECONDS ))
         TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
