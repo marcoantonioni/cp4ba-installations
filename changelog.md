@@ -9,6 +9,24 @@
 
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
+
+## [1.3.3] - 2026-03-27
+
+### Added
+
+New var CP4BA_INST_TMP_FOLDER to use a temporary folder, if not set '/tmp' is used. 
+
+```bash
+export CP4BA_INST_TMP_FOLDER="/opt/mytempfolder"
+CONFIG_FILE="...path to your config file..."
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -k 25.0.1
+```
+
+### Changed
+
+
+### Fixed
+
 ## [1.3.2] - 2026-03-23
 
 ### Added

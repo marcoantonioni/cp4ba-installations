@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-03-23</i> (see changelog.md for details)
+<i>Last update: 2026-03-27</i> (see changelog.md for details)
 
 ## Description of the contents of this repository
 
@@ -302,6 +302,16 @@ now from parent of cloned folders move into installation folder 'scripts'
 cd ./cp4ba-installations/scripts
 ```
 
+If you need to use a temporary folder different from '/tmp' then set and export the variable CP4BA_INST_TMP_FOLDER, if not set or empty then '/tmp' folder is used. 
+
+example:
+```bash
+export CP4BA_INST_TMP_FOLDER="/opt/mytempfolder"
+CONFIG_FILE="...path to your config file..."
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -k 25.0.1
+```
+
+
 <b><u>Note: The Openshift user you use to perform the installations must have the necessary grants as per IBM documentation</u></b>
 
 [https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=sucioc-installing-cloud-pak-catalogs-operators](https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=sucioc-installing-cloud-pak-catalogs-operators)
@@ -334,7 +344,7 @@ In version 24 the version selection code of the installation package version has
 
 Note: Version 5.1.0 corresponds to CP4BA version v23.0.2
 
-Ready to begin ? <i>GO !!!</i>
+Ready to start ? <i>GO !!!</i>
 ```
 # set your configuration file
 CONFIG_FILE=../configs/env1-baw.properties
