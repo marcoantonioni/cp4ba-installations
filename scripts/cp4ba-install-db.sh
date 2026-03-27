@@ -228,8 +228,8 @@ _deployPostgresNoSSL () {
     export _PG_TARGET_NS=$2
 
     _PG_SS_CR_TMP="${_INST_TMP_FOLDER}/cp4ba-pg-statefulset-$USER-$RANDOM"
-    _PG_CONF_FOLDER=${_INST_TMP_FOLDER}/cp4ba-pg-conf-folder-$USER-$RANDOM
-    mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
+    _PG_CONF_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-conf-folder-$USER-$RANDOM"
+    mkdir -p "${_PG_CONF_FOLDER}" 2>/dev/null 1>/dev/null
 
     if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE}"  ]]; then
       cp ${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE} ${_PG_CONF_FOLDER}/
@@ -270,6 +270,10 @@ _deployPostgresNoSSL () {
     done
 
     rm ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
+    if [[ ! -z "${_PG_CONF_FOLDER}" ]]; then
+      #echo "folder not removed: ${_PG_CONF_FOLDER}"
+      rm -fr ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
+    fi
 
   else
     echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresNoSSL name or namespace empty${_CLR_NC}"
@@ -388,8 +392,8 @@ _deployPostgresSSL () {
     export _PG_TARGET_NS=$2
 
     _PG_SS_CR_TMP="${_INST_TMP_FOLDER}/cp4ba-pg-statefulset-$USER-$RANDOM"
-    _PG_CONF_FOLDER=${_INST_TMP_FOLDER}/cp4ba-pg-conf-folder-$USER-$RANDOM
-    _PG_SECRETS_FOLDER=${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM
+    _PG_CONF_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-conf-folder-$USER-$RANDOM"
+    _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
 
     mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
     mkdir -p ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
