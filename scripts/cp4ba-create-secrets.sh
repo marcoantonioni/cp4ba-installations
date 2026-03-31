@@ -286,8 +286,7 @@ createSecretBAS () {
 # $1 username
 # $2 password
 
-if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]]; then
-
+if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
   [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
@@ -765,9 +764,9 @@ createSecrets () {
     ((i = i + 1))
   done  
 
-  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]]; then
+  # if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]]; then
     createSecretBAS ${CP4BA_INST_DB_BAW_USER} ${CP4BA_INST_DB_BAW_PWD}
-  fi
+  # fi
 
   createSecretAE
 
