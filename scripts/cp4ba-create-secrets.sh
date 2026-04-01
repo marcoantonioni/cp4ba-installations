@@ -87,7 +87,7 @@ createSecretLDAP () {
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_LDAP_SECRET} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_LDAP_SECRET} \
     --from-literal=ldapUsername="cn=admin,dc=vuxprod,dc=net" \
-    --from-literal=ldapPassword="passw0rd" 1> /dev/null
+    --from-literal=ldapPassword="passw0rd" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
     echo -e "${_CLR_RED}Secret ${CP4BA_INST_LDAP_SECRET} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
@@ -127,7 +127,7 @@ createSecretFNCM () {
       --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
       --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
       --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
-      --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
+      --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 2> /dev/null 1> /dev/null
     _ERR=$?
   else
     if [[ ! -z "${CP4BA_INST_DB_OS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_GCD_USER}" ]]; then
@@ -140,7 +140,7 @@ createSecretFNCM () {
         --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
         --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
         --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
-        --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
+        --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 2> /dev/null 1> /dev/null
       _ERR=$?
     else
       [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}ibm-fncm-secret (APP only)${_CLR_NC}'"
@@ -148,7 +148,7 @@ createSecretFNCM () {
         --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
         --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
         --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
-        --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
+        --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 2> /dev/null 1> /dev/null
       _ERR=$?
     fi
   fi
@@ -167,7 +167,7 @@ createSecretFNCMBpmOnly () {
     --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
     --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
     --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
-    --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
+    --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
     echo -e "${_CLR_RED}Secret ibm-fncm-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
@@ -190,7 +190,7 @@ createSecretBAN () {
     --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
     --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
     --from-literal=ltpaPassword="${CP4BA_INST_PAKBA_PASSW_LTPA}" \
-    --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 1> /dev/null
+    --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
     echo -e "${_CLR_RED}Secret ibm-ban-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
@@ -207,7 +207,7 @@ createSecretBAW () {
   oc delete secret -n ${CP4BA_INST_NAMESPACE} $1 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic $1 \
     --from-literal=dbUser="$2" \
-    --from-literal=password="$3"  1> /dev/null
+    --from-literal=password="$3"  2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
     echo -e "${_CLR_RED}Secret '${_CLR_YELLOW}$1${_CLR_RED}' NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
@@ -225,7 +225,7 @@ createSecretWFAssistantBAW () {
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=WATSONX_API_KEY="$1" \
     --from-literal=WATSONX_PROJECT_ID="$2" \
-    --from-literal=WATSONX_URL="$3" 1> /dev/null
+    --from-literal=WATSONX_URL="$3" 2> /dev/null 1> /dev/null
 
 }
 
@@ -259,7 +259,7 @@ _AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
-    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 1> /dev/null
+    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 2> /dev/null 1> /dev/null
 
 #---------------------------
 
@@ -268,7 +268,7 @@ _AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
-    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 1> /dev/null
+    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 2> /dev/null 1> /dev/null
 
 #---------------------------
 
@@ -277,7 +277,7 @@ _AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
-    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 1> /dev/null
+    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_AE_PWD}" 2> /dev/null 1> /dev/null
 
 }
 
@@ -291,11 +291,11 @@ if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OP
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
     --from-literal=dbUsername="$1" \
-    --from-literal=dbPassword="$2" 1> /dev/null
+    --from-literal=dbPassword="$2" 2> /dev/null 1> /dev/null
 
-  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
-  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-name=${CP4BA_INST_BAW_1_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
-  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 1> /dev/null
+  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-name=${CP4BA_INST_BAW_1_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
 
 fi
 
@@ -309,7 +309,7 @@ fi
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=WATSONX_API_KEY="${CP4BA_INST_BAS_GENAI_WX_APIKEY}" \
     --from-literal=WATSONX_PROJECT_ID="${CP4BA_INST_BAS_GENAI_WX_PRJ_ID}" \
-    --from-literal=WATSONX_URL="${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}" 1> /dev/null
+    --from-literal=WATSONX_URL="${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}" 2> /dev/null 1> /dev/null
 
 #---------------------------------------------
 _SECRET_FILE_NAME="${_INST_TMP_FOLDER}/secret-baw-runtime-$USER-$RANDOM.xml"
@@ -470,7 +470,7 @@ createSecretADS () {
     --from-literal=deploymentSpaceManagerUsername="${CP4BA_INST_ADS_SECRETS_DEPL_MGR_USER}" \
     --from-literal=deploymentSpaceManagerPassword="${CP4BA_INST_ADS_SECRETS_DEPL_MGR_PASS}" \
     --from-literal=encryptionKeys="{\"activeKey\":\"key1\",\"secretKeyList\":[{\"secretKeyId\":\"key1\",\"value\":\"123344566745435\"},{\"secretKeyId\":\"key2\",\"value\":\"987766544365675\"}]}" \
-    --from-literal=sslKeystorePassword="averymuchlongpasswordtobecompliantwithfips" 1> /dev/null
+    --from-literal=sslKeystorePassword="averymuchlongpasswordtobecompliantwithfips" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
     echo -e "${_CLR_RED}Secret ibm-dba-ads-runtime-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
@@ -481,7 +481,7 @@ createSecretADS () {
   if [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_USER}" ]] && [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" ]]; then
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-dba-ads-mongo-secret \
       --from-literal=mongoUser="${CP4BA_INST_ADS_SECRETS_MONGO_USER}" \
-      --from-literal=mongoPassword="${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" 1> /dev/null
+      --from-literal=mongoPassword="${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" 2> /dev/null 1> /dev/null
     if [[ $? -gt 0 ]]; then
       _ERROR=1
       echo -e "${_CLR_RED}Secret ibm-dba-ads-mongo-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
@@ -687,7 +687,7 @@ createSecretBAML () {
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
-    --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 1> /dev/null
+    --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 2> /dev/null 1> /dev/null
 
 #---------------------------------------------
 
@@ -696,7 +696,7 @@ createSecretBAML () {
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
-    --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 1> /dev/null
+    --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 2> /dev/null 1> /dev/null
 
 #---------------------------------------------
 # empty values, to let the 'insights' installation progress
@@ -707,7 +707,7 @@ createSecretBAML () {
     --from-literal=bpmSystemId="to-be-defined" \
     --from-literal=url="https://to-be-defined" \
     --from-literal=adminUsername="to-be-defined" \
-    --from-literal=adminPassword="to-be-defined" 1> /dev/null
+    --from-literal=adminPassword="to-be-defined" 2> /dev/null 1> /dev/null
 
 } 
 

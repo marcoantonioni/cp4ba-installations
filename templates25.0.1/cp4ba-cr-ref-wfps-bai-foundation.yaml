@@ -149,3 +149,52 @@ spec:
   resource_registry_configuration:
     replica_size: ${CP4BA_INST_REGISTRY_REPLICA_SIZE}
 
+  ## BAI
+  bai_configuration:
+    # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=baip-event-processing-parameters
+    
+    # bai_secret: custom-bai-secret
+
+    # settings:
+    #   egress: ${CP4BA_INST_BAI_EGRESS}
+
+    business_performance_center:
+      install: ${CP4BA_INST_BAI_BPC_WORKFORCE}
+      workforce_insights_secret: ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
+
+    bpmn:
+      install: ${CP4BA_INST_BAI_BPMN}
+      force_elasticsearch_timeseries: ${CP4BA_INST_BAI_FORCE_TIMESERIES}
+      end_aggregation_delay: ${CP4BA_INST_BAI_END_AGGR_DELAY}
+      force_opensearch_timeseries: ${CP4BA_INST_BAI_FORCE_TIMESERIES}
+    bawadv:
+      install: ${CP4BA_INST_BAI_BAWADV}
+    content:
+      install: ${CP4BA_INST_BAI_CONTENT}
+    event_forwarder:
+      install: ${CP4BA_INST_BAI_EVENT_FWD}
+    flink:
+      additional_task_managers: ${CP4BA_INST_BAI_FLINK_ADDITIONAL_TASK_MGRS}
+      create_route: ${CP4BA_INST_BAI_FLINK_ROUTE}
+    icm:
+      install: ${CP4BA_INST_BAI_ICM}
+    navigator:
+      install: ${CP4BA_INST_BAI_NAVIGATOR}
+    ads:
+      install: ${CP4BA_INST_BAI_ADS}
+    odm:
+      install: ${CP4BA_INST_BAI_ODM}
+
+  ## BAML
+  # baml_configuration:
+  #   workforce_insights:
+  #     replicas: ${CP4BA_INST_BAML_REPLICAS}
+  #     resources:
+  #       limits:
+  #         cpu: ${CP4BA_INST_BAML_RES_LIMITS_CPU}
+  #         memory: ${CP4BA_INST_BAML_RES_LIMITS_MEM}
+  #       requests:
+  #         cpu: ${CP4BA_INST_BAML_RES_REQS_CPU}
+  #         memory: ${CP4BA_INST_BAML_RES_REQS_MEM}
+  #   intelligent_task_prioritization:
+  #     retrain_model_schedule: "${CP4BA_INST_BAML_RETRAIN_MODEL_SCHEDULE}"

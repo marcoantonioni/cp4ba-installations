@@ -17,8 +17,9 @@
 ##
 ## DEPLOYMENT CONTENTS
 ## 
-## patterns: foundation (for WfPS)
+## patterns: foundation,wfps_authoring
 ##
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-authoring
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
@@ -42,23 +43,25 @@ spec:
   ibm_license: accept
 
   shared_configuration:
+    sc_deployment_fncm_license: "${CP4BA_INST_LICENSE_TYPE}"
+    sc_deployment_baw_license: "${CP4BA_INST_LICENSE_TYPE}"
     sc_deployment_license: "${CP4BA_INST_LICENSE_TYPE}"
-    sc_deployment_type: "${CP4BA_INST_TYPE}"
-    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
     sc_deployment_context: "CP4A"
     sc_image_repository: cp.icr.io
     root_ca_secret: icp4a-root-ca
     sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
     sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
+    sc_deployment_type: "Production"
+    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
     sc_deployment_profile_size: "${CP4BA_INST_DEPL_PROFILE_SIZE}"
+    sc_ingress_enable: false
+    trusted_certificate_list: []
     storage_configuration:
       sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
       sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
-    sc_ingress_enable: false
-    trusted_certificate_list: []
     sc_iam:
       default_admin_username: "${CP4BA_INST_IAM_ADMIN_USER}"
     enable_fips: false
@@ -72,6 +75,7 @@ spec:
     no_log: false
     show_sensitive_log: true
 
+    # new v25
     sc_is_multiple_az: false
     sc_generate_sample_network_policies: false
     images:
@@ -93,7 +97,6 @@ spec:
 
     sc_drivers_url:
 
-  # type: OpenLDAP
   ldap_configuration:
     lc_selected_ldap_type: "Custom"
     lc_ldap_server: "${CP4BA_INST_LDAP_HOST}"
@@ -116,7 +119,7 @@ spec:
       lc_user_filter: "(&(cn=%v)(objectclass=person))"
       lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
 
-    # OpenLDAP compatible
+    # new v25 (to be verified...)
     scim_configuration_iam:
       user_unique_id_attribute: "uid"
       user_name_attribute: "cn"
@@ -146,6 +149,33 @@ spec:
       group_object_class_attribute: "groupOfNames"
       group_members_attribute: "member"
 
-  resource_registry_configuration:
-    replica_size: ${CP4BA_INST_REGISTRY_REPLICA_SIZE}
+  # IBM Business Automation Workflow Authoring configuration
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-studio
+  bastudio_configuration:
+    admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
+    bastudio_custom_xml: |
+      <properties>
+        <authoring-environment>
+          <authoring-agent-endpoint merge="replace">https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX}/agent</authoring-agent-endpoint>
+        </authoring-environment>
+      </properties>
+    database:
+      host: ${CP4BA_INST_DB_1_SERVER_NAME}
+      name: ${CP4BA_INST_BAS_1_DB_BAW_NAME}
+      port: "${CP4BA_INST_BAS_1_DB_PORT}"
+      type: ${CP4BA_INST_DB_SERVER_TYPE}
+    playback_server:
+      admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
+      database:
+        host: ${CP4BA_INST_DB_1_SERVER_NAME}
+        name: ${CP4BA_INST_BAS_1_DB_PBK_NAME}
+        port: "${CP4BA_INST_BAS_1_DB_PORT}"
+        type: ${CP4BA_INST_DB_SERVER_TYPE}
+    tls:
+      tlsTrustList: []
+    resources:
+      bastudio:
+        limits:          
+          cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
+          memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
 

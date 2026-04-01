@@ -303,6 +303,7 @@ deployPFS () {
       echo "CP4BA_INST_PFS_APP_VER=\"${CP4BA_INST_PFS_APP_VER}\"" >> ${_PFS_PARAMS_FILE}
       echo "CP4BA_INST_PFS_ADMINUSER=\"${CP4BA_INST_PFS_ADMINUSER}\"" >> ${_PFS_PARAMS_FILE}
 
+      echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
       echo -e "${_CLR_GREEN}Deploy PFS: '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}'${_CLR_NC}"
       # launch in embedded mode, no wait
       /bin/bash ${_PFS_SCRIPT} -c ${_PFS_PARAMS_FILE} -e 1>/dev/null
