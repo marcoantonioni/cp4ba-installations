@@ -10,6 +10,18 @@
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
 
+## [1.3.4] - 2026-04-02
+
+### Added
+
+File 'configs-relationships.md' for configuration files documentation.
+
+### Changed
+
+Some optimizations in configuration files.
+
+### Fixed
+
 ## [1.3.3] - 2026-03-27
 
 ### Added

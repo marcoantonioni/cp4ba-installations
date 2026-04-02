@@ -75,7 +75,7 @@ Basic knowledge of the 'oc' commands (Openshift CLI) to log in to the cluster, t
 
 ## Repository structure
 
-This repository contains four folders (for this version) described as follows:
+This repository contains folders (for this version) described as follows:
 
 ```
 .
@@ -98,6 +98,8 @@ There is also a configuration template file (env-template.properties) that you c
 There are examples for Production-type environments and examples for Starter-type environments (with attached authoring environment).
 
 For Production environments there are currently examples for Foundation and Workflow deployments only.
+
+See 'configs-relationships.md' for configuration files relationships.
 
 ### Folder: output
 
