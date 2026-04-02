@@ -49,7 +49,6 @@ CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1/env1-ru
 
 
 #===================================
-cd cp4ba-utilities/remove-cp4ba/
 
 ./cp4ba-remove-namespace.sh -n cp4ba-baw-authoring-prod
 ./cp4ba-remove-namespace.sh -n cp4ba-baw-production

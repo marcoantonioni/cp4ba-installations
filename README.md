@@ -310,7 +310,7 @@ example:
 ```bash
 export CP4BA_INST_TMP_FOLDER="/opt/mytempfolder"
 CONFIG_FILE="...path to your config file..."
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -k 25.0.1
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.0.0 -k 25.0.0
 ```
 
 
@@ -359,6 +359,9 @@ CONFIG_FILE=../configs/env1-baw.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 24.0.1
 
 # v25 with specific cert-kubernetes version (use this option to override latestVersion value in https://github.com/IBM/cloud-pak/blob/master/repo/case/ibm-cp-automation/index.yaml)
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.0.0 -k 25.0.0
+
+# latest version with specific cert-kubernetes version (use this option to override latestVersion value in https://github.com/IBM/cloud-pak/blob/master/repo/case/ibm-cp-automation/index.yaml)
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -k 25.0.1
 
 ```
