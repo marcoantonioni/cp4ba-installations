@@ -338,9 +338,12 @@ If you want to change the namespace name, change the value of the 'CP4BA_INST_NA
 
 We'll use the simplest method, we'll run a single shell script named 'cp4ba-one-shot-installation.sh' with following parameters:
 
-- '-c' parameter to indicate the configuration file (.properties) that will guide the installation
-- '-m' parameter that requires an online download of the IBM CP4BA Case Package Manager (download in a temporary directory then removed)
-- '-v' parameter indicating the version of the IBM CP4BA Case Package Manager to use
+- '-c' parameter indicate the configuration file (.properties) that will guide the installation
+- '-m' parameter requires an online download of the IBM CP4BA Case Package Manager (download in a temporary directory then removed)
+- '-v' parameter indicate the version of the IBM CP4BA Case Package Manager to use
+- '-k' parameter indicate the kubernetes package scripts version
+
+Pay attention, '-v' and '-m' must match for first level version (-v 25.0.4 with -k 25.0.4-IF004).
 
 In version 24 the version selection code of the installation package version has been changed; to install version 24.0.0 use the key '24.0.0' 
 
@@ -358,8 +361,14 @@ CONFIG_FILE=../configs/env1-baw.properties
 # v24
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 24.0.1
 
-# v25 with specific cert-kubernetes version (use this option to override latestVersion value in https://github.com/IBM/cloud-pak/blob/master/repo/case/ibm-cp-automation/index.yaml)
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.0.0 -k 25.0.0
+# with specific cert-kubernetes version (use this option to override latestVersion value in https://github.com/IBM/cloud-pak/blob/master/repo/case/ibm-cp-automation/index.yaml)
+
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 24.0.1 -k 24.0.1-IF007
+
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m v 25.0.3 -k 25.0.0-IF003
+
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m v 25.0.4 -k 25.0.0-IF004
+
 
 # latest version with specific cert-kubernetes version (use this option to override latestVersion value in https://github.com/IBM/cloud-pak/blob/master/repo/case/ibm-cp-automation/index.yaml)
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -k 25.0.1
