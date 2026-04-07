@@ -365,7 +365,7 @@ CONFIG_FILE=../configs/env1-baw.properties
 
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 24.1.7 -k 24.0.1-IF007
 
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m v 25.0.4 -k 25.0.0-IF004
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.0.4 -k 25.0.0-IF004
 
 # For 25.1.0 the following example is NOT an error, mismatch in -v 25.1.0 -k 25.0.1
 # Bug in https://github.com/IBM/cloud-pak/blob/master/repo/case/ibm-cp-automation/index.yaml
