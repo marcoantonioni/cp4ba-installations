@@ -571,6 +571,19 @@ CONFIG_FILE=../configs25/env1-starter-all-but-adp.properties
 ./cp4ba-configure-genai.sh -c ${CONFIG_FILE}
 ```
 
+### Additional notes
+
+The ServiceAccount 'ibm-cp4ba-anyuid' is used only for installing OpenLDAP and Postgres pods when these are configured to be created locally to the deployment namespace.
+
+```
+export CP4BA_INST_LDAP=true
+export CP4BA_INST_DB=true
+```
+
+If you don't use internal OpenLDAP nor Postgres then to avoid add 'add-scc-to-user anyuid' use the following variable with value "false" in your properties file. 
+```
+export CP4BA_INST_ANYUID="false"
+```
 
 ### Troubleshooting
 

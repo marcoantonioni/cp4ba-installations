@@ -164,7 +164,12 @@ imagePullSecrets:
 - name: 'ibm-entitlement-key'
 EOF
 
-oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
+if [[ -z "${CP4BA_INST_ANYUID}" || "${CP4BA_INST_ANYUID}" = "true" ]]; then 
+  oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
+  echo -e "${_CLR_GREEN}Install ${_CLR_YELLOW}with${_CLR_GREEN} SCC anyuid${_CLR_NC}"
+else
+  echo -e "${_CLR_GREEN}Install ${_CLR_YELLOW}without${_CLR_GREEN} SCC anyuid${_CLR_NC}"
+fi
 
 _OK=false
 if [[ ! -z "${_SCRIPTS}" ]]; then
