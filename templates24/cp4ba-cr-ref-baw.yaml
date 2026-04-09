@@ -393,77 +393,15 @@ spec:
         ## The tos_list is a list. You can deploy multiple Target Object Stores.
         ## For each Target Object Store, the object_store_name value must be the same as the oc_cpe_obj_store_symb_name value of one of the object stores defined in initialize_configuration.ic_obj_store_creation.object_stores.
         - object_store_name: "BAWINS1TOS"        
-          ## Connection point name for Target Object Store.
-          ## See initialize_configuration.ic_obj_store_creation.object_stores[x].oc_cpe_obj_store_workflow_pe_conn_point_name.
-          ## If oc_cpe_obj_store_workflow_pe_conn_point_name is not specified explicitly, the default value is pe_conn_<TOS_OS_DB_NAME>.
-          # connection_point_name: "TOS_connection"
-          ## Navigator desktop name for Target Object Store.
-          #desktop_id: "baw"
-          ## Name of the target environment or project area to register with the case components and associate with an IBM Content Navigator desktop.
-          #target_environment_name: "target_env_my_tos"          
-          ## Whether to use the Target Object Store as the default Target Object Store.
-          ## If none of the Target Object Stores is set as default, the first one in the tos_list will be set as the default Target Object Store.
-          #is_default: true
+          connection_point_name: "pe_conn_tos1"
+          desktop_id: "baw"
+          target_environment_name: "target_env"          
+          is_default: true
 
-        ## Persistent volume claim (PVC) name for case network shared directory.
-        ## This parameter must be set to the same value as the Business Automation Navigator pvc_for_icn_pluginstore parameter.
-        ## If navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore is not specified explicitly, the default value is icn-pluginstore.
         network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
-        ## Custom package names for installing custom packages, where the value format is similar to package1.zip, package2.zip.
         custom_package_names: ""
-        ## Custom extension names for installing custom packages, where the value format is similar to extension1.zip, extension2.zip.
         custom_extension_names: ""
-        ## Number of seconds before a newly added or modified asset will take effect in the Case Client. The value must be an integer, e.g. "100."
-        ## The default value will be used if it is not set.
         cpe_metadata_cache_time_to_live: ""
-        ## The event emitter settings if you want to enable Case Event Emitter. You can configure multiple Target Object Stores if you want to enable the Case Event Emitter for them. The following example shows sample values:
-        ## event_emitter:
-        ## - tos_name: TOS1Name
-        ##   connection_point_name: tos1_connection_point_name
-        ##   date_sql: 20200630T002840Z
-        ##   logical_unique_id: bawinst1
-        ##   solution_list: SampleSolution1,SampleSolution2
-        ## - tos_name: TOS2Name
-        ##   connection_point_name: tos2_connection_point_name
-        ##   date_sql: 20220930T002710Z
-        ##   logical_unique_id: bawinst1
-        ##   solution_list: SampleSolution3,SampleSolution4
-
-        #event_emitter:
-        ### Target Object Store name of CASE
-        #- tos_name: "BAWINS1TOS"
-        #  ## Connection point name for Target Object Store.
-        #  connection_point_name: "TOS_connection"
-        #  ## Creation date of the events.
-        #  ## The emitter starts processing the events from that date. If a bookmark exists, the emitter ignores this parameter and processes #the events from the bookmark.
-        #  date_sql: "<Required>"
-        #  ## An 8-character alphanumeric string without underscores.
-        #  ## This value is always required. While processing, the emitter tracks the events that are processed by using the Content Engine #Audit Processing Bookmark with a display name that is based on this value.
-        #  ## Therefore, if the emitter is restarted and if the bookmark exists, the emitter processes the events from the last bookmark.
-        #  logical_unique_id: "<Required>"
-        #  ## Comma-separated list of all the case solution names that need to be processed, e.g "solution1, solution2". Default value is "*". #Add all the solutions that you want to be processed before you deploy the Case event emitter.
-        #  solution_list: "*"
-        #  ## Comma-separated list of all the case types that need to be processed, e.g "casetype1, casetype2". Default value is "".
-        #  casetype_list: ""
-        #  ## Case event emitter batch size. Default value is 1000.
-        #  emitter_batch_size: 1000
-        #  ## Whether to process FileNet Process Engine events in addition to IBM Business Automation Workflow events. Default value is true.
-        #  process_pe_events: true
-
-      #  ## The event emitter settings if you want to enable Case History Emitter. The following example shows sample values:
-      #  ## case_history_emitter:
-      #  ##   enable: true
-      #  ##   dc_common_cpe_datasource_name: "CASEHISTORYDS"
-      #  ##   case_history_store_schema_name: "CHSCHEMA"
-      #  ##
-      #  case_history_emitter:
-      #    ## To enable Case History Emitter, this parameter must be set to true.
-      #    enable: false
-      #    ## The name of the non-XA datasource of Case History Store (from dc_common_cpe_datasource_name in the dc_cpe_datasources section)
-      #    ## This value is always required. To enable Case History Emitter, add the Case History database configuration in the dc_cpe_datasources section, and specify the non-XA datasource name(dc_common_cpe_datasource_name) as the value of this parameter.
-      #    dc_common_cpe_datasource_name: "<Required>"
-      #    ## The schema name for Case History Store.
-      #    case_history_store_schema_name: "CHSCHEMA"
 
   # IBM Business Automation Navigator configuration
   navigator_configuration:
@@ -473,7 +411,7 @@ spec:
     image:
       ## The default repository is the IBM Entitled Registry
       repository: cp.icr.io/cp/cp4a/ban/navigator
-      tag: "${CP4BA_INST_APPVER}"
+      tag: "${CP4BA_INST_IMGTAG}"
       pull_policy: IfNotPresent
     log:
       format: json

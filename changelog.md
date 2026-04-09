@@ -10,6 +10,16 @@
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
 
+## [1.3.5] - 2026-04-09
+
+### Added
+
+### Changed
+
+### Fixed
+
+Incorrect export variables in cp4ba-install-operators.sh was preventing installation of operator catalog pods in same deployment namespaces (maximum isolation)
+
 ## [1.3.4] - 2026-04-02
 
 ### Added
