@@ -32,7 +32,7 @@ metadata:
     app.kubernetes.io/instance: ibm-dba
     app.kubernetes.io/managed-by: ibm-dba
     app.kubernetes.io/name: ibm-dba
-    release: "24.0.1"
+    release: "${CP4BA_BASE_VER}"
   annotations:
     kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
 spec:
@@ -361,7 +361,7 @@ spec:
           ## Image name for content integration container.
           repository: cp.icr.io/cp/cp4a/baw/iaws-ps-content-integration
           ## Image tag for content integration container.
-          tag: "${CP4BA_INST_APPVER}"
+          tag: "${CP4BA_INST_IMGTAG}"
           ## Pull policy for content integration container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
           pull_policy: IfNotPresent
         ## Domain name for content integration. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
@@ -379,7 +379,7 @@ spec:
           ## Image name for CASE init job container.
           repository: cp.icr.io/cp/cp4a/baw/workflow-server-case-initialization
           ## Image tag for CASE init job container.
-          tag: "${CP4BA_INST_APPVER}"
+          tag: "${CP4BA_INST_IMGTAG}"
           ## Pull policy for CASE init job container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
           pull_policy: IfNotPresent
       
@@ -403,6 +403,36 @@ spec:
         custom_extension_names: ""
         cpe_metadata_cache_time_to_live: ""
 
+  # IBM FileNet Content Manager configuration
+  ecm_configuration:
+    fncm_secret_name: ibm-fncm-secret
+    cpe:
+      datavolume:
+        existing_pvc_for_cpe_cfgstore:
+          name: "cpe-cfgstore"
+          size: ${CP4BA_INST_CPE_DATAVOLUME_STORAGE_SIZE_SMALL}
+        existing_pvc_for_cpe_logstore:
+          name: "cpe-logstore"
+          size: ${CP4BA_INST_CPE_DATAVOLUME_STORAGE_SIZE_SMALL}
+        existing_pvc_for_cpe_filestore:
+          name: "cpe-filestore"
+          size: ${CP4BA_INST_CPE_DATAVOLUME_STORAGE_SIZE_MEDIUM}
+        existing_pvc_for_cpe_icmrulestore:
+          name: "cpe-icmrulesstore"
+          size: ${CP4BA_INST_CPE_DATAVOLUME_STORAGE_SIZE_SMALL}
+        existing_pvc_for_cpe_textextstore:
+          name: "cpe-textextstore"
+          size: ${CP4BA_INST_CPE_DATAVOLUME_STORAGE_SIZE_MEDIUM}
+        existing_pvc_for_cpe_bootstrapstore:
+          name: "cpe-bootstrapstore"
+          size: ${CP4BA_INST_CPE_DATAVOLUME_STORAGE_SIZE_SMALL}
+        existing_pvc_for_cpe_fnlogstore:
+          name: "cpe-fnlogstore"
+          size: ${CP4BA_INST_CPE_DATAVOLUME_STORAGE_SIZE_MEDIUM}
+
+    graphql:
+      graphql_production_setting:
+        enable_graph_iql: ${CP4BA_INST_GRAPHQL}
   # IBM Business Automation Navigator configuration
   navigator_configuration:
     ## Navigator secret that contains user credentials for LDAP and database
