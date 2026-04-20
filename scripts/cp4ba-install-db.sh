@@ -239,8 +239,8 @@ _deployPostgresNoSSL () {
     fi
 
     # create CM for PG configuration files
-    oc delete configmap -n ${CP4BA_INST_NAMESPACE} ${_PG_CONFIG_CM} 2>/dev/null 1>/dev/null
-    oc create configmap -n ${CP4BA_INST_NAMESPACE} ${_PG_CONFIG_CM} --from-file=${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
+    oc delete configmap -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_CONFIG_CM} 2>/dev/null 1>/dev/null
+    oc create configmap -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_CONFIG_CM} --from-file=${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
 
     # create PG CR Statefulset and Services
     envsubst < ${CP4BA_INST_DB_POSTGRES_CR_TEMPLATE} > ${_PG_SS_CR_TMP}
@@ -422,13 +422,13 @@ _deployPostgresSSL () {
     echo "hostssl all all 127.0.0.1/32 cert clientcert=verify-full" >> ${_PG_HBA_CONF_FILE}
 
     # create CM for PG configuration files
-    oc delete configmap -n ${CP4BA_INST_NAMESPACE} ${_PG_CONFIG_CM} 2>/dev/null 1>/dev/null
-    oc create configmap -n ${CP4BA_INST_NAMESPACE} ${_PG_CONFIG_CM} --from-file=${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
+    oc delete configmap -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_CONFIG_CM} 2>/dev/null 1>/dev/null
+    oc create configmap -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_CONFIG_CM} --from-file=${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
 
     _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVICE_SSL}
 
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
-    oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
+    oc delete secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
+    oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
 
     # create PG CR Statefulset and Services
     envsubst < ${CP4BA_INST_DB_POSTGRES_CR_SSL_TEMPLATE} > ${_PG_SS_CR_TMP}
@@ -515,6 +515,15 @@ _deployDBCluster () {
 
 }
 
+#-------------------------------
+namespaceExist () {
+    if [ $(oc get ns $1 | grep $1 | wc -l) -lt 1 ];
+    then
+        return 0
+    fi
+    return 1
+}
+
 deployDBCluster() {
 # $1: inst db
 # $2: CR name
@@ -523,7 +532,29 @@ deployDBCluster() {
     echo -e "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_GREEN}' in namespace '${_CLR_YELLOW}$3${_CLR_GREEN}'${_CLR_NC}"
     _deployDBCluster "$2" "$3" "$4"
   else
-    echo -e "${_CLR_YELLOW}Skipping deployment of DB Cluster '${_CLR_GREEN}$1${_CLR_YELLOW}'${_CLR_NC}"
+    if [[ "${CP4BA_INST_DB_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
+      echo -e "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_GREEN}' in external namespace '${_CLR_YELLOW}$3${_CLR_GREEN}'${_CLR_NC}"
+
+      namespaceExist "${CP4BA_INST_DB_NAMESPACE}"
+      if [ $? -eq 0 ]; then
+        oc new-project "${CP4BA_INST_DB_NAMESPACE}" 2>/dev/null 1>/dev/null
+      fi
+
+cat << EOF | oc create -n ${3} -f - 2>/dev/null 1>/dev/null
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ibm-cp4ba-anyuid
+imagePullSecrets:
+- name: 'ibm-entitlement-key'
+EOF
+
+      oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${3} 2>/dev/null 1>/dev/null
+
+      _deployDBCluster "$2" "$3" "$4"
+    else
+      echo -e "${_CLR_YELLOW}Skipping deployment of DB Cluster '${_CLR_GREEN}$1${_CLR_YELLOW}'${_CLR_NC}"
+    fi
   fi
 }
 
@@ -628,6 +659,6 @@ deployDBClusters ${CP4BA_INST_SUPPORT_NAMESPACE}
 # test if operator present in ns when different namespaces
 if [[ "${CP4BA_INST_SUPPORT_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
   if [ $(oc get -n ${CP4BA_INST_SUPPORT_NAMESPACE} csv --no-headers | grep "cloud-native-postgresql.v" | wc -l) -lt 1 ]; then
-    echo -e "${_CLR_GREEN}Remember to install 'EDB Postgres for Kubernetes' operator in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
+    echo -e "${_CLR_GREEN}Remember to install 'Postgres for Kubernetes' in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
   fi
 fi

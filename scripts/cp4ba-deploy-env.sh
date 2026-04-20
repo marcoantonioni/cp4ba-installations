@@ -286,6 +286,40 @@ deployPostEnv () {
     fi
   fi
 
+  if [[ "${CP4BA_INST_DB}" = "false" ]]; then
+    echo ""
+
+    echo -e "${_CLR_YELLOW}[!] WARNING, if you are using an external DB you must manually create and label the following TLS secrets:${_CLR_NC}"
+
+    echo ""
+
+    _SEC_NAME="im-datastore-edb-secret"
+    echo -e "${_CLR_YELLOW}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+
+    echo "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
+    echo "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls"
+    echo "oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE}"
+    echo ""
+
+    _SEC_NAME="ibm-zen-metastore-edb-secret"
+    echo -e "${_CLR_YELLOW}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+
+    echo "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
+    echo "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls" 
+    echo "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory"
+
+    echo ""
+
+    _SEC_NAME="bts-datastore-edb-secret"
+    echo -e "${_CLR_YELLOW}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+    echo "openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt -in ./client.key -out ./tls_key.pk8"
+    echo "oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME}" 
+    echo "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./tls_key.pk8" 
+    echo "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory" 
+    echo -e "${_CLR_NC}"
+
+  fi
+
 }
 
 #-------------------------------

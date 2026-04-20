@@ -71,10 +71,10 @@ source "${_CFG}"
 
 #-------------------------------
 resourceExist () {
-# namespace name: $1
-# resource type: $2
-# resource name: $3
-  if [ $(oc get $2 -n $1 $3 2> /dev/null | grep $3 | wc -l) -lt 1 ];
+#    echo "namespace name: $1"
+#    echo "resource type: $2"
+#    echo "resource name: $3"
+  if [ $(oc get $2 -n $1 $3 2> /dev/null | grep $3 2>/dev/null | wc -l) -lt 1 ];
   then
       return 0
   fi
@@ -691,19 +691,182 @@ createConfigMapBtsImZenForExternalDBs() {
   fi
 }
 
-createSecretsExternalDBs () {
-  if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
-    echo "Creating secrets for external Postgres database"
-    # already created in install-db.sh
+#--------------------------------
+# Postgres instance with SSL enabled (ZEN,BTS,IM external databases)
+
+_createDBCertificates () {
+# $1 = certificate folder
+# $2 = server name
+_CERT_FOLDER=$1
+_CERT_SERVER_NAME=$2
+
+_CERT_PASS=marco
+_CERT_VERIFY="false"
+_CERT_CA_PREFIX_NAME="my-ca"
+_CERT_SERVER_PREFIX_NAME="my-server"
+_CERT_CLIENT_PREFIX_NAME="my-client"
+
+_CERT_ISSUER_SUBJ="/CN=my-postgres"
+_CERT_SUBJ_SERVER="/CN=${_CERT_SERVER_NAME}"
+_CERT_SUBJ_CLIENT="/CN=client.${_CERT_SERVER_NAME}"
+
+# CA conf
+mkdir -p ${_CERT_FOLDER}/ca.db.certs   # Signed certificates storage
+touch ${_CERT_FOLDER}/ca.db.index      # Index of signed certificates
+echo 01 > ${_CERT_FOLDER}/ca.db.serial # Next (sequential) serial number
+
+# Configuration cert server
+cat <<EOF > ${_CERT_FOLDER}/req.conf
+[ req ]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_ca
+prompt = no
+[ req_distinguished_name ]
+C = CN
+ST = MA
+O = CP4BA
+CN = root
+[ v3_ca ]
+basicConstraints = critical,CA:TRUE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+[ v3_req ]
+keyUsage = keyEncipherment, dataEncipherment, digitalSignature
+extendedKeyUsage = clientAuth, serverAuth
+subjectAltName = @alt_names
+[ alt_names ]
+IP.1 = 127.0.0.1
+DNS.1 = ${CP4BA_INST_DB_1_CR_NAME_SSL}
+DNS.2 = ${CP4BA_INST_DB_1_SERVICE_SSL}
+DNS.3 = ${CP4BA_INST_DB_1_SERVICE_SSL_R}
+DNS.4 = ${CP4BA_INST_DB_1_SERVER_NAME_SSL}
+DNS.5 = ${CP4BA_INST_DB_1_SERVER_NAME_SSL_R}
+DNS.6 = localhost
+
+EOF
+
+# Configuration cert client
+cat <<EOF > ${_CERT_FOLDER}/req-client.conf
+[ req ]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_ca
+prompt = no
+[ req_distinguished_name ]
+C = CN
+ST = MA
+O = CP4BAClient
+CN = root
+[ v3_ca ]
+basicConstraints = critical,CA:TRUE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+[ v3_req ]
+keyUsage = keyEncipherment, dataEncipherment, digitalSignature
+extendedKeyUsage = clientAuth
+
+EOF
+
+# CA
+openssl genrsa -out ${_CERT_FOLDER}/ca.key 2048 2>/dev/null 1>/dev/null
+openssl req -x509 -new -key ${_CERT_FOLDER}/ca.key -sha256 -days 36500 -out ${_CERT_FOLDER}/ca.cert -extensions 'v3_ca' -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
+
+# SERVER
+openssl genrsa -out ${_CERT_FOLDER}/server.key 2048 2>/dev/null 1>/dev/null
+openssl req -new -sha256 -key ${_CERT_FOLDER}/server.key -out ${_CERT_FOLDER}/server-req.pem -subj "/CN=${CP4BA_INST_DB_1_CR_NAME_SSL}" -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
+openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/server-req.pem -out ${_CERT_FOLDER}/server.cert -extfile ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
+
+# CLIENT
+openssl genrsa -out ${_CERT_FOLDER}/client.key 2048 2>/dev/null 1>/dev/null
+openssl req -new -sha256 -key ${_CERT_FOLDER}/client.key -out ${_CERT_FOLDER}/client-req.pem -subj "/CN=postgres-client" -config ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
+openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/client-req.pem -out ${_CERT_FOLDER}/client.cert -extfile ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
+
+}
+
+# only db 1
+_createDbCertsAndSecrets () {
+    _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
+    export _PG_SECRETS=my-postgresql-secrets
+    export _PG_SS_NAME=$1
+    export _PG_TARGET_NS=${CP4BA_INST_NAMESPACE}
+
+    _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVICE_SSL}
+    ls -al ${_PG_SECRETS_FOLDER}
+
+    _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
+    _INST_DB_CR_NAME_SSL="CP4BA_INST_DB_"$i"_CR_NAME_SSL"
+
+    oc delete secret -n ${_PG_TARGET_NS} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
+    oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
 
     _SEC_NAME="im-datastore-edb-secret"
-    [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+    oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} #>/dev/null 2>&1
+    oc create secret generic ${_SEC_NAME} -n ${_PG_TARGET_NS} \
+      --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert" \
+      --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert" \
+      --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key" \
+      --type=kubernetes.io/tls #2>/dev/null 1>/dev/null
+    oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${_PG_TARGET_NS} # 2>/dev/null 1>/dev/null
 
     _SEC_NAME="ibm-zen-metastore-edb-secret"
-    [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+    oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
+    oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME} \
+      --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
+      --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
+      --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key"  \
+      --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
+    oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
 
     _SEC_NAME="bts-datastore-edb-secret"
-    [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+    openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
+      -in ${_PG_SECRETS_FOLDER}/client.key \
+      -out ${_PG_SECRETS_FOLDER}/tls_key.pk8 2>/dev/null 1>/dev/null
+
+    oc delete secret -n ${_PG_TARGET_NS} ${_SEC_NAME} 2>/dev/null 1>/dev/null
+    oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME}  \
+      --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
+      --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
+      --from-file=tls.key="${_PG_SECRETS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
+    oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
+
+    rm ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
+
+    if [[ ! -z "${_PG_CONF_FOLDER}" ]]; then
+      #echo "folder not removed: ${_PG_CONF_FOLDER}"
+      rm -fr ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
+    fi
+    if [[ ! -z "${_PG_SECRETS_FOLDER}" ]]; then
+      #echo "folder not removed: ${_PG_SECRETS_FOLDER}"
+      rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
+    fi
+}
+
+createSecretsExternalDBs () {
+  if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
+    echo "Verify secrets for external database"
+
+    # se instdb != inst
+    if [[ "${CP4BA_INST_DB_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
+      # crea certificati e secrets
+      _createDbCertsAndSecrets "${CP4BA_INST_DB_1_CR_NAME_SSL}"
+    fi
+
+    _SEC_NAME="im-datastore-edb-secret"
+    resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}
+    if [ $? -eq 1 ]; then
+      [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret found: '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+    fi
+
+    _SEC_NAME="ibm-zen-metastore-edb-secret"
+    resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}
+    if [ $? -eq 1 ]; then
+      [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+    fi
+
+    _SEC_NAME="bts-datastore-edb-secret"
+    resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}
+    if [ $? -eq 1 ]; then
+      [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+    fi
 
   fi
 }
