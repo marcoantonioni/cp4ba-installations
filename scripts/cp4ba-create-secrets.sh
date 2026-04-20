@@ -226,6 +226,10 @@ createSecretWFAssistantBAW () {
     --from-literal=WATSONX_API_KEY="$1" \
     --from-literal=WATSONX_PROJECT_ID="$2" \
     --from-literal=WATSONX_URL="$3" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    echo -e "${_CLR_RED}Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_RED}' NOT created (verify 'watsonx api key / proj id / url' for secret) !!!${_CLR_NC}"
+  fi
 
 }
 
@@ -292,6 +296,10 @@ if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OP
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
     --from-literal=dbUsername="$1" \
     --from-literal=dbPassword="$2" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    echo -e "${_CLR_RED}Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_RED}' NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
 
   oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
   oc label secret ${CP4BA_INST_CR_NAME}-bas-admin-secret db-name=${CP4BA_INST_BAW_1_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
@@ -310,6 +318,10 @@ fi
     --from-literal=WATSONX_API_KEY="${CP4BA_INST_BAS_GENAI_WX_APIKEY}" \
     --from-literal=WATSONX_PROJECT_ID="${CP4BA_INST_BAS_GENAI_WX_PRJ_ID}" \
     --from-literal=WATSONX_URL="${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    echo -e "${_CLR_RED}Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_RED}' NOT created (verify 'watsonx api key / proj id / url' for secret) !!!${_CLR_NC}"
+  fi
 
 #---------------------------------------------
 _SECRET_FILE_NAME="${_INST_TMP_FOLDER}/secret-baw-runtime-$USER-$RANDOM.xml"
@@ -337,6 +349,10 @@ EOF
 _SECRET_NAME="my-liberty-custom-xml-secret"
 [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
 oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+if [[ $? -gt 0 ]]; then
+  _ERROR=1
+  echo -e "${_CLR_RED}Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_RED}' NOT created !!!${_CLR_NC}"
+fi
 rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
 #---------------------------------------------
@@ -450,6 +466,12 @@ EOF
 _SECRET_NAME="my-lombardi-custom-xml-secret"
 [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
 oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
+
+if [[ $? -gt 0 ]]; then
+  _ERROR=1
+  echo -e "${_CLR_RED}Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_RED}' NOT created !!!${_CLR_NC}"
+fi
+
 rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
 }
@@ -672,7 +694,17 @@ createConfigMapBtsImZenForExternalDBs() {
 createSecretsExternalDBs () {
   if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
     echo "Creating secrets for external Postgres database"
-    # in install-db.sh
+    # already created in install-db.sh
+
+    _SEC_NAME="im-datastore-edb-secret"
+    [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+
+    _SEC_NAME="ibm-zen-metastore-edb-secret"
+    [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+
+    _SEC_NAME="bts-datastore-edb-secret"
+    [[ "${_VERBOSE}" = "true" ]] && echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+
   fi
 }
 
@@ -688,6 +720,10 @@ createSecretBAML () {
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
     --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 2> /dev/null 1> /dev/null
+  if [[ $_ERR -gt 0 ]]; then
+    _ERROR=1
+    echo -e "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
 
 #---------------------------------------------
 
@@ -697,6 +733,10 @@ createSecretBAML () {
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
     --from-literal=adminPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" 2> /dev/null 1> /dev/null
+  if [[ $_ERR -gt 0 ]]; then
+    _ERROR=1
+    echo -e "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
 
 #---------------------------------------------
 # empty values, to let the 'insights' installation progress
@@ -708,6 +748,10 @@ createSecretBAML () {
     --from-literal=url="https://to-be-defined" \
     --from-literal=adminUsername="to-be-defined" \
     --from-literal=adminPassword="to-be-defined" 2> /dev/null 1> /dev/null
+  if [[ $_ERR -gt 0 ]]; then
+    _ERROR=1
+    echo -e "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
 
 } 
 

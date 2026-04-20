@@ -59,6 +59,8 @@ A linux box (scripts are only available in the bash shell)
 
 'openssl' client tool (optional, used with my other git repositories from the cp4ba-* family, eg: for trusted certificate list configuration)
 
+**Mac users: If you are using a Mac environment, make sure that the LibreSSL distribution and its version are compatible with latest OpenSSL version.**
+
 ## Prerequisites for the Openshift cluster
 
 The version of Openshift used must be among those supported by the CP4BA version
