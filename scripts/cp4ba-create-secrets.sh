@@ -842,11 +842,10 @@ _createDbCertsAndSecrets () {
 
 createSecretsExternalDBs () {
   if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
-    echo "Verify secrets for external database"
 
-    # se instdb != inst
     if [[ "${CP4BA_INST_DB_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
-      # crea certificati e secrets
+      # create certificates and secrets to connect to external db (other namespace)
+      [[ "${_VERBOSE}" = "true" ]] && echo -e "Create TLS secrets for external database${_CLR_NC}'"
       _createDbCertsAndSecrets "${CP4BA_INST_DB_1_CR_NAME_SSL}"
     fi
 
