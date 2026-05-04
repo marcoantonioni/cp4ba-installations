@@ -10,6 +10,17 @@
 2024-01-29: updated project cp4ba-idp-ldap, modified 'sed -i' command for compatibility with Darwing platform limitation
 
 
+## [1.3.6] - 2026-05-04
+
+### Added
+
+### Changed
+
+### Fixed
+
+External database configuration endpoints and certificates.
+
+
 ## [1.3.5] - 2026-04-09
 
 ### Added
