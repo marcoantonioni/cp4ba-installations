@@ -10,6 +10,7 @@ _WAIT=false
 _GENERATE_SQL_ONLY=false
 
 _VERBOSE="false"
+_FORCE="false"
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -20,13 +21,14 @@ _CLR_NC="\033[0m"
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:wgv flag
+while getopts c:wgvf flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         w) _WAIT=true;;
         g) _GENERATE_SQL_ONLY=true;;
-        v) _VERBOSE=true;;
+        f) _FORCE="true";;
+        v) _VERBOSE="true";;
     esac
 done
 
@@ -300,9 +302,12 @@ createDatabases () {
 
 echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
 
-if [[ "${CP4BA_INST_DB}" = "true" ]]; then
+if [[ "${CP4BA_INST_DB}" = "true" ]] || [[ "${_FORCE}" == "true" ]]; then
   if [[ "${_GENERATE_SQL_ONLY}" = "false" ]]; then
     echo -e "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers${_CLR_NC}"
+    if [[ "${CP4BA_INST_DB}" = "false" ]] || [[ "${_FORCE}" == "true" ]]; then
+      echo -e "${_CLR_GREEN}Using external dbms '${_CLR_YELLOW}${CP4BA_INST_DB_1_SERVER_NAME}${_CLR_GREEN}'"
+    fi
   fi
   createDatabases "CP4BA_INST_DB_ZENBTSIM_EXT"
   createDatabases "CP4BA_INST_BAS"

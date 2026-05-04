@@ -621,8 +621,8 @@ data:
   DATABASE_USER: "${CP4BA_INST_DB_IM_USER}"
   DATABASE_NAME: im
   DATABASE_PORT: "${CP4BA_INST_DB_SERVER_PORT}"
-  DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE_SSL}"
-  DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE_SSL}"
+  DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVER_NAME_SSL}"
+  DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVER_NAME_SSL}"
   DATABASE_ENABLE_SSL: "true"
   DATABASE_CA_CERT: ca.crt
   DATABASE_CLIENT_CERT: tls.crt
@@ -666,8 +666,8 @@ data:
   DATABASE_USER: "${CP4BA_INST_DB_ZEN_USER}"
   DATABASE_NAME: zen
   DATABASE_PORT: "${CP4BA_INST_DB_SERVER_PORT}"
-  DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE_SSL}"
-  DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVICE_SSL}"
+  DATABASE_R_ENDPOINT: "${CP4BA_INST_DB_1_SERVER_NAME_SSL}"
+  DATABASE_RW_ENDPOINT: "${CP4BA_INST_DB_1_SERVER_NAME_SSL}"
   DATABASE_SCHEMA: public
   DATABASE_MONITORING_SCHEMA: watchdog
   DATABASE_ENABLE_SSL: "true"
@@ -789,8 +789,7 @@ _createDbCertsAndSecrets () {
     export _PG_SS_NAME=$1
     export _PG_TARGET_NS=${CP4BA_INST_NAMESPACE}
 
-    _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVICE_SSL}
-    ls -al ${_PG_SECRETS_FOLDER}
+    _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVER_NAME_SSL}
 
     _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
     _INST_DB_CR_NAME_SSL="CP4BA_INST_DB_"$i"_CR_NAME_SSL"
@@ -804,8 +803,8 @@ _createDbCertsAndSecrets () {
       --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert" \
       --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert" \
       --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key" \
-      --type=kubernetes.io/tls #2>/dev/null 1>/dev/null
-    oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${_PG_TARGET_NS} # 2>/dev/null 1>/dev/null
+      --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
+    oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
 
     _SEC_NAME="ibm-zen-metastore-edb-secret"
     oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
