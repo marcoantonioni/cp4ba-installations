@@ -6,6 +6,7 @@
 _me=$(basename "$0")
 
 _CFG=""
+_KEEP_SSL="false"
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -45,15 +46,16 @@ setTemporaryFolder () {
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:s: flag
+while getopts c:k flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
+        k) _KEEP_SSL="true";;
     esac
 done
 
 if [[ -z "${_CFG}" ]]; then
-  echo "usage: $_me -c path-of-config-file"
+  echo "usage: $_me -c path-of-config-file -k(optional) keep certificate folder"
   exit 1
 fi
 
@@ -393,7 +395,15 @@ _deployPostgresSSL () {
 
     _PG_SS_CR_TMP="${_INST_TMP_FOLDER}/cp4ba-pg-statefulset-$USER-$RANDOM"
     _PG_CONF_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-conf-folder-$USER-$RANDOM"
+
     _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
+
+    # TO BE REFACTORED
+    #if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+    #  _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
+    #else
+    #  _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
+    #fi
 
     mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
     mkdir -p ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
@@ -493,9 +503,14 @@ _deployPostgresSSL () {
       #echo "folder not removed: ${_PG_CONF_FOLDER}"
       rm -fr ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
     fi
-    if [[ ! -z "${_PG_SECRETS_FOLDER}" ]]; then
-      #echo "folder not removed: ${_PG_SECRETS_FOLDER}"
-      rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
+    
+    if [[ "${_KEEP_SSL}" = "false" ]]; then
+      if [[ ! -z "${_PG_SECRETS_FOLDER}" ]]; then
+        rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
+      fi
+    else
+      echo -e "${_CLR_GREEN}The database server is configured with self signed certificates stored in folder '${_CLR_YELLOW}${_PG_SECRETS_FOLDER}${_CLR_GREEN}' reuse it for client side components with following export."
+      echo -e "${_CLR_YELLOW}export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=\"${_PG_SECRETS_FOLDER}\"${_CLR_GREEN}"
     fi
 
   else

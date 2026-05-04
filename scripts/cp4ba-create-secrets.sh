@@ -40,7 +40,7 @@ setTemporaryFolder () {
 
     if [[ $_OK -lt 1 ]]; then
       echo -e "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
-      echo -e "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
+      echo -e "${_CLR_RED} '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
       exit 1
     fi
     export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
@@ -783,13 +783,25 @@ openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.
 }
 
 # only db 1
+# certificates creation configuration must be kept aligned with cp4ba-install-db.sh (_deployPostgresSSL)
+# TO BE REFACTORED
 _createDbCertsAndSecrets () {
-    _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
     export _PG_SECRETS=my-postgresql-secrets
     export _PG_SS_NAME=$1
     export _PG_TARGET_NS=${CP4BA_INST_NAMESPACE}
 
-    _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVER_NAME_SSL}
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
+      _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVER_NAME_SSL}
+    else
+      if [[ -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+        _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
+        echo -e "${_CLR_GREEN}Reusing certificates in folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}'${_CLR_GREEN}"
+      else  
+        echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
+        exit 1
+      fi    
+    fi 
 
     _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
     _INST_DB_CR_NAME_SSL="CP4BA_INST_DB_"$i"_CR_NAME_SSL"
@@ -798,7 +810,7 @@ _createDbCertsAndSecrets () {
     oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
 
     _SEC_NAME="im-datastore-edb-secret"
-    oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} #>/dev/null 2>&1
+    oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} >/dev/null 2>&1
     oc create secret generic ${_SEC_NAME} -n ${_PG_TARGET_NS} \
       --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert" \
       --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert" \
@@ -830,12 +842,12 @@ _createDbCertsAndSecrets () {
     rm ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
 
     if [[ ! -z "${_PG_CONF_FOLDER}" ]]; then
-      #echo "folder not removed: ${_PG_CONF_FOLDER}"
       rm -fr ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
     fi
-    if [[ ! -z "${_PG_SECRETS_FOLDER}" ]]; then
-      #echo "folder not removed: ${_PG_SECRETS_FOLDER}"
-      rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      if [[ ! -z "${_PG_SECRETS_FOLDER}" ]]; then
+        rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
+      fi
     fi
 }
 
