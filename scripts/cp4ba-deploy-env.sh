@@ -750,7 +750,7 @@ waitDeploymentReadiness () {
         for (( i=0; i<$NUM_KEYS; i++ ));
         do
           KEY=$(echo $ACC_INFO | jq keys[$i])
-          echo "  saving access-info data for key: ${KEY}"
+          echo -e "  saving access-info data for key: ${_CLR_YELLOW}${KEY}${_CLR_GREEN}"
           echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${_FULL_TXT_NAME}
         done
 
@@ -760,14 +760,14 @@ waitDeploymentReadiness () {
         echo "Admin user: ${_ADMINUSER}" >> ${_FULL_TXT_NAME}
         echo "Admin password: ${_ADMINPASSWORD}" >> ${_FULL_TXT_NAME}
 
-        echo "Platform URLs stored in: ${_FULL_TXT_NAME}"
+        echo -e "Platform URLs stored in: ${_CLR_YELLOW}${_FULL_TXT_NAME}${_CLR_GREEN}"
       else
         echo -e "${_CLR_YELLOW}Warning access info config map empty or not valid${_CLR_NC}"
       fi
 
       echo -e "${_CLR_GREEN}CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
-      echo "See acces info urls in file ${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"     
+      echo -e "See acces info urls in file ${_CLR_YELLOW}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt${_CLR_GREEN}"     
       echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"     
       break
     fi

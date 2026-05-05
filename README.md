@@ -597,7 +597,7 @@ The variables must be set accordingly (see following examples).
 2. A DBMS defined in a different namespace built using this tool.
 In this case, the external DBMS can be created with the following steps:
 
-Step 1. Install dbms and keep self signed certificates (automatically creates namesps if not exists)
+Step 1. Install dbms and keep self signed certificates (automatically creates namespace if not exists)
 ```
 CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1/env1-extdb-authoring-wfps.properties
 ./cp4ba-install-db.sh -c ${CONFIG_FILE}
