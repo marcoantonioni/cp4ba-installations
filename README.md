@@ -608,6 +608,8 @@ Step 2. Create DBs (must use -f to force db creation)
 ./cp4ba-create-databases.sh -c ${CONFIG_FILE} -w -f
 ```
 
+Step 1 and 2 will work on namespace defined by CP4BA_INST_SUPPORT_NAMESPACE
+
 Step 3. Install environment
 ```
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
