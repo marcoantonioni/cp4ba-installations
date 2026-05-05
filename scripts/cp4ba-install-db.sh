@@ -294,7 +294,7 @@ _createDBCertificates () {
 # $1 = certificate folder
 # $2 = server name
 _CERT_FOLDER=$1
-_CERT_SERVER_NAME=$2
+_CERT_SERVER_NAME="${CP4BA_INST_DB_1_SERVER_NAME_SSL}"
 
 _CERT_PASS=marco
 _CERT_VERIFY="false"
@@ -396,123 +396,147 @@ _deployPostgresSSL () {
     _PG_SS_CR_TMP="${_INST_TMP_FOLDER}/cp4ba-pg-statefulset-$USER-$RANDOM"
     _PG_CONF_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-conf-folder-$USER-$RANDOM"
 
-    _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
-
-    # TO BE REFACTORED
-    #if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-    #  _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
-    #else
-    #  _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
-    #fi
-
-    mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
-    mkdir -p ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
-
-    _PG_CONF_FILE=${_PG_CONF_FOLDER}/postgresql_nossl.conf
-    _PG_CONF_FILE_SSL=${_PG_CONF_FOLDER}/postgresql.conf
-    _PG_HBA_CONF_FILE_TMP=${_PG_CONF_FOLDER}/pg_hba.conf.tmp
-    _PG_HBA_CONF_FILE=${_PG_CONF_FOLDER}/pg_hba.conf
-
-    if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}"  ]]; then
-      cp ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE} ${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
-    else
-      echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}${_CLR_NC}"
-      exit 1
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
     fi
-    if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE}"  ]]; then
-      cp ${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE} ${_PG_HBA_CONF_FILE_TMP} 2>/dev/null 1>/dev/null
-    else
-      echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE}${_CLR_NC}"
-      exit 1
-    fi
-
-    cat ${_PG_HBA_CONF_FILE_TMP} | sed "s/host all all all scram-sha-256/host all all all trust/g" > ${_PG_HBA_CONF_FILE}
-
-    echo "hostssl all all 127.0.0.1/32 password clientcert=verify-ca" >> ${_PG_HBA_CONF_FILE}
-    echo "hostssl all all 127.0.0.1/32 cert clientcert=verify-full" >> ${_PG_HBA_CONF_FILE}
-
-    # create CM for PG configuration files
-    oc delete configmap -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_CONFIG_CM} 2>/dev/null 1>/dev/null
-    oc create configmap -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_CONFIG_CM} --from-file=${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
-
-    _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVICE_SSL}
-
-    oc delete secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
-    oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
-
-    # create PG CR Statefulset and Services
-    envsubst < ${CP4BA_INST_DB_POSTGRES_CR_SSL_TEMPLATE} > ${_PG_SS_CR_TMP}
-    envsubst < ${CP4BA_INST_DB_POSTGRES_SRV_CR_TEMPLATE} >> ${_PG_SS_CR_TMP}
-
-    # - loop 
-    while true 
-    do
-      # apply CR
-      oc apply -n $2 -f ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
-      if [ $? -gt 0 ]; then
-        sleep 5
-      else
-        # -- verify CR existence
-        resourceExist $2 "statefulsets.apps" ${_PG_SS_NAME}
-        
-        # -- if OK end loop
-        if [ $? -eq 1 ]; then
-          echo -e "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
-          break
-        else
-          sleep 1
-        fi
-      fi
-    done
-
-    # https://www.ibm.com/docs/en/cloud-paks/foundational-services/4.x_cd?topic=management-configuring-external-postgresql-database-im
-
-    _SEC_NAME="im-datastore-edb-secret"
-    oc delete secret ${_SEC_NAME} -n "$2" >/dev/null 2>&1
-    oc create secret generic ${_SEC_NAME} \
-      --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert" \
-      --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert" \
-      --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key" \
-      --type=kubernetes.io/tls -n "$2" 2>/dev/null 1>/dev/null
-    oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n "$2" 2>/dev/null 1>/dev/null
-
-    _SEC_NAME="ibm-zen-metastore-edb-secret"
-    oc delete secret ${_SEC_NAME} -n "$2" 2>/dev/null 1>/dev/null
-    oc create secret generic -n "$2" ${_SEC_NAME} \
-      --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
-      --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
-      --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key"  \
-      --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
-    oc label secret -n "$2" ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
-
-    _SEC_NAME="bts-datastore-edb-secret"
-    openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
-      -in ${_PG_SECRETS_FOLDER}/client.key \
-      -out ${_PG_SECRETS_FOLDER}/tls_key.pk8 2>/dev/null 1>/dev/null
-
-    oc delete secret -n "$2" ${_SEC_NAME} 2>/dev/null 1>/dev/null
-    oc create secret generic -n "$2" ${_SEC_NAME}  \
-      --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
-      --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
-      --from-file=tls.key="${_PG_SECRETS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
-    oc label secret -n "$2" ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
-
-    rm ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
-
-    if [[ ! -z "${_PG_CONF_FOLDER}" ]]; then
-      #echo "folder not removed: ${_PG_CONF_FOLDER}"
-      rm -fr ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
     fi
     
-    if [[ "${_KEEP_SSL}" = "false" ]]; then
-      if [[ ! -z "${_PG_SECRETS_FOLDER}" ]]; then
-        rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
+    if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
+      if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+        echo -e "${_CLR_RED}[✗] ERROR folder not defined in '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}'${_CLR_GREEN}"
+        exit 1
+      else
+        _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
+
+        _KEEP_SSL="true"
       fi
+
     else
-      echo -e "${_CLR_GREEN}The database server is configured with self signed certificates stored in folder '${_CLR_YELLOW}${_PG_SECRETS_FOLDER}${_CLR_GREEN}' reuse it for client side components with following export."
-      echo -e "${_CLR_YELLOW}export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=\"${_PG_SECRETS_FOLDER}\"${_CLR_GREEN}"
+
+      if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+        if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
+          exit 1        
+        fi
+        _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
+      else
+        _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
+      fi
+
     fi
 
+    if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
+
+      mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
+      mkdir -p ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
+
+      _PG_CONF_FILE=${_PG_CONF_FOLDER}/postgresql_nossl.conf
+      _PG_CONF_FILE_SSL=${_PG_CONF_FOLDER}/postgresql.conf
+      _PG_HBA_CONF_FILE_TMP=${_PG_CONF_FOLDER}/pg_hba.conf.tmp
+      _PG_HBA_CONF_FILE=${_PG_CONF_FOLDER}/pg_hba.conf
+
+      if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}"  ]]; then
+        cp ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE} ${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
+      else
+        echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}${_CLR_NC}"
+        exit 1
+      fi
+      if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE}"  ]]; then
+        cp ${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE} ${_PG_HBA_CONF_FILE_TMP} 2>/dev/null 1>/dev/null
+      else
+        echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE}${_CLR_NC}"
+        exit 1
+      fi
+
+      cat ${_PG_HBA_CONF_FILE_TMP} | sed "s/host all all all scram-sha-256/host all all all trust/g" > ${_PG_HBA_CONF_FILE}
+
+      echo "hostssl all all 127.0.0.1/32 password clientcert=verify-ca" >> ${_PG_HBA_CONF_FILE}
+      echo "hostssl all all 127.0.0.1/32 cert clientcert=verify-full" >> ${_PG_HBA_CONF_FILE}
+
+      # create CM for PG configuration files
+      oc delete configmap -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_CONFIG_CM} 2>/dev/null 1>/dev/null
+      oc create configmap -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_CONFIG_CM} --from-file=${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
+
+      _createDBCertificates ${_PG_SECRETS_FOLDER}
+
+      oc delete secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
+      oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
+
+      # create PG CR Statefulset and Services
+      envsubst < ${CP4BA_INST_DB_POSTGRES_CR_SSL_TEMPLATE} > ${_PG_SS_CR_TMP}
+      envsubst < ${CP4BA_INST_DB_POSTGRES_SRV_CR_TEMPLATE} >> ${_PG_SS_CR_TMP}
+
+      # - loop 
+      while true 
+      do
+        # apply CR
+        oc apply -n $2 -f ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
+        if [ $? -gt 0 ]; then
+          sleep 5
+        else
+          # -- verify CR existence
+          resourceExist $2 "statefulsets.apps" ${_PG_SS_NAME}
+          
+          # -- if OK end loop
+          if [ $? -eq 1 ]; then
+            echo -e "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
+            break
+          else
+            sleep 1
+          fi
+        fi
+      done
+
+      # https://www.ibm.com/docs/en/cloud-paks/foundational-services/4.x_cd?topic=management-configuring-external-postgresql-database-im
+
+      _SEC_NAME="im-datastore-edb-secret"
+      oc delete secret ${_SEC_NAME} -n "$2" >/dev/null 2>&1
+      oc create secret generic ${_SEC_NAME} \
+        --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert" \
+        --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert" \
+        --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key" \
+        --type=kubernetes.io/tls -n "$2" 2>/dev/null 1>/dev/null
+      oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n "$2" 2>/dev/null 1>/dev/null
+
+      _SEC_NAME="ibm-zen-metastore-edb-secret"
+      oc delete secret ${_SEC_NAME} -n "$2" 2>/dev/null 1>/dev/null
+      oc create secret generic -n "$2" ${_SEC_NAME} \
+        --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
+        --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
+        --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key"  \
+        --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
+      oc label secret -n "$2" ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
+
+      _SEC_NAME="bts-datastore-edb-secret"
+      openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
+        -in ${_PG_SECRETS_FOLDER}/client.key \
+        -out ${_PG_SECRETS_FOLDER}/tls_key.pk8 2>/dev/null 1>/dev/null
+
+      oc delete secret -n "$2" ${_SEC_NAME} 2>/dev/null 1>/dev/null
+      oc create secret generic -n "$2" ${_SEC_NAME}  \
+        --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
+        --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
+        --from-file=tls.key="${_PG_SECRETS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
+      oc label secret -n "$2" ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
+
+      rm ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
+
+      if [[ ! -z "${_PG_CONF_FOLDER}" ]]; then
+        rm -fr ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
+      fi
+      
+      if [[ "${_KEEP_SSL}" = "false" ]]; then
+        if [[ ! -z "${_PG_SECRETS_FOLDER}" ]]; then
+          rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
+        fi
+      else
+        echo -e "${_CLR_GREEN}The database server is configured with self signed certificates stored in folder '${_CLR_YELLOW}${_PG_SECRETS_FOLDER}${_CLR_GREEN}' reuse it for client side components with following export."
+        echo -e "${_CLR_YELLOW}export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=\"${_PG_SECRETS_FOLDER}\"${_CLR_GREEN}"
+      fi
+
+    fi
   else
     echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresSSL name or namespace empty${_CLR_NC}"
     exit 1
@@ -672,8 +696,8 @@ setTemporaryFolder
 deployDBClusters ${CP4BA_INST_SUPPORT_NAMESPACE}
 
 # test if operator present in ns when different namespaces
-if [[ "${CP4BA_INST_SUPPORT_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
-  if [ $(oc get -n ${CP4BA_INST_SUPPORT_NAMESPACE} csv --no-headers | grep "cloud-native-postgresql.v" | wc -l) -lt 1 ]; then
-    echo -e "${_CLR_GREEN}Remember to install 'Postgres for Kubernetes' in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
-  fi
-fi
+#if [[ "${CP4BA_INST_SUPPORT_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
+#  if [ $(oc get -n ${CP4BA_INST_SUPPORT_NAMESPACE} csv --no-headers | grep "cloud-native-postgresql.v" | wc -l) -lt 1 ]; then
+#    echo -e "${_CLR_GREEN}Remember to install 'Postgres for Kubernetes' in '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
+#  fi
+#fi

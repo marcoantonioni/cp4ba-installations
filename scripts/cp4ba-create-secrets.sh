@@ -790,6 +790,14 @@ _createDbCertsAndSecrets () {
     export _PG_SS_NAME=$1
     export _PG_TARGET_NS=${CP4BA_INST_NAMESPACE}
 
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
+    fi
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
+    fi
+
+
     if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
       _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
       _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVER_NAME_SSL}

@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-05-04</i> (see changelog.md for details)
+<i>Last update: 2026-05-05</i> (see changelog.md for details)
 
 ## Description of the contents of this repository
 
@@ -586,6 +586,55 @@ If you don't use internal OpenLDAP nor Postgres then to avoid add 'add-scc-to-us
 ```
 export CP4BA_INST_ANYUID="false"
 ```
+
+## Installing a CP4BA environment with an external database
+
+An external database is defined as:
+1. A pre-installed and pre-configured DBMS (anywhere, as long as it's accessible via the network).
+In this case, this tool's scripts use TLS certificates, which must be present in a specific folder.
+The variables must be set accordingly (see following examples).
+
+2. A DBMS defined in a different namespace built using this tool.
+In this case, the external DBMS can be created with the following steps:
+
+Step 1. Install dbms and keep self signed certificates (automatically creates namesps if not exists)
+```
+CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1/env1-extdb-authoring-wfps.properties
+./cp4ba-install-db.sh -c ${CONFIG_FILE}
+```
+
+Step 2. Create DBs (must use -f to force db creation)
+```
+./cp4ba-create-databases.sh -c ${CONFIG_FILE} -w -f
+```
+
+Step 3. Install environment
+```
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
+```
+
+
+
+### Configuration example: create self signed certificates for external db (database pod in different namespace) then reuse
+```
+export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="true"
+export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="/tmp/cp4ba-pg-tls-certs-external"
+```
+
+### Configuration example: use your own certificates for external db (database external and manually configured) then reuse
+
+*you must copy your certificates into folder defined by CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER*
+```
+export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"
+export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="/tmp/my-own-tls-certs"
+```
+
+### Configuration example: create self signed certificates for internal db (database pod in same namespace) then reuse
+```
+export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"
+export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
+```
+
 
 ### Troubleshooting
 
