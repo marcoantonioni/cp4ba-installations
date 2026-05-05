@@ -686,7 +686,7 @@ The configurations for CR .yaml deployment
 
     kind: ICP4ACluster
 
-are the property of IBM as per the official wording:
+are property of IBM as per the official wording:
 
 Licensed Materials - Property of IBM
 
