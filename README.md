@@ -627,7 +627,6 @@ Step 3. Install environment
 
 ### Configuration example 2
 Use your own certificates for external db (database external and manually configured).
-The certificates will be used in step 3.
 
 *you must copy your certificates into folder defined by CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER*
 
@@ -644,7 +643,7 @@ CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1/env1-ex
 ```
 
 ### Configuration example 3
-Create self signed certificates for internal db (database pod in same namespace) then reuse
+Create self signed certificates for internal db (database pod in same namespace)
 
 Set in your .properties file the following variables
 ```
