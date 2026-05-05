@@ -423,11 +423,12 @@ _deployPostgresSSL () {
         _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
       else
         _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
+        _KEEP_SSL="false"
       fi
 
     fi
 
-    if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
+    if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]] || [[ "${CP4BA_INST_NAMESPACE}" = "${CP4BA_INST_SUPPORT_NAMESPACE}" ]]; then
 
       mkdir -p ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
       mkdir -p ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
