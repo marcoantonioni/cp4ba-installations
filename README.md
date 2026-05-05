@@ -597,6 +597,14 @@ The variables must be set accordingly (see following examples).
 2. A DBMS defined in a different namespace built using this tool.
 In this case, the external DBMS can be created with the following steps:
 
+### Configuration example 1
+Create self signed certificates for external db (database pod in different namespace). 
+The self signed certificates will be used in step 3.
+```
+export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="true"
+export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="/tmp/cp4ba-pg-tls-certs-external"
+```
+
 Step 1. Install dbms and keep self signed certificates (automatically creates namespace if not exists)
 ```
 CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1/env1-extdb-authoring-wfps.properties
@@ -615,15 +623,9 @@ Step 3. Install environment
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
 ```
 
-
-
-### Configuration example: create self signed certificates for external db (database pod in different namespace) then reuse
-```
-export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="true"
-export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="/tmp/cp4ba-pg-tls-certs-external"
-```
-
-### Configuration example: use your own certificates for external db (database external and manually configured) then reuse
+### Configuration example 2
+Use your own certificates for external db (database external and manually configured).
+The certificates will be used in step 3.
 
 *you must copy your certificates into folder defined by CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER*
 ```
@@ -631,10 +633,23 @@ export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"
 export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="/tmp/my-own-tls-certs"
 ```
 
-### Configuration example: create self signed certificates for internal db (database pod in same namespace) then reuse
+Step 1. Install environment
+```
+CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1/env1-extdb-authoring-wfps.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
+```
+
+### Configuration example 3
+Create self signed certificates for internal db (database pod in same namespace) then reuse
 ```
 export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"
 export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
+```
+
+Step 1. Install environment
+```
+CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1/env1-extdb-authoring-wfps.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
 ```
 
 
