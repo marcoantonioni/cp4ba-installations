@@ -600,6 +600,8 @@ In this case, the external DBMS can be created with the following steps:
 ### Configuration example 1
 Create self signed certificates for external db (database pod in different namespace). 
 The self signed certificates will be used in step 3.
+
+Set in your .properties file the following variables
 ```
 export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="true"
 export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="/tmp/cp4ba-pg-tls-certs-external"
@@ -628,6 +630,8 @@ Use your own certificates for external db (database external and manually config
 The certificates will be used in step 3.
 
 *you must copy your certificates into folder defined by CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER*
+
+Set in your .properties file the following variables
 ```
 export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"
 export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="/tmp/my-own-tls-certs"
@@ -641,6 +645,8 @@ CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1/env1-ex
 
 ### Configuration example 3
 Create self signed certificates for internal db (database pod in same namespace) then reuse
+
+Set in your .properties file the following variables
 ```
 export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"
 export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
