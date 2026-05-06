@@ -57,7 +57,14 @@ A linux box (scripts are only available in the bash shell)
 
 'envsubst' (mandatory)
 
-'openssl' client tool (optional, used with my other git repositories from the cp4ba-* family, eg: for trusted certificate list configuration)
+'openssl' client tool (mandatory)
+
+### OpenSSL and mac users
+You need to install OpenSSL and add it to path.
+```
+brew install openssl@3.5 
+export PATH="/opt/homebrew/opt/openssl@3/bin:$PATH"
+```
 
 **Mac users: If you are using a Mac environment, make sure that the LibreSSL distribution and its version are compatible with latest OpenSSL version.**
 
