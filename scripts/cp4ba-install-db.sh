@@ -378,6 +378,40 @@ openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.
 
 }
 
+checkExtDbCertificates() {
+
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
+    fi
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
+    fi
+
+    if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
+      if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+        echo -e "${_CLR_RED}[✗] ERROR folder path not defined in 'CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER'${_CLR_GREEN}"
+        exit 1
+      else
+        if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
+          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+          exit 1
+        fi      
+      fi
+    else
+      if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+        if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
+          exit 1        
+        fi
+        if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
+          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+          exit 1
+        fi      
+      fi
+    fi
+}
+
+
 _deployPostgresSSL () {
 
   if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
@@ -404,28 +438,15 @@ _deployPostgresSSL () {
     fi
     
     if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
-      if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-        echo -e "${_CLR_RED}[✗] ERROR folder not defined in '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}'${_CLR_GREEN}"
-        exit 1
-      else
-        _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
-
-        _KEEP_SSL="true"
-      fi
-
+      _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
+      _KEEP_SSL="true"
     else
-
       if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-        if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
-          exit 1        
-        fi
         _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
       else
         _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
         _KEEP_SSL="false"
       fi
-
     fi
 
     if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]] || [[ "${CP4BA_INST_NAMESPACE}" = "${CP4BA_INST_SUPPORT_NAMESPACE}" ]]; then
@@ -693,6 +714,7 @@ deployDBClusters() {
 echo -e "${_CLR_GREEN}Deploying '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' DB Clusters in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 setTemporaryFolder
+checkExtDbCertificates
 
 deployDBClusters ${CP4BA_INST_SUPPORT_NAMESPACE}
 

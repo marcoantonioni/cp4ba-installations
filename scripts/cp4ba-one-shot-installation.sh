@@ -111,6 +111,19 @@ fi
 source "${_CFG}"
 
 checkPrereqTools () {
+  which curl &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_RED}[✗] Error, curl not installed, cannot proceed.${_CLR_NC}"
+    exit 1
+  fi
+
+  which kubectl &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_RED}[✗] Error, kubectl not installed, cannot proceed.${_CLR_NC}"
+    exit 1
+  fi
+
+
   which jq &>/dev/null
   if [[ $? -ne 0 ]]; then
     echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
@@ -129,12 +142,46 @@ checkPrereqTools () {
   fi
 }
 
+checkExtDbCertificates() {
+
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
+    fi
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
+    fi
+
+    if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
+      if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+        echo -e "${_CLR_RED}[✗] ERROR folder path not defined in 'CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER'${_CLR_GREEN}"
+        exit 1
+      else
+        if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
+          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+          exit 1
+        fi      
+      fi
+    else
+      if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+        if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
+          exit 1        
+        fi
+        if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
+          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+          exit 1
+        fi      
+      fi
+    fi
+}
+
 testConfiguration () {
   echo "testConfiguration not yet implemented!"
 }
 
 if [[ "${_TEST_CFG}" = "true" ]]; then
   checkPrereqTools
+  checkExtDbCertificates
   testConfiguration
   exit 0
 fi
@@ -330,6 +377,7 @@ installAndVerifyCasePkgMgr () {
 initialChecks () {
 
   checkPrereqTools
+  checkExtDbCertificates
 
   # verify logged in OCP
   oc whoami 2>/dev/null 1>/dev/null
