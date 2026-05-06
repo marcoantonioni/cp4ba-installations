@@ -78,6 +78,23 @@ spec:
     # new v25
     sc_is_multiple_az: false
     sc_generate_sample_network_policies: false
+    images:
+      keytool_job_container:
+        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-jobcontainer
+        tag: "${CP4BA_INST_IMGTAG}"
+      dbcompatibility_init_container:
+        repository: cp.icr.io/cp/cp4a/baw/dba-dbcompatibility-initcontainer
+        tag: "${CP4BA_INST_IMGTAG}"
+      keytool_init_container:
+        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-initcontainer
+        tag: "${CP4BA_INST_IMGTAG}"
+      umsregistration_initjob:
+        repository: cp.icr.io/cp/cp4a/baw/dba-umsregistration-initjob
+        tag: "${CP4BA_INST_IMGTAG}"
+
+      ## All CP4A components should use this pull_policy as the default, but it can override by each component
+      pull_policy: IfNotPresent
+
     sc_drivers_url:
 
   ldap_configuration:
@@ -162,7 +179,31 @@ spec:
       dc_hadr_retry_interval_for_client_reroute: 15
       dc_hadr_max_retries_for_client_reroute: 3
 
+    dc_cpe_datasources:
+    - database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_chos"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      dc_common_conn_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1_CONN_NAME}"
+      dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
+      dc_common_cpe_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}XA"
+      dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      dc_os_label: ${CP4BA_INST_DB_CHOS_LBL}
+
     dc_os_datasources:
+      - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_os_label: "${CP4BA_INST_DB_OS_LBL}"
+        dc_common_os_datasource_name: "FNOS1DS"
+        dc_common_os_xa_datasource_name: "FNOS1DSXA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+        database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_os1"
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
       - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWDOCS_LBL}"
         dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
@@ -263,6 +304,16 @@ spec:
 
       object_stores:
 
+        # - oc_cpe_obj_store_display_name: "OS01"
+        #   oc_cpe_obj_store_symb_name: "OS01"
+        #   oc_cpe_obj_store_conn:
+        #     name: "objectstore1_connection"
+        #     dc_os_datasource_name: "FNOS1DS"
+        #     dc_os_xa_datasource_name: "FNOS1DSXA"
+        #   oc_cpe_obj_store_admin_user_groups:
+        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_conn:
@@ -327,7 +378,7 @@ spec:
           oc_cpe_obj_store_admin_user_groups:
             - "${CP4BA_INST_PAKBA_ADMIN_USER}"
             - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          oc_cpe_obj_store_enable_content_event_emitter: false
+          oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
           oc_cpe_obj_store_enable_workflow: false
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
@@ -396,6 +447,56 @@ spec:
           add_desktop_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
           add_desktop_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
 
+  ## BAI
+  bai_configuration:
+    # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=baip-event-processing-parameters
+    
+    # bai_secret: custom-bai-secret
+
+    # settings:
+    #   egress: ${CP4BA_INST_BAI_EGRESS}
+
+    business_performance_center:
+      install: ${CP4BA_INST_BAI_BPC_WORKFORCE}
+      workforce_insights_secret: ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
+
+    bpmn:
+      install: ${CP4BA_INST_BAI_BPMN}
+      force_elasticsearch_timeseries: ${CP4BA_INST_BAI_FORCE_TIMESERIES}
+      end_aggregation_delay: ${CP4BA_INST_BAI_END_AGGR_DELAY}
+      force_opensearch_timeseries: ${CP4BA_INST_BAI_FORCE_TIMESERIES}
+    bawadv:
+      install: ${CP4BA_INST_BAI_BAWADV}
+    content:
+      install: ${CP4BA_INST_BAI_CONTENT}
+    event_forwarder:
+      install: ${CP4BA_INST_BAI_EVENT_FWD}
+    flink:
+      additional_task_managers: ${CP4BA_INST_BAI_FLINK_ADDITIONAL_TASK_MGRS}
+      create_route: ${CP4BA_INST_BAI_FLINK_ROUTE}
+    icm:
+      install: ${CP4BA_INST_BAI_ICM}
+    navigator:
+      install: ${CP4BA_INST_BAI_NAVIGATOR}
+    ads:
+      install: ${CP4BA_INST_BAI_ADS}
+    odm:
+      install: ${CP4BA_INST_BAI_ODM}
+
+  ## BAML
+  baml_configuration:
+    workforce_insights:
+      replicas: ${CP4BA_INST_BAML_REPLICAS}
+      resources:
+        limits:
+          cpu: ${CP4BA_INST_BAML_RES_LIMITS_CPU}
+          memory: ${CP4BA_INST_BAML_RES_LIMITS_MEM}
+        requests:
+          cpu: ${CP4BA_INST_BAML_RES_REQS_CPU}
+          memory: ${CP4BA_INST_BAML_RES_REQS_MEM}
+    intelligent_task_prioritization:
+      retrain_model_schedule: "${CP4BA_INST_BAML_RETRAIN_MODEL_SCHEDULE}"
+
   # IBM Business Automation Workflow Authoring configuration
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-studio
   bastudio_configuration:
@@ -451,6 +552,18 @@ spec:
       custom_package_names: ""
       custom_extension_names: ""
       cpe_metadata_cache_time_to_live: ""
+
+      event_emitter:
+      - casetype_list: '*'
+        connection_point_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}
+        date_sql: ${CP4BA_INST_BAI_EVENT_EMITTER_DATE_SQL}
+        logical_unique_id: ${CP4BA_INST_BAI_EVENT_EMITTER_UNIQUE_ID}
+        solution_list: '*'
+        tos_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}
+      case_history_emitter:
+        case_history_store_schema_name: ${CP4BA_INST_DB_CHOS_USER} # schema name = owner name = user name
+        dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
+        enable: true
 
     ## Application engine configuration, because application engine is an array,
     ## when there is only one Application engine deployed along with this CR, below four parameters are not required.
@@ -543,6 +656,19 @@ spec:
     #  kubectl create secret generic wfs-lombardi-custom-xml-secret --from-file=sensitiveCustomConfig=./100Custom.xml
     lombardi_custom_xml_secret_name: my-lombardi-custom-xml-secret
 
+    ##  IBM Business Automation Insights integration configuration
+    business_event:
+      enable: true
+      enable_task_record: true
+      enable_task_api: true
+      subscription:
+      - app_name: '*'
+        component_name: '*'
+        component_type: '*'
+        element_name: '*'
+        element_type: '*'
+        nature: '*'
+        version: '*'
 
   workflow_assistant_configuration:
     run_authoring_agent: ${CP4BA_RUN_AUTHORING_AGENT}
@@ -585,6 +711,11 @@ spec:
     ## Navigator secret that contains user credentials for LDAP and database
     ban_secret_name: ibm-ban-secret
     replica_count: 1
+    image:
+      ## The default repository is the IBM Entitled Registry
+      repository: cp.icr.io/cp/cp4a/ban/navigator
+      tag: "${CP4BA_INST_IMGTAG}"
+      pull_policy: IfNotPresent
     log:
       format: json
     resources:

@@ -78,23 +78,6 @@ spec:
 
     sc_is_multiple_az: false
     sc_generate_sample_network_policies: false
-    images:
-      keytool_job_container:
-        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-jobcontainer
-        tag: "${CP4BA_INST_IMGTAG}"
-      dbcompatibility_init_container:
-        repository: cp.icr.io/cp/cp4a/baw/dba-dbcompatibility-initcontainer
-        tag: "${CP4BA_INST_IMGTAG}"
-      keytool_init_container:
-        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-initcontainer
-        tag: "${CP4BA_INST_IMGTAG}"
-      umsregistration_initjob:
-        repository: cp.icr.io/cp/cp4a/baw/dba-umsregistration-initjob
-        tag: "${CP4BA_INST_IMGTAG}"
-
-      ## All CP4A components should use this pull_policy as the default, but it can override by each component
-      pull_policy: IfNotPresent
-
     sc_drivers_url:
 
   # type: OpenLDAP
@@ -531,26 +514,6 @@ spec:
         ## `kubectl create secret generic baw_custom_trusted_keystore_secret --from-file=truststorefile=./trust.p12 --from-literal=type=PKCS12  --from-literal=password=WebAS`
         tls_trust_store: ''
 
-      # new v25
-      image:
-        ## Workflow Server (Process Server) image repository URL.
-        repository: cp.icr.io/cp/cp4a/baw/workflow-server
-        ## Image tag for Workflow Server container.
-        tag: "${CP4BA_INST_IMGTAG}"
-        ## Pull policy for Workflow Server container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
-        pull_policy: IfNotPresent
-        
-      # new v25
-      upgrade_job:
-        ## Workflow Server database handling image repository URL.
-        repository: cp.icr.io/cp/cp4a/baw/workflow-server-dbhandling
-        ## Workflow Server database handling image repository tag.
-        tag: "${CP4BA_INST_IMGTAG}"
-        ## Pull policy for database handling. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
-        pull_policy: IfNotPresent
-        ## The trace Specification for database handling job, the trace is disabled by default, you can enable it when the job fails, the sample trace specification is WLE.*=all:com.ibm.bpm.*=all:com.ibm.workflow.*=all
-        trace_specification: ""
-
       # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
       #process_federation_server:
       #  hostname:
@@ -559,13 +522,6 @@ spec:
 
       ## The configurations for content integration for attachment in process
       content_integration:
-        init_job_image:
-          ## Image name for content integration container.
-          repository: cp.icr.io/cp/cp4a/baw/iaws-ps-content-integration
-          ## Image tag for content integration container.
-          tag: "${CP4BA_INST_IMGTAG}"
-          ## Pull policy for content integration container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
-          pull_policy: IfNotPresent
         ## Domain name for content integration. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
         domain_name: "P8DOMAIN"
         ## Object Store name for content integration.
@@ -577,13 +533,6 @@ spec:
 
       # The configuration for case
       case:
-        init_job_image:
-          ## Image name for CASE init job container.
-          repository: cp.icr.io/cp/cp4a/baw/workflow-server-case-initialization
-          ## Image tag for CASE init job container.
-          tag: "${CP4BA_INST_IMGTAG}"
-          ## Pull policy for CASE init job container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
-          pull_policy: IfNotPresent
       
         ## Domain name for CASE. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
         domain_name: "P8DOMAIN"
@@ -649,11 +598,6 @@ spec:
     ## Navigator secret that contains user credentials for LDAP and database
     ban_secret_name: ibm-ban-secret
     replica_count: 1
-    image:
-      ## The default repository is the IBM Entitled Registry
-      repository: cp.icr.io/cp/cp4a/ban/navigator
-      tag: "${CP4BA_INST_IMGTAG}"
-      pull_policy: IfNotPresent
     log:
       format: json
     resources:
