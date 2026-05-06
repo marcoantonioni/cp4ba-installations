@@ -576,7 +576,6 @@ spec:
     ##   ## Please adjust this value according to the App Engine instance you selected. Don't miss the slash in front of value
     ##   context_root: ""
 
-
     ## storage configuration
     storage:
       use_dynamic_provisioning: ${CP4BA_INST_BAWAUTHORING_STORAGE_DYNAMIC_PROVISIONING}

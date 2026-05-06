@@ -484,7 +484,6 @@ spec:
     ##   ## Please adjust this value according to the App Engine instance you selected. Don't miss the slash in front of value
     ##   context_root: ""
 
-
     ## storage configuration
     storage:
       use_dynamic_provisioning: ${CP4BA_INST_BAWAUTHORING_STORAGE_DYNAMIC_PROVISIONING}
@@ -560,7 +559,6 @@ spec:
     #  kubectl create secret generic wfs-lombardi-custom-xml-secret --from-file=sensitiveCustomConfig=./100Custom.xml
     lombardi_custom_xml_secret_name: my-lombardi-custom-xml-secret
 
-
   workflow_assistant_configuration:
     run_authoring_agent: ${CP4BA_RUN_AUTHORING_AGENT}
     run_workplace_agent: ${CP4BA_RUN_WORKPLACE_AGENT}
@@ -604,8 +602,7 @@ spec:
     replica_count: 1
     image:
       ## The default repository is the IBM Entitled Registry
-      repository: cp.icr.io/cp/cp4a/ban/navigator
-      
+      repository: cp.icr.io/cp/cp4a/ban/navigator      
       pull_policy: IfNotPresent
     log:
       format: json

@@ -149,7 +149,6 @@ spec:
       group_object_class_attribute: "groupOfNames"
       group_members_attribute: "member"
 
-
   ## BAI
   bai_configuration:
     # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=baip-event-processing-parameters
