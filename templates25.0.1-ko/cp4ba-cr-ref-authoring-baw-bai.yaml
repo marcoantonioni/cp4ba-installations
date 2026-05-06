@@ -17,10 +17,9 @@
 ##
 ## DEPLOYMENT CONTENTS
 ## 
-## patterns: foundation,workflow
+## patterns: foundation,baw_authoring
 ##
-## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-runtime-workstream-services
-## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=scp-shared-configuration
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-authoring
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
@@ -76,28 +75,24 @@ spec:
     no_log: false
     show_sensitive_log: true
 
+    # new v25
     sc_is_multiple_az: false
     sc_generate_sample_network_policies: false
     images:
       keytool_job_container:
         repository: cp.icr.io/cp/cp4a/baw/dba-keytool-jobcontainer
-        tag: "${CP4BA_INST_IMGTAG}"
       dbcompatibility_init_container:
         repository: cp.icr.io/cp/cp4a/baw/dba-dbcompatibility-initcontainer
-        tag: "${CP4BA_INST_IMGTAG}"
       keytool_init_container:
         repository: cp.icr.io/cp/cp4a/baw/dba-keytool-initcontainer
-        tag: "${CP4BA_INST_IMGTAG}"
       umsregistration_initjob:
         repository: cp.icr.io/cp/cp4a/baw/dba-umsregistration-initjob
-        tag: "${CP4BA_INST_IMGTAG}"
 
       ## All CP4A components should use this pull_policy as the default, but it can override by each component
       pull_policy: IfNotPresent
 
     sc_drivers_url:
 
-  # type: OpenLDAP
   ldap_configuration:
     lc_selected_ldap_type: "Custom"
     lc_ldap_server: "${CP4BA_INST_LDAP_HOST}"
@@ -120,7 +115,7 @@ spec:
       lc_user_filter: "(&(cn=%v)(objectclass=person))"
       lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
 
-    # OpenLDAP compatible
+    # new v25 (to be verified...)
     scim_configuration_iam:
       user_unique_id_attribute: "uid"
       user_name_attribute: "cn"
@@ -180,30 +175,30 @@ spec:
       dc_hadr_retry_interval_for_client_reroute: 15
       dc_hadr_max_retries_for_client_reroute: 3
 
-    #dc_cpe_datasources:
-    #- database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_chos"
-    #  database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-    #  database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-    #  dc_common_conn_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1_CONN_NAME}"
-    #  dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
-    #  dc_common_cpe_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}XA"
-    #  dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-    #  dc_os_label: ${CP4BA_INST_DB_CHOS_LBL}
-#
+    dc_cpe_datasources:
+    - database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_chos"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      dc_common_conn_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1_CONN_NAME}"
+      dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
+      dc_common_cpe_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}XA"
+      dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      dc_os_label: ${CP4BA_INST_DB_CHOS_LBL}
+
     dc_os_datasources:
-      #- dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #  dc_os_label: "${CP4BA_INST_DB_OS_LBL}"
-      #  dc_common_os_datasource_name: "FNOS1DS"
-      #  dc_common_os_xa_datasource_name: "FNOS1DSXA"
-      #  database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-      #  database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_os1"
-      #  database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #  database_ssl_secret_name: ""
-      #  dc_hadr_validation_timeout: 15
-      #  dc_hadr_standby_servername: ""
-      #  dc_hadr_standby_port: ""
-      #  dc_hadr_retry_interval_for_client_reroute: 15
-      #  dc_hadr_max_retries_for_client_reroute: 3
+      - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_os_label: "${CP4BA_INST_DB_OS_LBL}"
+        dc_common_os_datasource_name: "FNOS1DS"
+        dc_common_os_xa_datasource_name: "FNOS1DSXA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+        database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_os1"
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
 
       - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWDOCS_LBL}"
@@ -379,7 +374,7 @@ spec:
           oc_cpe_obj_store_admin_user_groups:
             - "${CP4BA_INST_PAKBA_ADMIN_USER}"
             - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          oc_cpe_obj_store_enable_content_event_emitter: false
+          oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
           oc_cpe_obj_store_enable_workflow: false
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
@@ -448,165 +443,228 @@ spec:
           add_desktop_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
           add_desktop_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
 
-  # IBM Business Automation Workflow configuration
-  baw_configuration:
+  ## BAI
+  bai_configuration:
+    # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=baip-event-processing-parameters
+    
+    # bai_secret: custom-bai-secret
 
-    - name: ${CP4BA_INST_BAW_1_NAME} 
-      capabilities: "workflow"
-      host_federated_portal: false
-      admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
-      database:
-        enable_ssl: false
-        db_cert_secret_name: ""
-        type: ${CP4BA_INST_DB_SERVER_TYPE}
-        server_name: "${CP4BA_INST_BAW_1_DB_HOST}"
-        port: "${CP4BA_INST_DB_SERVER_PORT}"
-        database_name: "${CP4BA_INST_BAW_1_DB_NAME}"
-        secret_name: "${CP4BA_INST_BAW_1_DB_SECRET}"
-        use_custom_jdbc_drivers: false
-        cm_max_pool_size: ${CP4BA_INST_BAW_1_MAX_POOL_SIZE}
-      security_context:
-        selinux_options:
-        fs_groupchangepolicy:
-      # Production, Staging, Test, Development
-      env_type: Test
-      
-      # 'replicas' commented out just as workaround for operator bug (25.0.1) 
-      # replicas: ${CP4BA_INST_BAW_1_REPLICAS}
-      
+    # settings:
+    #   egress: ${CP4BA_INST_BAI_EGRESS}
+
+    business_performance_center:
+      install: ${CP4BA_INST_BAI_BPC_WORKFORCE}
+      workforce_insights_secret: ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
+
+    bpmn:
+      install: ${CP4BA_INST_BAI_BPMN}
+      force_elasticsearch_timeseries: ${CP4BA_INST_BAI_FORCE_TIMESERIES}
+      end_aggregation_delay: ${CP4BA_INST_BAI_END_AGGR_DELAY}
+      force_opensearch_timeseries: ${CP4BA_INST_BAI_FORCE_TIMESERIES}
+    bawadv:
+      install: ${CP4BA_INST_BAI_BAWADV}
+    content:
+      install: ${CP4BA_INST_BAI_CONTENT}
+    event_forwarder:
+      install: ${CP4BA_INST_BAI_EVENT_FWD}
+    flink:
+      additional_task_managers: ${CP4BA_INST_BAI_FLINK_ADDITIONAL_TASK_MGRS}
+      create_route: ${CP4BA_INST_BAI_FLINK_ROUTE}
+    icm:
+      install: ${CP4BA_INST_BAI_ICM}
+    navigator:
+      install: ${CP4BA_INST_BAI_NAVIGATOR}
+    ads:
+      install: ${CP4BA_INST_BAI_ADS}
+    odm:
+      install: ${CP4BA_INST_BAI_ODM}
+
+  ## BAML
+  baml_configuration:
+    workforce_insights:
+      replicas: ${CP4BA_INST_BAML_REPLICAS}
       resources:
         limits:
-          cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"
-          memory: "${CP4BA_INST_BAW_1_LIMITS_MEMORY}"
+          cpu: ${CP4BA_INST_BAML_RES_LIMITS_CPU}
+          memory: ${CP4BA_INST_BAML_RES_LIMITS_MEM}
         requests:
-          cpu: "500m"
-          memory: "1048Mi"
-      ## Resource configuration for init job
-      resources_init:
-        limits:
-          ## CPU limit for init job containers.
-          cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"
-          ## Memory limit for init job containers.
-          memory: 512Mi
-        requests:
-          ## Requested amount of CPU for init job containers.
-          cpu: "200m"
-          ## Requested amount of memory for init job containers.
-          memory: 128Mi
+          cpu: ${CP4BA_INST_BAML_RES_REQS_CPU}
+          memory: ${CP4BA_INST_BAML_RES_REQS_MEM}
+    intelligent_task_prioritization:
+      retrain_model_schedule: "${CP4BA_INST_BAML_RETRAIN_MODEL_SCHEDULE}"
 
-      ## Resource configuration for heavy init job such as database init job
-      resources_init_heavy_job:
-        limits:
-          ## CPU limit for Workflow Server database init job container.
-          cpu: "${CP4BA_INST_BAW_1_LIMITS_CPU}"
-          ## Memory limit for Workflow Server database init job container.
-          memory: 2048Mi
-        requests:
-          ## Requested amount of CPU for Workflow Server database init job container.
-          cpu: "500m"
-          ## Requested amount of memory for Workflow Server database init job container.
-          memory: 512Mi
-      logs:
-        trace_specification: "${CP4BA_INST_BAW_1_LOGS_TRACE}"
-      jms:
-        storage:
-          use_dynamic_provisioning: true
-          storage_class: "${CP4BA_INST_SC_FILE}"
-      storage:
-        use_dynamic_provisioning: true
-        sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-        sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
-      tls:
-        ## Workflow Server TLS secret that contains tls.key and tls.crt.
-        ## If you want to use a customized Workflow Server TLS certificate, ensure it is signed by the CA in shared_configuration.root_ca_secret.
-        ## If you do not want to use a customized Workflow Server TLS certificate, leave it empty.
-        tls_secret_name: ''
-        ## Workflow Server TLS trust list.
-        ## You might specify a list of secrets, every secret stores a trusted CA
-        ## Use command `kubectl create secret generic baw_custom_trust_ca_secret1 --from-file=tls.crt=./ca1.crt` to generate the secret.
-        tls_trust_list: []
-        ## Secret to store your custom trusted keystore (optional). The type for the keystore must be JKS or PKCS12. All certificates from the keystore are imported into the trust keystore of the Workflow Server.
-        ## When FIPS mode is enabled, you cannot use this parameter, and external sourced trust stores are not supported.
-        ## You might run the following sample command to create the secret:
-        ## `kubectl create secret generic baw_custom_trusted_keystore_secret --from-file=truststorefile=./trust.p12 --from-literal=type=PKCS12  --from-literal=password=WebAS`
-        tls_trust_store: ''
+  # IBM Business Automation Workflow Authoring configuration
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-studio
+  bastudio_configuration:
+    admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
+    bastudio_custom_xml: |
+      <properties>
+        <authoring-environment>
+          <authoring-agent-endpoint merge="replace">https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX}/agent</authoring-agent-endpoint>
+        </authoring-environment>
+      </properties>
+    database:
+      host: ${CP4BA_INST_DB_1_SERVER_NAME}
+      name: ${CP4BA_INST_BAS_1_DB_BAW_NAME}
+      port: "${CP4BA_INST_BAS_1_DB_PORT}"
+      type: ${CP4BA_INST_DB_SERVER_TYPE}
+    playback_server:
+      admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
+      database:
+        host: ${CP4BA_INST_DB_1_SERVER_NAME}
+        name: ${CP4BA_INST_BAS_1_DB_PBK_NAME}
+        port: "${CP4BA_INST_BAS_1_DB_PORT}"
+        type: ${CP4BA_INST_DB_SERVER_TYPE}
+    tls:
+      tlsTrustList: []
+    resources:
+      bastudio:
+        limits:          
+          cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
+          memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
 
-      # new v25
-      image:
-        ## Workflow Server (Process Server) image repository URL.
-        repository: cp.icr.io/cp/cp4a/baw/workflow-server
-        ## Image tag for Workflow Server container.
-        tag: "${CP4BA_INST_IMGTAG}"
-        ## Pull policy for Workflow Server container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
-        pull_policy: IfNotPresent
-        
-      # new v25
-      upgrade_job:
-        ## Workflow Server database handling image repository URL.
-        repository: cp.icr.io/cp/cp4a/baw/workflow-server-dbhandling
-        ## Workflow Server database handling image repository tag.
-        tag: "${CP4BA_INST_IMGTAG}"
-        ## Pull policy for database handling. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
-        pull_policy: IfNotPresent
-        ## The trace Specification for database handling job, the trace is disabled by default, you can enable it when the job fails, the sample trace specification is WLE.*=all:com.ibm.bpm.*=all:com.ibm.workflow.*=all
-        trace_specification: ""
+  # Business Automation Workflow Authoring
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-authoring
+  workflow_authoring_configuration:
 
-      # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
-      #process_federation_server:
-      #  hostname:
-      #  port:
-      #  context_root_prefix:
+    ## The configurations for content integration for attachment in process
+    content_integration:
+      ## Domain name for content integration. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
+      domain_name: "P8DOMAIN"
+      object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
 
-      ## The configurations for content integration for attachment in process
-      content_integration:
-        init_job_image:
-          ## Image name for content integration container.
-          repository: cp.icr.io/cp/cp4a/baw/iaws-ps-content-integration
-          ## Image tag for content integration container.
-          tag: "${CP4BA_INST_IMGTAG}"
-          ## Pull policy for content integration container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
-          pull_policy: IfNotPresent
-        ## Domain name for content integration. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
-        domain_name: "P8DOMAIN"
-        ## Object Store name for content integration.
-        ## The value must be an existing object store in CPE.
-        ## If use initialize_configuration for the object store initialization, the value must be one of initialize_configuration.ic_obj_store_creation.object_stores.
-        object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
-        ## Admin secret for connecting to Content Platform Engine (CPE). This parameter is optional. If not set, it will autodetect CPE's admin secret in the same namespace.
-        cpe_admin_secret: ""
+    ## The configuration for case
+    case:
+      ## Domain name for CASE. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
+      domain_name: "P8DOMAIN"
+      object_store_name_dos: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
+      tos_list:
+      - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
+        connection_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
+        target_environment_name: "dev_env_connection_definition"
+        is_default: true
 
-      # The configuration for case
-      case:
-        init_job_image:
-          ## Image name for CASE init job container.
-          repository: cp.icr.io/cp/cp4a/baw/workflow-server-case-initialization
-          ## Image tag for CASE init job container.
-          tag: "${CP4BA_INST_IMGTAG}"
-          ## Pull policy for CASE init job container. Default value is IfNotPresent. Possible values are IfNotPresent, Always.
-          pull_policy: IfNotPresent
-      
-        ## Domain name for CASE. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
-        domain_name: "P8DOMAIN"
-        ## Design Object Store name of CASE.
-        ## The value must be the same as the oc_cpe_obj_store_symb_name value of one of the object stores defined in initialize_configuration.ic_obj_store_creation.object_stores.
-        object_store_name_dos: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
-        
-        tos_list:
-        ## The tos_list is a list. You can deploy multiple Target Object Stores.
-        ## For each Target Object Store, the object_store_name value must be the same as the oc_cpe_obj_store_symb_name value of one of the object stores defined in initialize_configuration.ic_obj_store_creation.object_stores.
-        - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
-          connection_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
-          desktop_id: "baw"
-          target_environment_name: "target_env"          
-          is_default: true
+      network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
+      custom_package_names: ""
+      custom_extension_names: ""
+      cpe_metadata_cache_time_to_live: ""
 
-        ## Persistent volume claim (PVC) name for case network shared directory.
-        ## This parameter must be set to the same value as the Business Automation Navigator pvc_for_icn_pluginstore parameter.
-        ## If navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore is not specified explicitly, the default value is icn-pluginstore.
-        network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
-        custom_package_names: ""
-        custom_extension_names: ""
-        cpe_metadata_cache_time_to_live: ""
+      event_emitter:
+      - casetype_list: '*'
+        connection_point_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}
+        date_sql: ${CP4BA_INST_BAI_EVENT_EMITTER_DATE_SQL}
+        logical_unique_id: ${CP4BA_INST_BAI_EVENT_EMITTER_UNIQUE_ID}
+        solution_list: '*'
+        tos_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}
+      case_history_emitter:
+        case_history_store_schema_name: ${CP4BA_INST_DB_CHOS_USER} # schema name = owner name = user name
+        dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
+        enable: true
+
+    ## Application engine configuration, because application engine is an array,
+    ## when there is only one Application engine deployed along with this CR, below four parameters are not required.
+    ## when there is more then one application engine deployed, below four parameters are required.
+    ## appengine:
+    ##   ## App Engine hostname
+    ##   hostname: ""
+    ##   ## App Engine port
+    ##   port: "443"
+    ##   ## App Engine admin secret name
+    ##   admin_secret_name: ""
+    ##   ## App Engine context root.
+    ##   ## The application default context root will be /{{ meta.name}}-{{ application engine instance name }}-aae
+    ##   ## Please adjust this value according to the App Engine instance you selected. Don't miss the slash in front of value
+    ##   context_root: ""
+
+
+    ## storage configuration
+    storage:
+      use_dynamic_provisioning: ${CP4BA_INST_BAWAUTHORING_STORAGE_DYNAMIC_PROVISIONING}
+      size_for_filestore: "${CP4BA_INST_BAWAUTHORING_STORAGE_SIZE}"
+
+    ## customize environment settings
+    environment_config:
+      ## Whether to show the Intelligent Task Prioritization service toggle button in the web user interface to allow the user to enable or disable this service.
+      show_task_prioritization_service_toggle: ${CP4BA_INST_BAWAUTHORING_TASK_PRIORITIZATION_SERVICE_TOGGLE}
+      ## Whether to display the Intelligent Task Prioritization service toggle button. If this parameter is set to true, the previous parameter is ignored.
+      always_run_task_prioritization_service: ${CP4BA_INST_BAWAUTHORING_ALWAYS_RUN_TASK_PRIORITIZATION_SERVICE}
+
+      # csrf:
+      #   ## Acceptable values in the Origin header field. The value of this property must be a comma-separated list of prefixes in the format protocol://host:port, e.g "https://example.com, http://example2.com:8080".
+      #   origin_allowlist:
+      #   ## Acceptable values in the Referer header field. The value of this property must be a comma-separated list of fully qualified host names, e.g "example1.com, example2.com".
+      #   referer_allowlist:
+      # Content security policy additional directive for all folders , e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_all: []
+      # ## Content security policy additional directive for default-src , e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_default_src: []
+      # ## Content security policy additional directive for script-src , e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_script_src: []
+      # ## Content security policy additional directive for frame-src , e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_frame_src: []
+      # ## Content security policy additional directive for object-src , e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_object_src: []
+      # ## Content security policy additional directive for connect-src , e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_connect_src: []
+      # ## Content security policy additional directive for frame-ancestor, e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_frame_ancestor: []
+      # ## Content security policy additional directive for img-src, e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_img_src: []
+      # ## Content security policy additional directive for font-src, e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_font_src: []
+      # ## Content security policy additional directive for style-src, e.g. ["https://hostname1","https://hostname2"]
+      # content_security_policy_additional_style_src: []
+
+    ## federation config
+    federation_config:
+      # workflow_server:
+      #     ## Number of primary shards of the Elasticsearch/Opensearch index used to store Workflow Authoring data.
+      #     index_number_of_shards: 3
+      #     ## Number of shard replicas of the Elasticsearch/Opensearch index used to store Workflow Authoring data.
+      #     index_number_of_replicas: 1
+      case_manager:
+            ## Case Manager object store name.
+          - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
+            ## Number of primary shards of the Elasticsearch/Opensearch index used to store Case Manager object store data.
+            # index_number_of_shards: 3
+            ## Number of shard replicas of the Elasticsearch/Opensearch index used to store Case Manager object store data.
+            # index_number_of_replicas: 1
+
+    ## JVM options separated with spaces, for example: -Dtest1=test -Dtest2=test2.
+    ## jvm_customize_options:
+
+    ##  Workflow Authoring custom plain XML snippet
+    ##  liberty_custom_xml: |+
+    ##    <server>
+    ##      <!-- custom propeties here -->
+    ##    </server>
+    ## The custom_xml_secret_name is also used for Workflow Authoring customization. Ensure the configuration value exists either in liberty_custom_xml or custom_xml_secret_name.
+    ## Do not set the configuration value in both places.
+    ## liberty_custom_xml:
+
+    ## Workflow Authoring custom XML secret name that contains custom configuration in Liberty server.xml,
+    ## put the custom.xml in secret with key "sensitiveCustomConfig"
+    ## kubectl create secret generic wfs-custom-xml-secret --from-file=sensitiveCustomConfig=./custom.xml
+    ## The liberty_custom_xml property is also used for Workflow Authoring customization. Ensure the configuration value exists either in liberty_custom_xml or custom_xml_secret_name.
+    ## Do not set the configuration value in both places
+    custom_xml_secret_name: my-liberty-custom-xml-secret
+
+    #  kubectl create secret generic wfs-lombardi-custom-xml-secret --from-file=sensitiveCustomConfig=./100Custom.xml
+    lombardi_custom_xml_secret_name: my-lombardi-custom-xml-secret
+
+    ##  IBM Business Automation Insights integration configuration
+    business_event:
+      enable: true
+      enable_task_record: true
+      enable_task_api: true
+      subscription:
+      - app_name: '*'
+        component_name: '*'
+        component_type: '*'
+        element_name: '*'
+        element_type: '*'
+        nature: '*'
+        version: '*'
 
   workflow_assistant_configuration:
     run_authoring_agent: ${CP4BA_RUN_AUTHORING_AGENT}
@@ -652,7 +710,6 @@ spec:
     image:
       ## The default repository is the IBM Entitled Registry
       repository: cp.icr.io/cp/cp4a/ban/navigator
-      tag: "${CP4BA_INST_IMGTAG}"
       pull_policy: IfNotPresent
     log:
       format: json
@@ -678,8 +735,6 @@ spec:
     monitor_enabled: false
     logging_enabled: false
 
-    ## Persistent Volume Claims for ICN.  If the storage_configuration in the shared_configuration is configured,
-    ## the Operator will create the PVC using the names below.
     datavolume:
       existing_pvc_for_icn_cfgstore: 
         name: "icn-cfgstore"
@@ -700,7 +755,6 @@ spec:
         name: "icn-asperastore" 
         size: 1Gi
 
-    ## Default values for both rediness and liveness probes.  Modify these values to meet your requirements.
     probe:
       startup:
         initial_delay_seconds: 120
@@ -716,8 +770,6 @@ spec:
         timeout_seconds: 5
         failure_threshold: 6
 
-    ## Only use this parameter if you want to override the image_pull_secrets setting in the shared_configuration above.
     image_pull_secrets:
       name: "ibm-entitlement-key"
-    ## BAN Sync services work with Zen URL by default, change it to false to use BAN Route URL.
     use_sync_with_zen_url: true

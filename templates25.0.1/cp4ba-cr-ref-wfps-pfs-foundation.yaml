@@ -74,6 +74,23 @@ spec:
 
     sc_is_multiple_az: false
     sc_generate_sample_network_policies: false
+    images:
+      keytool_job_container:
+        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-jobcontainer
+        
+      dbcompatibility_init_container:
+        repository: cp.icr.io/cp/cp4a/baw/dba-dbcompatibility-initcontainer
+        
+      keytool_init_container:
+        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-initcontainer
+        
+      umsregistration_initjob:
+        repository: cp.icr.io/cp/cp4a/baw/dba-umsregistration-initjob
+        
+
+      ## All CP4A components should use this pull_policy as the default, but it can override by each component
+      pull_policy: IfNotPresent
+
     sc_drivers_url:
 
   # type: OpenLDAP

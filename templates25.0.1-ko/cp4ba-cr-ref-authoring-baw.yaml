@@ -78,23 +78,6 @@ spec:
     # new v25
     sc_is_multiple_az: false
     sc_generate_sample_network_policies: false
-    images:
-      keytool_job_container:
-        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-jobcontainer
-        tag: "${CP4BA_INST_IMGTAG}"
-      dbcompatibility_init_container:
-        repository: cp.icr.io/cp/cp4a/baw/dba-dbcompatibility-initcontainer
-        tag: "${CP4BA_INST_IMGTAG}"
-      keytool_init_container:
-        repository: cp.icr.io/cp/cp4a/baw/dba-keytool-initcontainer
-        tag: "${CP4BA_INST_IMGTAG}"
-      umsregistration_initjob:
-        repository: cp.icr.io/cp/cp4a/baw/dba-umsregistration-initjob
-        tag: "${CP4BA_INST_IMGTAG}"
-
-      ## All CP4A components should use this pull_policy as the default, but it can override by each component
-      pull_policy: IfNotPresent
-
     sc_drivers_url:
 
   ldap_configuration:
@@ -602,11 +585,6 @@ spec:
     ## Navigator secret that contains user credentials for LDAP and database
     ban_secret_name: ibm-ban-secret
     replica_count: 1
-    image:
-      ## The default repository is the IBM Entitled Registry
-      repository: cp.icr.io/cp/cp4a/ban/navigator
-      tag: "${CP4BA_INST_IMGTAG}"
-      pull_policy: IfNotPresent
     log:
       format: json
     resources:
