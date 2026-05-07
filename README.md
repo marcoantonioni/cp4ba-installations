@@ -768,6 +768,8 @@ https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=parameters
 
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/24.0.0?topic=parameters-event-processing
 
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-datasource
+
 ## Content
 https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=containers-administering
 https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=resource-creating-volumes-folders-deployment
