@@ -123,6 +123,12 @@ checkPrereqTools () {
     exit 1
   fi
 
+  which podman &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo -e "${_CLR_RED}[✗] Error, podman not installed, cannot proceed.${_CLR_NC}"
+    exit 1
+  fi
+
 
   which jq &>/dev/null
   if [[ $? -ne 0 ]]; then
