@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-05-05</i> (see changelog.md for details)
+<i>Last update: 2026-05-07</i> (see changelog.md for details)
 
 ## Description of the contents of this repository
 
@@ -64,6 +64,16 @@ You need to install OpenSSL and add it to path.
 ```
 brew install openssl@3.5 
 export PATH="/opt/homebrew/opt/openssl@3/bin:$PATH"
+```
+
+### AWK and mac users
+AWK in macos is quite different from awk in linux, commands used in 'cp4ba-tls-update-ep.sh' doesn't works.
+
+The awk split_after breaks in macos.
+```
+# TBD: Looking for a compatible solution...
+
+oc get secret -n ${_SOURCE_SECRET_NAMESPACE} ${_SOURCE_SECRET_NAME} -o jsonpath='{.data.tls\.crt}' | base64 -d | awk 'split_after==1{n++;split_after=0} /-----END CERTIFICATE-----/ {split_after=1} {if(length($0) > 0) print > "'${_INST_TMP_FOLDER}'/cp4ba-ep-'${_RND_}'-cert" n ".pem"}'
 ```
 
 **Mac users: If you are using a Mac environment, make sure that the LibreSSL distribution and its version are compatible with latest OpenSSL version.**
