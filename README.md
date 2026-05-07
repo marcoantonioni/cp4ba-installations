@@ -744,6 +744,12 @@ https://www.ibm.com/docs/en/filenet-p8-platform/5.5.12?topic=vtpiicd-creating-po
 
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=cfcmdswrps-creating-secrets-protect-sensitive-filenet-content-manager-configuration-data
 
+## External Postgres database
+https://www.ibm.com/docs/en/cloud-paks/foundational-services/4.x_cd?topic=im-setting-up-external-postgresql-database-server
+
+https://www.ibm.com/docs/en/cloud-paks/foundational-services/4.x_cd?topic=management-configuring-external-postgresql-database-im
+
+
 ## Configuration parameters
 
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/24.0.0?topic=reference-custom-resource-configuration-parameters
