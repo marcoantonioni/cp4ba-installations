@@ -45,6 +45,8 @@ These tools were developed starting from CP4BA v23.0.2 and Case Installation Man
 
 The CRs in yaml format that you will find in the configuration examples may not be backwards compatible.
 
+**Note: The 'main' branch contains code and configurations updated to the latest available version of CP4BA. The bash script code is kept as backwards compatible as possible with previous versions. Configuration files and templates from older versions may no longer be valid (I don't constantly test older configurations). If you need specific configuration files for older versions and scripts that have been tested, you can refer to the various branches (e.g., v25, etc.).**
+
 ## Mandatory and optional tools for running scripts
 
 A linux box (scripts are only available in the bash shell)
@@ -57,7 +59,11 @@ A linux box (scripts are only available in the bash shell)
 
 'envsubst' (mandatory)
 
+'curl' (mandatory)
+
 'openssl' client tool (mandatory)
+
+'podman' (mandatory)
 
 ### OpenSSL and mac users
 You need to install OpenSSL and add it to path.
@@ -65,6 +71,7 @@ You need to install OpenSSL and add it to path.
 brew install openssl@3.5 
 export PATH="/opt/homebrew/opt/openssl@3/bin:$PATH"
 ```
+**Make sure that the LibreSSL distribution and its version are compatible with latest OpenSSL version.**
 
 ### AWK and mac users
 AWK in macos is quite different from awk in linux, commands used in 'cp4ba-tls-update-ep.sh' doesn't works.
@@ -78,8 +85,6 @@ brew install gawk
 BREW_PATH=/opt/homebrew
 export PATH="$BREW_PATH/opt/gawk/libexec/gnubin:$PATH"
 ```
-
-**Mac users: If you are using a Mac environment, make sure that the LibreSSL distribution and its version are compatible with latest OpenSSL version.**
 
 ## Prerequisites for the Openshift cluster
 
