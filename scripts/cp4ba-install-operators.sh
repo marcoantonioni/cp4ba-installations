@@ -15,6 +15,40 @@ _CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
+#----------------------------------------------------
+_SCRIPT_PATH="${BASH_SOURCE}"
+while [ -L "${_SCRIPT_PATH}" ]; do
+  _SCRIPT_DIR="$(cd -P "$(dirname "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+  _SCRIPT_PATH="$(readlink "${_SCRIPT_PATH}")"
+  [[ ${_SCRIPT_PATH} != /* ]] && _SCRIPT_PATH="${_SCRIPT_DIR}/${_SCRIPT_PATH}"
+done
+_SCRIPT_PATH="$(readlink -f "${_SCRIPT_PATH}")"
+_SCRIPT_DIR="$(cd -P "$(dirname -- "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+
+#----------------------------------------------------
+source $_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh
+if [[ -z "${CP4BA_LOGGING_ENABLED}" ]]; then 
+  export CP4BA_LOGGING_ENABLED=true
+fi
+if [[ -z "${CP4BA_LOG_LEVEL}" ]]; then 
+  export CP4BA_LOG_LEVEL="INFO"
+fi
+if [[ -z "${CP4BA_LOG_TO_CONSOLE}" ]]; then 
+  export CP4BA_LOG_TO_CONSOLE=true
+fi
+if [[ -z "${CP4BA_LOG_TO_FILE}" ]]; then 
+  export CP4BA_LOG_TO_FILE=false
+fi
+if [[ -z "${CP4BA_LOG_FILE}" ]]; then 
+  export CP4BA_LOG_FILE=""
+fi
+if [[ -z "${CP4BA_LOG_MAX_SIZE}" ]]; then 
+  export CP4BA_LOG_MAX_SIZE=$((10 * 1024 * 1024))
+fi
+if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then 
+  export CP4BA_LOG_BACKUP_COUNT=5
+fi
+
 #--------------------------------------------------------
 # read command line params
 while getopts c:s: flag
@@ -26,21 +60,21 @@ do
 done
 
 usage () {
-  echo ""
-  echo -e "${_CLR_GREEN}usage: $_me
+  log_msg ""
+  log_msg "${_CLR_GREEN}usage: $_me
     -c full-path-to-config-file
        (eg: '../configs/env1.properties')
     -s full-path-to-folder-for-case-package-manager${_CLR_NC}"
 }
 
 if [[ -z "${_CFG}" ]]; then
-  echo "Configuration file name empty"
+  log_error "Configuration file name empty"
   usage
   exit 1
 fi
 
 if [[ ! -f "${_CFG}" ]]; then
-  echo "Configuration file not found: "${_CFG}
+  log_error "Configuration file not found: "${_CFG}
   usage
   exit 1
 fi
@@ -53,12 +87,12 @@ source "${_CFG}"
 checkPrereqTools () {
   which jq &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
     exit 1
   fi
   which openssl &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
+    log_warning "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
   fi
 }
 
@@ -74,49 +108,49 @@ storageClassExist () {
 checkPrereqVars () {
   _OK_VARS=1
   if [[ -z "${CP4BA_AUTO_CLUSTER_USER}" ]]; then
-    echo -e "${_CLR_RED}[✗] var CP4BA_AUTO_CLUSTER_USER not set, export it in your bash shell and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] var CP4BA_AUTO_CLUSTER_USER not set, export it in your bash shell and rerun.${_CLR_NC}"
     _OK_VARS=0
   fi
 
   if [[ -z "${CP4BA_AUTO_ENTITLEMENT_KEY}" ]]; then
-    echo -e "${_CLR_RED}[✗] var CP4BA_AUTO_ENTITLEMENT_KEY not set, export it in your bash shell and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] var CP4BA_AUTO_ENTITLEMENT_KEY not set, export it in your bash shell and rerun.${_CLR_NC}"
     _OK_VARS=0
   fi
 
   if [[ -z "${CP4BA_INST_TYPE}" ]]; then
-    echo -e "${_CLR_RED}[✗] var CP4BA_INST_TYPE not set, update your configuration file and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] var CP4BA_INST_TYPE not set, update your configuration file and rerun.${_CLR_NC}"
     _OK_VARS=0
   else
     if [[ "${CP4BA_INST_TYPE}" != "starter" ]] && [[ "${CP4BA_INST_TYPE}" != "production" ]]; then
-      echo -e "${_CLR_RED}[✗] var CP4BA_INST_TYPE must be 'starter' or 'production', update your configuration file and rerun.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] var CP4BA_INST_TYPE must be 'starter' or 'production', update your configuration file and rerun.${_CLR_NC}"
       _OK_VARS=0
     fi
   fi
 
   if [[ -z "${CP4BA_INST_PLATFORM}" ]]; then
-    echo -e "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM not set, update your configuration file and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM not set, update your configuration file and rerun.${_CLR_NC}"
     _OK_VARS=0
   else
     if [[ "${CP4BA_INST_PLATFORM}" != "OCP" ]] && [[ "${CP4BA_INST_PLATFORM}" != "ROKS" ]]; then
-      echo -e "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM must be 'OCP' or 'ROKS', update your configuration file and rerun.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM must be 'OCP' or 'ROKS', update your configuration file and rerun.${_CLR_NC}"
       _OK_VARS=0
     fi
   fi
 
   if [[ -z "${CP4BA_INST_SC_FILE}" ]]; then
-    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not found in your OCP cluster, update your configuration file and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not found in your OCP cluster, update your configuration file and rerun.${_CLR_NC}"
     _OK_VARS=0
   fi
 
   storageClassExist ${CP4BA_INST_SC_FILE}
   if [ $? -eq 0 ]; then
-    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not present in your OCP cluster${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not present in your OCP cluster${_CLR_NC}"
     _OK_VARS=0
   fi
 
   storageClassExist ${CP4BA_INST_SC_BLOCK}
   if [ $? -eq 0 ]; then
-    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_BLOCK}' not present in your OCP cluster${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_BLOCK}' not present in your OCP cluster${_CLR_NC}"
     _OK_VARS=0
   fi
 
@@ -133,9 +167,9 @@ checkPrereqVars () {
 }
 
 
-echo -e "${_CLR_NC}=============================================================="
-echo -e "Install CP4BA Operators in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
-echo -e "==============================================================${_CLR_NC}"
+log_msg "${_CLR_NC}=============================================================="
+log_msg "Install CP4BA Operators in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
+log_msg "==============================================================${_CLR_NC}"
 
 START_SECONDS=$SECONDS
 
@@ -145,7 +179,7 @@ checkPrereqVars
 # verify logged in OCP
 oc whoami 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
-  echo -e "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
+  log_error "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
   exit 1
 fi
 
@@ -162,16 +196,16 @@ EOF
 
 if [[ -z "${CP4BA_INST_ANYUID}" || "${CP4BA_INST_ANYUID}" = "true" ]]; then 
   oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
-  echo -e "${_CLR_GREEN}Install ${_CLR_YELLOW}with${_CLR_GREEN} SCC anyuid${_CLR_NC}"
+  log_msg "${_CLR_GREEN}Install ${_CLR_YELLOW}with${_CLR_GREEN} SCC anyuid${_CLR_NC}"
 else
-  echo -e "${_CLR_GREEN}Install ${_CLR_YELLOW}without${_CLR_GREEN} SCC anyuid${_CLR_NC}"
+  log_msg "${_CLR_GREEN}Install ${_CLR_YELLOW}without${_CLR_GREEN} SCC anyuid${_CLR_NC}"
 fi
 
 _OK=false
 if [[ ! -z "${_SCRIPTS}" ]]; then
   if [[ -d "${_SCRIPTS}" ]]; then
     if [[ -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
-      echo -e "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
+      log_msg "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
       _ACT_DIR=$(pwd)
       cd ${_SCRIPTS}
       export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
@@ -203,24 +237,24 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
 
       if [ $? -ne 0 ]; then
         # retry once, since v25, timeouts have been noted during operator setup...
-        echo -e "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try one more time...'"
+        log_warning "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try one more time...'"
         /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
       fi
 
       if [ $? -eq 0 ]; then
         rm ./_clusteradmin.out
-        echo -e "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
+        log_msg "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
         _OK=true
       else
         if [[ -f "./_clusteradmin.out" ]]; then
           cp ./_clusteradmin.out "${_ACT_DIR}/${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
         fi
-        echo -e "${_CLR_RED}*****************************************************************${_CLR_NC}"
-        echo -e "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
-        echo -e "${_CLR_RED}*****************************************************************${_CLR_NC}"
+        log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+        log_error "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
+        log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
         # cat ./_clusteradmin.out
-        echo -e "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
-        echo -e "${_CLR_RED}*****************************************************************${_CLR_NC}"
+        log_error "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
+        log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
       fi
       cd ${_ACT_DIR}
       
@@ -229,7 +263,7 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
 fi
 
 if [[ "${_OK}" = "false" ]]; then
-  echo -e ">>> ${_CLR_RED}\x1b[5m[✗] ERROR\x1b[25m${_CLR_NC} <<< ${_CLR_RED}CP4BA Operators not installed.${_CLR_NC}"
+  log_error ">>> ${_CLR_RED}\x1b[5m[✗] ERROR\x1b[25m${_CLR_NC} <<< ${_CLR_RED}CP4BA Operators not installed.${_CLR_NC}"
   exit 1
 fi
 
@@ -237,6 +271,6 @@ STOP_SECONDS=$SECONDS
 ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
 TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
 TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
-echo -e "CP4BA Operators installed at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+log_msg "CP4BA Operators installed at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
 
 exit 0

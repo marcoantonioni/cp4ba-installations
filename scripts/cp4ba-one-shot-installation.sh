@@ -110,6 +110,40 @@ fi
 
 source "${_CFG}"
 
+#----------------------------------------------------
+_SCRIPT_PATH="${BASH_SOURCE}"
+while [ -L "${_SCRIPT_PATH}" ]; do
+  _SCRIPT_DIR="$(cd -P "$(dirname "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+  _SCRIPT_PATH="$(readlink "${_SCRIPT_PATH}")"
+  [[ ${_SCRIPT_PATH} != /* ]] && _SCRIPT_PATH="${_SCRIPT_DIR}/${_SCRIPT_PATH}"
+done
+_SCRIPT_PATH="$(readlink -f "${_SCRIPT_PATH}")"
+_SCRIPT_DIR="$(cd -P "$(dirname -- "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+
+#----------------------------------------------------
+source $_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh
+if [[ -z "${CP4BA_LOGGING_ENABLED}" ]]; then 
+  export CP4BA_LOGGING_ENABLED=true
+fi
+if [[ -z "${CP4BA_LOG_LEVEL}" ]]; then 
+  export CP4BA_LOG_LEVEL="INFO"
+fi
+if [[ -z "${CP4BA_LOG_TO_CONSOLE}" ]]; then 
+  export CP4BA_LOG_TO_CONSOLE=true
+fi
+if [[ -z "${CP4BA_LOG_TO_FILE}" ]]; then 
+  export CP4BA_LOG_TO_FILE=false
+fi
+if [[ -z "${CP4BA_LOG_FILE}" ]]; then 
+  export CP4BA_LOG_FILE=""
+fi
+if [[ -z "${CP4BA_LOG_MAX_SIZE}" ]]; then 
+  export CP4BA_LOG_MAX_SIZE=$((10 * 1024 * 1024))
+fi
+if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then 
+  export CP4BA_LOG_BACKUP_COUNT=5
+fi
+
 checkPrereqTools () {
   which curl &>/dev/null
   if [[ $? -ne 0 ]]; then
@@ -182,7 +216,7 @@ checkExtDbCertificates() {
 }
 
 testConfiguration () {
-  echo "testConfiguration not yet implemented!"
+  log_warning "testConfiguration not yet implemented!"
 }
 
 if [[ "${_TEST_CFG}" = "true" ]]; then
@@ -193,7 +227,7 @@ if [[ "${_TEST_CFG}" = "true" ]]; then
 fi
 
 if [[ "${_CPAK_MGR}" = "false" ]] && [[ -z "${_SCRIPTS}" ]]; then
-  echo "Invalid combination: when '-m' is not specificied the scripts folder must be defined."
+  log_error "Invalid combination: when '-m' is not specificied the scripts folder must be defined."
   usage
   exit 1
 fi
@@ -201,7 +235,7 @@ fi
 if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
   if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
     if [[ ! -f "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
-      echo "LDAP configuration file not found: "${CP4BA_INST_LDAP_CFG_FILE}
+      log_error "LDAP configuration file not found: "${CP4BA_INST_LDAP_CFG_FILE}
       usage
       exit 1
     fi
@@ -212,7 +246,7 @@ fi
 if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
   if [[ ! -z "${CP4BA_INST_IDP_CFG_FILE}" ]]; then
     if [[ ! -f "${CP4BA_INST_IDP_CFG_FILE}" ]]; then
-      echo "IDP configuration file not found: "${CP4BA_INST_IDP_CFG_FILE}
+      log_error "IDP configuration file not found: "${CP4BA_INST_IDP_CFG_FILE}
       usage
       exit 1
     fi
@@ -440,49 +474,48 @@ oneShotInstallation () {
   STOP_SECONDS=$SECONDS
 
   if [[ "${_OK}" = "0" ]]; then
-    echo ""
-    echo -e "${_CLR_RED}[✗] Installation error, environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_RED}' not installed !!!${_CLR_NC}"
-    echo "Verify the configuration and/or run parameters."
-    echo "If the installation was started and subsequently interrupted it is recommended to remove the entire namespace"
-    echo "using the 'remove-cp4ba' tool."
-    echo "See link https://github.com/marcoantonioni/cp4ba-utilities"
+    log_msg ""
+    log_error "${_CLR_RED}[✗] Installation error, environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_RED}' not installed !!!${_CLR_NC}"
+    log_warning "Verify the configuration and/or run parameters."
+    log_warning "If the installation was started and subsequently interrupted it is recommended to remove the entire namespace using the 'remove-cp4ba' tool."
+    log_warning "See link https://github.com/marcoantonioni/cp4ba-utilities"
   else
     ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
     TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
 
-    echo -e "${_CLR_YELLOW}***********************************************************************"
-    echo -e "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
-    echo -e "Terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+    log_msg "${_CLR_YELLOW}***********************************************************************"
+    log_msg "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
+    log_msg "Terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
 
-    echo -e "${_CLR_GREEN}Verifying pod status and Case initialization logs...${_CLR_NC}"
+    log_msg "${_CLR_GREEN}Verifying pod status and Case initialization logs...${_CLR_NC}"
     _CASE_INIT_ERRORS=0
     _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
     if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
       _CASE_INIT_ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') 2>/dev/null | egrep "SEVERE|Exception" | wc -l)
     fi
     if [[ $_PENDING -gt 0 ]]; then
-      echo -e "\x1B[1mPlease note${_CLR_NC}, some pods may be not yet ready. Check before using the system."
+      log_msg "\x1B[1mPlease note${_CLR_NC}, some pods may be not yet ready. Check before using the system."
       oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
-      echo ""
-      echo -e "${_CLR_GREEN}For pod status run manually: ${_CLR_YELLOW}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
+      log_msg ""
+      log_msg "${_CLR_GREEN}For pod status run manually: ${_CLR_YELLOW}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
     fi
 
     if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
       if [[ $_CASE_INIT_ERRORS -gt 0 ]]; then
-        echo -e "\x1B[1mPlease note${_CLR_NC}, some errors in Case initialization. May be a transient problem."
-        echo ""
+        log_warning "\x1B[1mPlease note${_CLR_NC}, some errors in Case initialization. May be a transient problem."
+        log_msg ""
         oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') | egrep 'SEVERE|Exception'
-        echo ""
+        log_msg ""
       fi
 
-      echo -e "${_CLR_GREEN}PAY ATTENTION: The case completion job may take more time to complete${_CLR_NC}"
-      echo -e "${_CLR_GREEN}To verify the completion of Case subsys. installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
-      echo -e "${_CLR_GREEN}For Case initialization log/status/errors run manually:${_CLR_GREEN}"
-      echo -e "  logs   : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
-      echo -e "  errors : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | egrep 'SEVERE|Exception'${_CLR_GREEN}"
-      echo -e "  success: ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | grep 'INFO: Configuration Completed'${_CLR_GREEN}"
-      echo -e "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
+      log_warning "${_CLR_GREEN}PAY ATTENTION: The case completion job may take more time to complete${_CLR_NC}"
+      log_msg "${_CLR_GREEN}To verify the completion of Case subsys. installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
+      log_msg "${_CLR_GREEN}For Case initialization log/status/errors run manually:${_CLR_GREEN}"
+      log_msg "  logs   : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
+      log_msg "  errors : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | egrep 'SEVERE|Exception'${_CLR_GREEN}"
+      log_msg "  success: ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | grep 'INFO: Configuration Completed'${_CLR_GREEN}"
+      log_msg "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
 
     fi
 
@@ -501,11 +534,12 @@ onExit () {
 }
 
 
-echo ""
-echo -e "${_CLR_GREEN}***********************************************************************"
-echo -e "Install CP4BA version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}' complete environment in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'"
-echo -e "Started at ${CLR_YELLOW}"$(date)"${_CLR_GREEN}"
-echo -e "***********************************************************************${_CLR_NC}"
+log_msg ""
+log_msg "${_CLR_GREEN}***********************************************************************"
+log_msg "Install CP4BA version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}' complete environment in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'"
+_START_AT=$(date)
+log_msg "Started at ${CLR_YELLOW}${_START_AT}${_CLR_GREEN}"
+log_msg "***********************************************************************${_CLR_NC}"
 
 trap 'onExit' EXIT
 

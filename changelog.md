@@ -1,8 +1,17 @@
 
 # Change Log
 
-## [1.3.7] - 2026-05-08
+## [1.4] - 2026-05-10
 
+### Added
+
+Added dependency on cp4ba-logger project.
+
+### Changed
+
+### Fixed
+
+## [1.3.7] - 2026-05-08
 
 Created branch v25
 

@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-05-08</i> (see changelog.md for details)
+<i>Last update: 2026-05-10</i> (see changelog.md for details)
 
 
 ## Description of the contents of this repository
@@ -286,6 +286,7 @@ Clone the following repositories within a parent folder.
 git clone https://github.com/marcoantonioni/cp4ba-installations.git
 git clone https://github.com/marcoantonioni/cp4ba-casemanager-setup.git
 git clone https://github.com/marcoantonioni/cp4ba-idp-ldap.git
+git clone https://github.com/marcoantonioni/cp4ba-logger.git
 
 # mandatory only if PFS in configuration
 git clone https://github.com/marcoantonioni/cp4ba-process-federation-server.git
