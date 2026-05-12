@@ -39,13 +39,13 @@ setTemporaryFolder () {
     fi
 
     if [[ $_OK -lt 1 ]]; then
-      echo -e "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
-      echo -e "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
+      log_error "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
       exit 1
     fi
     export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
   fi
-  echo -e "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
 
 }
 
@@ -96,16 +96,56 @@ fi
 
 source "${_CFG}"
 
+#----------------------------------------------------
+_SCRIPT_PATH="${BASH_SOURCE}"
+while [ -L "${_SCRIPT_PATH}" ]; do
+  _SCRIPT_DIR="$(cd -P "$(dirname "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+  _SCRIPT_PATH="$(readlink "${_SCRIPT_PATH}")"
+  [[ ${_SCRIPT_PATH} != /* ]] && _SCRIPT_PATH="${_SCRIPT_DIR}/${_SCRIPT_PATH}"
+done
+_SCRIPT_PATH="$(readlink -f "${_SCRIPT_PATH}")"
+_SCRIPT_DIR="$(cd -P "$(dirname -- "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+
+#----------------------------------------------------
+if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh" ]]; then
+  echo "Error, log package not found !"
+  echo "Clone it alongside with other cp4ba-..."
+  echo "use the command: git clone https://github.com/marcoantonioni/cp4ba-logger"
+  exit 1
+fi
+source $_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh
+if [[ -z "${CP4BA_LOGGING_ENABLED}" ]]; then 
+  export CP4BA_LOGGING_ENABLED=true
+fi
+if [[ -z "${CP4BA_LOG_LEVEL}" ]]; then 
+  export CP4BA_LOG_LEVEL="INFO"
+fi
+if [[ -z "${CP4BA_LOG_TO_CONSOLE}" ]]; then 
+  export CP4BA_LOG_TO_CONSOLE=true
+fi
+if [[ -z "${CP4BA_LOG_TO_FILE}" ]]; then 
+  export CP4BA_LOG_TO_FILE=false
+fi
+if [[ -z "${CP4BA_LOG_FILE}" ]]; then 
+  export CP4BA_LOG_FILE=""
+fi
+if [[ -z "${CP4BA_LOG_MAX_SIZE}" ]]; then 
+  export CP4BA_LOG_MAX_SIZE=$((10 * 1024 * 1024))
+fi
+if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then 
+  export CP4BA_LOG_BACKUP_COUNT=5
+fi
+
 #-------------------------------
 checkPrereqTools () {
   which jq &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
     exit 1
   fi
   which openssl &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
+    log_warning "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
   fi
 }
 
@@ -161,56 +201,56 @@ waitForResourceCreated () {
 checkPrereqVars () {
   _OK_VARS=1
   if [[ -z "${CP4BA_AUTO_CLUSTER_USER}" ]]; then
-    echo -e "${_CLR_RED}[✗] var CP4BA_AUTO_CLUSTER_USER not set, export it in your bash shell and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] var CP4BA_AUTO_CLUSTER_USER not set, export it in your bash shell and rerun.${_CLR_NC}"
     _OK_VARS=0
   fi
 
   if [[ -z "${CP4BA_AUTO_ENTITLEMENT_KEY}" ]]; then
-    echo -e "${_CLR_RED}[✗] var CP4BA_AUTO_ENTITLEMENT_KEY not set, export it in your bash shell and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] var CP4BA_AUTO_ENTITLEMENT_KEY not set, export it in your bash shell and rerun.${_CLR_NC}"
     _OK_VARS=0
   fi
 
   if [[ -z "${CP4BA_INST_TYPE}" ]]; then
-    echo -e "${_CLR_RED}[✗] var CP4BA_INST_TYPE not set, update your configuration file and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] var CP4BA_INST_TYPE not set, update your configuration file and rerun.${_CLR_NC}"
     _OK_VARS=0
   else
     CP4BA_INST_TYPE=$(echo "${CP4BA_INST_TYPE}" | tr '[:upper:]' '[:lower:]')
     if [[ "${CP4BA_INST_TYPE}" != "starter" ]] && [[ "${CP4BA_INST_TYPE}" != "production" ]]; then
-      echo -e "${_CLR_RED}[✗] var CP4BA_INST_TYPE must be 'starter' or 'production', update your configuration file and rerun.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] var CP4BA_INST_TYPE must be 'starter' or 'production', update your configuration file and rerun.${_CLR_NC}"
       _OK_VARS=0
     fi
   fi
 
   if [[ -z "${CP4BA_INST_PLATFORM}" ]]; then
-    echo -e "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM not set, update your configuration file and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM not set, update your configuration file and rerun.${_CLR_NC}"
     _OK_VARS=0
   else
     if [[ "${CP4BA_INST_PLATFORM}" != "OCP" ]] && [[ "${CP4BA_INST_PLATFORM}" != "ROKS" ]]; then
-      echo -e "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM must be 'OCP' or 'ROKS', update your configuration file and rerun.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] var CP4BA_INST_PLATFORM must be 'OCP' or 'ROKS', update your configuration file and rerun.${_CLR_NC}"
       _OK_VARS=0
     fi
   fi
 
   if [[ -z "${CP4BA_INST_SC_FILE}" ]]; then
-    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not found in your OCP cluster, update your configuration file and rerun.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not found in your OCP cluster, update your configuration file and rerun.${_CLR_NC}"
     _OK_VARS=0
   fi
 
   storageClassExist ${CP4BA_INST_SC_FILE}
   if [ $? -eq 0 ]; then
-    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not present in your OCP cluster${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not present in your OCP cluster${_CLR_NC}"
     _OK_VARS=0
   fi
 
   storageClassExist ${CP4BA_INST_SC_BLOCK}
   if [ $? -eq 0 ]; then
-    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_BLOCK}' not present in your OCP cluster${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_BLOCK}' not present in your OCP cluster${_CLR_NC}"
     _OK_VARS=0
   fi
 
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     if [[ -z "${CP4BA_INST_LDAP_SECRET}" ]]; then
-      echo -e "${_CLR_RED}[✗] var CP4BA_INST_LDAP_SECRET not set, must be set when CP4BA_INST_LDAP=true, update your configuration file and rerun.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] var CP4BA_INST_LDAP_SECRET not set, must be set when CP4BA_INST_LDAP=true, update your configuration file and rerun.${_CLR_NC}"
     fi
   fi
 
@@ -235,7 +275,7 @@ updateZenServiceCertificate () {
   if [[ "${CP4BA_INST_ZS_CONFIGURE}" = "true" ]]; then
     ${CP4BA_INST_UTILS_TOOLS_FOLDER}/cp4ba-tls-update-ep.sh -x -n ${CP4BA_INST_NAMESPACE} -z ${CP4BA_INST_ZS_NAME} -s ${CP4BA_INST_ZS_TARGET_SECRET} -f ${CP4BA_INST_ZS_SOURCE_SECRET} -k ${CP4BA_INST_ZS_SOURCE_NAMESPACE}
     if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_YELLOW}[✗] Warning, ZenService not updated with certificate ${CP4BA_INST_ZS_SOURCE_SECRET}.${_CLR_NC}"
+      log_warning "${_CLR_YELLOW}[✗] Warning, ZenService not updated with certificate ${CP4BA_INST_ZS_SOURCE_SECRET}.${_CLR_NC}"
     else
       _ZENCONFIGURED=1
     fi
@@ -247,13 +287,13 @@ updateZenServiceCertificate () {
 deployPreEnv () {
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     if [[ ! -z "${_LDAP}" ]]; then
-      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-ldap.sh -p ${_LDAP} -n ${CP4BA_INST_NAMESPACE}
+      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-ldap.sh -p "${_LDAP}" -n ${CP4BA_INST_NAMESPACE} -c "${_CFG}"
       if [[ $? -ne 0 ]]; then
-        echo -e "${_CLR_RED}[✗] Error, LDAP not installed.${_CLR_NC}"
+        log_error "${_CLR_RED}[✗] Error, LDAP not installed.${_CLR_NC}"
         exit 1
       fi
     else
-      echo -e "${_CLR_RED}[✗] Error, LDAP configuration file not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, LDAP configuration file not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
       exit 1
     fi
   fi
@@ -261,7 +301,7 @@ deployPreEnv () {
   if [[ "${CP4BA_INST_TYPE}" != "starter" ]]; then
     ./cp4ba-create-secrets.sh -c ${_CFG} -s -t 0
     if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_RED}[✗] Error, secrets not configured.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, secrets not configured.${_CLR_NC}"
       exit 1
     fi
   fi
@@ -273,7 +313,7 @@ deployPostEnv () {
   if [[ "${CP4BA_INST_DB}" = "true" ]]; then
     ./cp4ba-install-db.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
       exit 1
     fi
   fi
@@ -281,7 +321,7 @@ deployPostEnv () {
   if [[ "${CP4BA_INST_DB}" = "true" ]]; then
     ./cp4ba-create-databases.sh -c ${_CFG} -w
     if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_RED}[✗] Error, databases not created.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, databases not created.${_CLR_NC}"
       exit 1
     fi
   fi
@@ -310,44 +350,44 @@ deployPostEnv () {
 
     if [[ ${_SHOW_WARN} -eq 1 ]]; then
 
-      echo ""
+      log_msg ""
 
-      echo -e "${_CLR_YELLOW}[!] WARNING, if you are using an external DB you must manually create and label the following TLS secrets:${_CLR_NC}"
+      log_warning "${_CLR_YELLOW}[!] WARNING, if you are using an external DB you must manually create and label the following TLS secrets:${_CLR_NC}"
 
       _SEC_NAME="im-datastore-edb-secret"
       resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
       if [ $? -eq 0 ]; then
-        echo ""
-        echo -e "${_CLR_YELLOW}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+        log_msg ""
+        log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
 
-        echo "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
-        echo "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls"
-        echo "oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE}"
-        echo ""
+        log_msg "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
+        log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls"
+        log_msg "oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE}"
+        log_msg ""
       fi
 
       _SEC_NAME="ibm-zen-metastore-edb-secret"
       resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
       if [ $? -eq 0 ]; then
-        echo ""
-        echo -e "${_CLR_YELLOW}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+        log_msg ""
+        log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
 
-        echo "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
-        echo "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls" 
-        echo "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory"
+        log_msg "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
+        log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls" 
+        log_msg "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory"
       fi
 
 
       _SEC_NAME="bts-datastore-edb-secret"
       resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
       if [ $? -eq 0 ]; then
-        echo ""
-        echo -e "${_CLR_YELLOW}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
-        echo "openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt -in ./client.key -out ./tls_key.pk8"
-        echo "oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME}" 
-        echo "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./tls_key.pk8" 
-        echo "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory" 
-        echo -e "${_CLR_NC}"
+        log_msg ""
+        log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+        log_msg "openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt -in ./client.key -out ./tls_key.pk8"
+        log_msg "oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME}" 
+        log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./tls_key.pk8" 
+        log_msg "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory" 
+        log_msg ""
       fi
 
     fi
@@ -371,15 +411,15 @@ deployPFS () {
       echo "CP4BA_INST_PFS_APP_VER=\"${CP4BA_INST_PFS_APP_VER}\"" >> ${_PFS_PARAMS_FILE}
       echo "CP4BA_INST_PFS_ADMINUSER=\"${CP4BA_INST_PFS_ADMINUSER}\"" >> ${_PFS_PARAMS_FILE}
 
-      echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
-      echo -e "${_CLR_GREEN}Deploy PFS: '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}'${_CLR_NC}"
+      log_msg "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+      log_info "${_CLR_GREEN}Deploy PFS: '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}'${_CLR_NC}"
       # launch in embedded mode, no wait
       /bin/bash ${_PFS_SCRIPT} -c ${_PFS_PARAMS_FILE} -e 1>/dev/null
       # echo -e "${_CLR_GREEN}PFS '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}' deployment complete${_CLR_NC}"
 
       rm ${_PFS_PARAMS_FILE}
     else
-      echo -e "${_CLR_RED}[✗] Error, PFS tool script not found (check var CP4BA_INST_PFS_TOOLS_FOLDER), PFS CR not generated.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, PFS tool script not found (check var CP4BA_INST_PFS_TOOLS_FOLDER), PFS CR not generated.${_CLR_NC}"
       exit 1
     fi
   fi
@@ -393,7 +433,7 @@ postInstallationSteps () {
   if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
     ./cp4ba-configure-genai.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
       exit 1
     fi
   fi
@@ -402,7 +442,7 @@ postInstallationSteps () {
   if [[ "${CP4BA_INST_BAI_BPC_WORKFORCE}" = "true" ]]; then
     ./cp4ba-configure-bai-workforce.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
-      echo -e "${_CLR_RED}[✗] Error, BAIWorkforce not configured.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, BAIWorkforce not configured.${_CLR_NC}"
       exit 1
     fi
   fi
@@ -415,14 +455,14 @@ generateCR () {
   _INST_ENV_FULL_PATH="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   envsubst < ../${CP4BA_INST_CR_TEMPLATE} > ${_INST_ENV_FULL_PATH}
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, CP4BA CR not generated.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, CP4BA CR not generated.${_CLR_NC}"
     exit 1
   fi
 
   if [[ -f "${_INST_ENV_FULL_PATH}" ]]; then
     #MISSED_TRANSFORMATIONS=$(cat ${_INST_ENV_FULL_PATH} | grep "\${" | wc -l)
     #if [[ $MISSED_TRANSFORMATIONS -gt 0 ]]; then
-    #  echo -e "${_CLR_RED}[✗] Error, env var missed in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+    #  log_error "${_CLR_RED}[✗] Error, env var missed in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
     #  echo "++++++++++++++++++++++++++++++++++++++++"
     #  cat ${_INST_ENV_FULL_PATH} | grep "\${"
     #  echo "++++++++++++++++++++++++++++++++++++++++"
@@ -431,17 +471,17 @@ generateCR () {
     yq ${_INST_ENV_FULL_PATH} 2>/dev/null 1>/dev/null
     YAML_ERROR=$?
     if [ $YAML_ERROR -gt 0 ]; then
-      echo -e "${_CLR_RED}[✗] Error, wrong yaml format in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, wrong yaml format in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
       echo "++++++++++++++++++++++++++++++++++++++++"
       yq ${_INST_ENV_FULL_PATH}
       echo "++++++++++++++++++++++++++++++++++++++++"
       exit 1
     fi
   else
-    echo -e "${_CLR_GREEN}[✗] Error, file not found '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, file not found '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
     exit 1
   fi 
-  echo -e "${_CLR_GREEN}CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_YELLOW}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' saved in file '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_YELLOW}'${_CLR_NC}"
 }
 
 #-------------------------------
@@ -451,14 +491,13 @@ deployEnvironment () {
 
   generateCR
 
-  # echo -e "=============================================================="
-  echo -e "${_CLR_GREEN}Deploying CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}Deploying CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
   _INST_ENV_FULL_PATH="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   oc apply -n ${CP4BA_INST_NAMESPACE} -f ${_INST_ENV_FULL_PATH} 2>/dev/null 1>/dev/null
   if [ $? -gt 0 ]; then
-    echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
-    echo -e "${_CLR_RED}[✗] Cannot deploy CP4BA CR '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}', use yq to verify"
+    log_error ">>> \x1b[5mERROR\x1b[25m <<<"
+    log_error "${_CLR_RED}[✗] Cannot deploy CP4BA CR '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}', use yq to verify"
     exit 1
   fi
 
@@ -477,7 +516,7 @@ loopWaitForPfsReady () {
       _pfsService=$(echo $_PFS_COMPONENTS | jq .pfsService | sed 's/"//g' )
       _pfsZenIntegration=$(echo $_PFS_COMPONENTS | jq .pfsZenIntegration | sed 's/"//g' )
 
-      [[ ${_TRACE} -eq 1 ]] && echo -e "[DEBUG] PFS readiness: _pfsDeployment[${_CLR_YELLOW}${_pfsDeployment}${_CLR_GREEN}] _pfsService[${_CLR_YELLOW}${_pfsService}${_CLR_GREEN}] _pfsZenIntegration[${_CLR_YELLOW}${_pfsZenIntegration}${_CLR_GREEN}]"
+      log_debug "[DEBUG] PFS readiness: _pfsDeployment[${_CLR_YELLOW}${_pfsDeployment}${_CLR_GREEN}] _pfsService[${_CLR_YELLOW}${_pfsService}${_CLR_GREEN}] _pfsZenIntegration[${_CLR_YELLOW}${_pfsZenIntegration}${_CLR_GREEN}]"
 
       if [[ "${_pfsDeployment}" = "Ready" ]] && [[ "${_pfsService}" = "Ready" ]] && [[ "${_pfsZenIntegration}" = "Ready" ]]; then
           return 1
@@ -505,15 +544,15 @@ federateBaw () {
   _HOST_FED_PORTAL=$2
 
   if [[ -z "${_BAW_NAME}" ]]; then
-    echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
-    echo -e "${_CLR_RED}[✗] Cannot federate BAW '${_CLR_YELLOW}${_BAW_NAME}${_CLR_RED}', name not found in configuration.${_CLR_NC}"
+    log_error ">>> \x1b[5mERROR\x1b[25m <<<"
+    log_error "${_CLR_RED}[✗] Cannot federate BAW '${_CLR_YELLOW}${_BAW_NAME}${_CLR_RED}', name not found in configuration.${_CLR_NC}"
     exit 1
   fi
   _hfpIcon="✗"
   if [[ "${_HOST_FED_PORTAL}" = "true" ]]; then
     _hfpIcon="\xE2\x9C\x94"
   fi
-  echo -e "${_CLR_GREEN}PFS - Federating BAW: '${_CLR_YELLOW}${_BAW_NAME}${_CLR_GREEN}', host federated portal [${_CLR_YELLOW}${_hfpIcon}${_CLR_GREEN}]${_CLR_NC}"
+  log_info "${_CLR_GREEN}PFS - Federating BAW: '${_CLR_YELLOW}${_BAW_NAME}${_CLR_GREEN}', host federated portal [${_CLR_YELLOW}${_hfpIcon}${_CLR_GREEN}]${_CLR_NC}"
 
   _PFS_CR_NAME=""
   if [[ "${CP4BA_INST_PFS}" = "true" ]]; then
@@ -539,8 +578,8 @@ federateBaw () {
     _PFS_HOST=$(echo ${_PFS_FULL_URL} | sed 's/\/.*//g')
 
     if [[ -z "${_PFS_HOST}" ]] || [[ -z "${_PFS_CTX}" ]]; then
-        echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
-        echo -e "${_CLR_RED}[✗] Cannot federate BAW '${_CLR_YELLOW}${_BAW_NAME}${_CLR_RED}', PFS host/ctx not found in endpoints.${_CLR_NC}"
+        log_error ">>> \x1b[5mERROR\x1b[25m <<<"
+        log_error "${_CLR_RED}[✗] Cannot federate BAW '${_CLR_YELLOW}${_BAW_NAME}${_CLR_RED}', PFS host/ctx not found in endpoints.${_CLR_NC}"
         exit 1
     fi
 
@@ -574,12 +613,12 @@ federateBaw () {
     rm ${_FILE_FINAL} 2>/dev/null
 
     if [[ $_patched -eq 0 ]]; then
-      echo -e ">>> \x1b[5mERROR\x1b[25m <<<"
-      echo -e "${_CLR_RED}[✗] Unable to patch CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_RED}${_CLR_NC}'"
+      log_error ">>> \x1b[5mERROR\x1b[25m <<<"
+      log_error "${_CLR_RED}[✗] Unable to patch CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_RED}${_CLR_NC}'"
       exit 1
     fi
   else
-    echo -e "${_CLR_YELLOW}WARNING: PFS instance not found, federation ignored for BAWs in'${_CLR_GREEN}${CP4BA_INST_CR_NAME}${_CLR_YELLOW}'${_CLR_NC}"
+    log_warning "${_CLR_YELLOW}WARNING: PFS instance not found, federation ignored for BAWs in'${_CLR_GREEN}${CP4BA_INST_CR_NAME}${_CLR_YELLOW}'${_CLR_NC}"
   fi
 }
 
@@ -599,7 +638,7 @@ waitForBawStatefulSetReady () {
       break
     fi
   done
-  echo -e "${_CLR_YELLOW}READY${_CLR_GREEN}${_CLR_NC}"
+  log_info "${_CLR_YELLOW}READY${_CLR_GREEN}${_CLR_NC}"
 }
 
 federateBawsInDeployment () {
@@ -623,13 +662,13 @@ federateBawsInDeployment () {
       _NAME=""
     else
       if [[ ! -z "${_NAME}" ]]; then
-        echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${__BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+        log_info "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${__BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
       fi 
     fi
     ((i=i+1))
   done
   
-  echo -e "${_CLR_GREEN}INFO: ${_CLR_YELLOW}The CR defining BAW servers has been modified for federation with PFS, operators will follow their periodic tasks and complete the necessary configurations; the whole operation can take minutes; the installation procedure continues without waiting.${_CLR_GREEN}${_CLR_NC}"
+  log_info "${_CLR_GREEN}INFO: ${_CLR_YELLOW}The CR defining BAW servers has been modified for federation with PFS, operators will follow their periodic tasks and complete the necessary configurations; the whole operation can take minutes; the installation procedure continues without waiting.${_CLR_GREEN}${_CLR_NC}"
 
 }
 
@@ -640,7 +679,7 @@ restartStatefulSets () {
   STATEFULSET_NAME=$(oc get statefulsets -n ${_NS} | grep "${_STATEFULSET_SUFFIX}" | awk '{print $1}')
 
   if [[ ! -z "${STATEFULSET_NAME}" ]]; then
-    echo -e "${_CLR_GREEN}Restarting statefulset: ${_CLR_YELLOW}${STATEFULSET_NAME}${_CLR_GREEN}${_CLR_NC}"
+    log_info "${_CLR_GREEN}Restarting statefulset: ${_CLR_YELLOW}${STATEFULSET_NAME}${_CLR_GREEN}${_CLR_NC}"
 
     STATEFULSET_REPLICAS=$(oc get statefulsets -n ${_NS} ${STATEFULSET_NAME} -o jsonpath="{.spec.replicas}")
 
@@ -669,8 +708,9 @@ zenCertInTrustedList () {
 }
 
 waitDeploymentReadiness () {
-  echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
-  echo -e "${_CLR_GREEN}Configuration and deployment complete for CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' in  namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
+  log_msg "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+  log_info "${_CLR_GREEN}Configuration and deployment complete for CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' in  namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "Waiting for CR configurations to complete."
 
   _seconds=0
   _total_warnings=0
@@ -710,10 +750,10 @@ waitDeploymentReadiness () {
         resourceExist ${CP4BA_INST_NAMESPACE} "pfs" ${CP4BA_INST_PFS_NAME}
         if [ $? -eq 1 ]; then
           if [[ ${CP4BA_INST_DEPL_PATTERNS} == *"workflow"* ]]; then
-            echo ""
+            log_msg ""
             federateBawsInDeployment
           else
-            echo -e "${_CLR_RED}[✗] Error, deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_RED}' capability.${_CLR_NC}"
+            log_error "${_CLR_RED}[✗] Error, deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_RED}' capability.${_CLR_NC}"
           fi
         fi
       fi
@@ -741,7 +781,7 @@ waitDeploymentReadiness () {
 
       done
       sleep 5
-      echo ""
+      log_msg ""
       _FULL_TXT_NAME="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-access-info.txt"
       ACC_INFO=$(oc get cm -n ${CP4BA_INST_NAMESPACE} --no-headers | grep "access-info" 2>/dev/null | awk '{print $1}' | xargs oc get cm -n ${CP4BA_INST_NAMESPACE} -o jsonpath='{.data}')
       if [[ ! -z "${ACC_INFO}" ]]; then
@@ -750,8 +790,8 @@ waitDeploymentReadiness () {
         for (( i=0; i<$NUM_KEYS; i++ ));
         do
           KEY=$(echo $ACC_INFO | jq keys[$i])
-          echo -e "  saving access-info data for key: ${_CLR_YELLOW}${KEY}${_CLR_GREEN}"
-          echo -e $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${_FULL_TXT_NAME}
+          log_info "  saving access-info data for key: ${_CLR_YELLOW}${KEY}${_CLR_GREEN}"
+          echo $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${_FULL_TXT_NAME}
         done
 
         _ADMINUSER=$(oc get secrets -n ${CP4BA_INST_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 -d)
@@ -760,12 +800,12 @@ waitDeploymentReadiness () {
         echo "Admin user: ${_ADMINUSER}" >> ${_FULL_TXT_NAME}
         echo "Admin password: ${_ADMINPASSWORD}" >> ${_FULL_TXT_NAME}
 
-        echo -e "Platform URLs stored in: ${_CLR_YELLOW}${_FULL_TXT_NAME}${_CLR_GREEN}"
+        log_info "Platform URLs stored in: ${_CLR_YELLOW}${_FULL_TXT_NAME}${_CLR_GREEN}"
       else
-        echo -e "${_CLR_YELLOW}Warning access info config map empty or not valid${_CLR_NC}"
+        log_warning "${_CLR_YELLOW}Warning access info config map empty or not valid${_CLR_NC}"
       fi
 
-      echo -e "${_CLR_GREEN}CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
+      log_info "${_CLR_GREEN}CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' is ready.${_CLR_NC}"
       break
     fi
     _pending_pvc_count=0
@@ -814,10 +854,9 @@ waitDeploymentReadiness () {
 }
 
 
-echo -e "${_CLR_GREEN}=============================================================="
-echo -e "Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
-echo -e "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
-# echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+log_msg "${_CLR_GREEN}=============================================================="
+log_info "Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
+log_info "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
 
 setTemporaryFolder
 checkPrereqTools
@@ -827,17 +866,17 @@ if [[ "${_GENERATE_ONLY}" = "true" ]]; then
   generateCR
   ./cp4ba-create-databases.sh -c ${_CFG} -g
   if [[ -z "${_LDAP}" ]] && [[ "${CP4BA_INST_TYPE}" = "production" ]]; then
-    echo ""
-    echo -e "${_CLR_YELLOW}WARNING${_CLR_GREEN}: no LDAP data has been configured, update manually the generated CR.${_CLR_NC}" 
+    log_msg ""
+    log_warning "${_CLR_YELLOW}WARNING${_CLR_GREEN}: no LDAP data has been configured, update manually the generated CR.${_CLR_NC}" 
   fi
-  echo -e "${_CLR_GREEN}If you intend to manually deploy the generated CR, remember to create/configure all the prerequisites (LDAP, DBs, secrets, etc...)${_CLR_NC}"
+  log_info "${_CLR_GREEN}If you manually deploy the generated CR, remember to create/configure all the prerequisites (LDAP, DBs, secrets, etc...)${_CLR_NC}"
   exit 0
 fi
 
 # verify logged in OCP
 oc whoami 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
-  echo -e "${_CLR_RED}[✗] Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}"
+  log_error "${_CLR_RED}[✗] Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}"
   exit 1
 fi
 
@@ -849,7 +888,7 @@ namespaceExist ${CP4BA_INST_NAMESPACE}
 if [ $? -eq 1 ]; then
 
   if [[ -z "${CP4BA_INST_APPVER}" ]]; then
-    echo -e "${_CLR_RED}[✗] Error, var '${_CLR_YELLOW}CP4BA_INST_APPVER${_CLR_RED}' not set, cannot continue. ${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, var '${_CLR_YELLOW}CP4BA_INST_APPVER${_CLR_RED}' not set, cannot continue. ${_CLR_NC}"
     exit 1
   fi
   
@@ -865,10 +904,10 @@ if [ $? -eq 1 ]; then
   # 20260212
   postInstallationSteps
 
-  echo -e "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
+  log_info "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
   exit 0
 
 else
-  echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_RED}' doesn't exists. ${_CLR_NC}"
+  log_error "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_RED}' doesn't exists. ${_CLR_NC}"
   exit 1
 fi

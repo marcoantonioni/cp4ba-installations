@@ -2,8 +2,6 @@
 
 #set -euo pipefail
 
-_TRACE=0
-
 _me=$(basename "$0")
 
 _CFG=""
@@ -32,6 +30,45 @@ fi
 
 source "${_CFG}"
 
+#----------------------------------------------------
+_SCRIPT_PATH="${BASH_SOURCE}"
+while [ -L "${_SCRIPT_PATH}" ]; do
+  _SCRIPT_DIR="$(cd -P "$(dirname "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+  _SCRIPT_PATH="$(readlink "${_SCRIPT_PATH}")"
+  [[ ${_SCRIPT_PATH} != /* ]] && _SCRIPT_PATH="${_SCRIPT_DIR}/${_SCRIPT_PATH}"
+done
+_SCRIPT_PATH="$(readlink -f "${_SCRIPT_PATH}")"
+_SCRIPT_DIR="$(cd -P "$(dirname -- "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+
+#----------------------------------------------------
+if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh" ]]; then
+  echo "Error, log package not found !"
+  echo "Clone it alongside with other cp4ba-..."
+  echo "use the command: git clone https://github.com/marcoantonioni/cp4ba-logger"
+  exit 1
+fi
+source $_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh
+if [[ -z "${CP4BA_LOGGING_ENABLED}" ]]; then 
+  export CP4BA_LOGGING_ENABLED=true
+fi
+if [[ -z "${CP4BA_LOG_LEVEL}" ]]; then 
+  export CP4BA_LOG_LEVEL="INFO"
+fi
+if [[ -z "${CP4BA_LOG_TO_CONSOLE}" ]]; then 
+  export CP4BA_LOG_TO_CONSOLE=true
+fi
+if [[ -z "${CP4BA_LOG_TO_FILE}" ]]; then 
+  export CP4BA_LOG_TO_FILE=false
+fi
+if [[ -z "${CP4BA_LOG_FILE}" ]]; then 
+  export CP4BA_LOG_FILE=""
+fi
+if [[ -z "${CP4BA_LOG_MAX_SIZE}" ]]; then 
+  export CP4BA_LOG_MAX_SIZE=$((10 * 1024 * 1024))
+fi
+if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then 
+  export CP4BA_LOG_BACKUP_COUNT=5
+fi
 #--------------------------------------------------------
 _INST_TMP_FOLDER="/tmp"
 setTemporaryFolder () {
@@ -51,13 +88,13 @@ setTemporaryFolder () {
     fi
 
     if [[ $_OK -lt 1 ]]; then
-      echo -e "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
-      echo -e "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
+      log_error "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
       exit 1
     fi
     export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
   fi
-  echo -e "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
 
 }
 
@@ -111,19 +148,19 @@ _createBAIWorkforceSecret () {
 
     resourceExist ${CP4BA_INST_NAMESPACE} "routes" "cpd"
     if [ $? -eq 0 ]; then
-      echo -e "${_CLR_GREEN}Wait for resource '${_CLR_YELLOW}cpd${_CLR_GREEN}'..."
+      log_info "${_CLR_GREEN}Wait for resource '${_CLR_YELLOW}cpd${_CLR_GREEN}'..."
       waitForResourceCreated ${CP4BA_INST_NAMESPACE} "routes" "cpd" 5
     fi
 
     _ROUTE_NAME="cp-console"
     if [ $(oc get routes -n ${_NS} $_ROUTE_NAME --no-headers 2> /dev/null | wc -l 2>/dev/null) -lt 1 ]; then
       _ROUTE_NAME="platform-id-provider"
-      echo "Using console route name [${_ROUTE_NAME}]"
+      log_info "Using console route name [${_ROUTE_NAME}]"
     fi
 
     resourceExist ${CP4BA_INST_NAMESPACE} "routes" ${_ROUTE_NAME}
     if [ $? -eq 0 ]; then
-      echo -e "${_CLR_GREEN}Wait for resource '${_CLR_YELLOW}${_ROUTE_NAME}${_CLR_GREEN}'..."
+      log_info "${_CLR_GREEN}Wait for resource '${_CLR_YELLOW}${_ROUTE_NAME}${_CLR_GREEN}'..."
       waitForResourceCreated ${CP4BA_INST_NAMESPACE} "routes" ${_ROUTE_NAME} 5
     fi
 
@@ -136,9 +173,9 @@ _createBAIWorkforceSecret () {
     username=$(oc get secret -n ${_NS} ibm-ban-secret -ojsonpath='{.data.appLoginUsername}'|base64 -d)
     password=$(oc get secret -n ${_NS} ibm-ban-secret -ojsonpath='{.data.appLoginPassword}'|base64 -d)
 
-    [[ ${_TRACE} -eq 1 ]] && echo "===> ibm-ban-secret: " $username " / " $password
+    log_debug "===> ibm-ban-secret: " $username " / " $password
     if [[ -z "$username" ]] || [[ -z "$password" ]]; then
-      echo -e "${_CLR_RED}[✗] Error, secret ibm-ban-secret not found or username or password is empty.${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, secret ibm-ban-secret not found or username or password is empty.${_CLR_NC}"
       exit 1
     fi
 
@@ -156,7 +193,7 @@ _createBAIWorkforceSecret () {
         _WFS_URL=$(oc get cm -n ${_NS} ${cmName} -o yaml | grep "Business Automation Workflow .* base URL:" | sed 's/.*URL://g' | sed 's/ //g')
 
         if [[ ! -z "${_WFS_URL}" ]]; then
-          [[ ${_TRACE} -eq 1 ]] && echo "Workflow server url: "$_WFS_URL
+          log_debug "Workflow server url: "$_WFS_URL
           break
         fi
       fi
@@ -169,8 +206,8 @@ _createBAIWorkforceSecret () {
     iamhost="https://"$(oc get route -n ${_NS} ${_ROUTE_NAME} -o jsonpath="{.spec.host}" )
     platformauth="https://"$(oc get route -n ${_NS} cpd -o jsonpath="{.spec.host}" )
 
-    [[ ${_TRACE} -eq 1 ]] && echo "===> iamhost: " ${iamhost}
-    [[ ${_TRACE} -eq 1 ]] && echo "===> platformauth: " ${platformauth}
+    log_debug "===> iamhost: ${iamhost}"
+    log_debug "===> platformauth: ${platformauth}"
 
     if [[ ${_ROUTE_NAME} = "platform-id-provider" ]]; then
       iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${platformauth}/v1/auth/identitytoken | jq -r .access_token)
@@ -178,15 +215,15 @@ _createBAIWorkforceSecret () {
       iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${iamhost}/idprovider/v1/auth/identitytoken | jq -r .access_token)
     fi
 
-    [[ ${_TRACE} -eq 1 ]] && echo "===> iamaccesstoken: " ${iamaccesstoken}
+    log_debug "===> iamaccesstoken: ${iamaccesstoken}"
 
     zentoken=$(curl -sk ${platformauth}/v1/preauth/validateAuth -H "username:${username}" -H "iam-token: ${iamaccesstoken}" | jq -r .accessToken)
         
-    [[ ${_TRACE} -eq 1 ]] && echo "===> zentoken: " ${zentoken}
+    log_debug "===> zentoken: ${zentoken}"
 
     type=$(oc get icp4acluster -n ${_NS} -o yaml | grep -E "sc_deployment_type|olm_deployment_type"| tail -1 |awk '{print $2}')
     
-    [[ ${_TRACE} -eq 1 ]] && echo "===> deloyment type: " ${type}
+    log_debug "===> deloyment type: ${type}"
 
     _IS_SLASH=""
     if [[ "${_WFS_URL}" != */ ]]; then
@@ -201,21 +238,21 @@ _createBAIWorkforceSecret () {
       #echo "TBD: ===>>> get baw name "
       _BAW_NAME=$(echo "${_WFS_URL}" | awk -F / -v OFS=/ '{ print $(NF-1), $NF }' | sed 's#/##g')
       _adminSecret="${CP4BA_INST_CR_NAME}-${_BAW_NAME}-admin-secret"
-      [[ ${_TRACE} -eq 1 ]] && echo "===> try secret: " ${_adminSecret}
+      log_debug "===> try secret: ${_adminSecret}"
       resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_adminSecret} 
       if [[ $? -eq 0 ]]; then
         arrIN=(${_BAW_NAME//-/ })
         _BAW_NAME="${arrIN[1]}-${arrIN[0]}"
         _adminSecret="${CP4BA_INST_CR_NAME}-${_BAW_NAME}-admin-secret"
-        [[ ${_TRACE} -eq 1 ]] && echo "===> try secret: " ${_adminSecret}
+        log_debug "===> try secret: ${_adminSecret}"
         resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_adminSecret} 
         if [[ $? -eq 0 ]]; then
-          echo -e "${_CLR_RED}[✗] ERROR: _createBAIWorkforceSecret admin secret name not found${_CLR_NC}"
+          log_error "${_CLR_RED}[✗] ERROR: _createBAIWorkforceSecret admin secret name not found${_CLR_NC}"
           exit 1
         fi
       fi
 
-      [[ ${_TRACE} -eq 1 ]] && echo "admin secret name: ${_adminSecret}"
+      log_debug "admin secret name: ${_adminSecret}"
     fi
 
     adminUsername=$(oc get secret -n ${_NS} $(oc get secret -n ${_NS} |grep ${_adminSecret} | awk '{print $1}') -o jsonpath='{.data.adminUser}'|base64 -d)
@@ -226,10 +263,10 @@ _createBAIWorkforceSecret () {
 
     adminPassword=$(oc get secret -n ${_NS} $(oc get secret -n ${_NS} |grep ${_adminSecret} | awk '{print $1}') -o jsonpath='{.data.adminPassword}'|base64 -d)
 
-    [[ ${_TRACE} -eq 1 ]] && echo ${_WFS_URL}
-    [[ ${_TRACE} -eq 1 ]] && echo "===> bpmSystemID: " $bpmSystemID
-    [[ ${_TRACE} -eq 1 ]] && echo "===> adminUsername: " $adminUsername
-    [[ ${_TRACE} -eq 1 ]] && echo "===> adminPassword: " $adminPassword
+    log_debug ${_WFS_URL}
+    log_debug "===> bpmSystemID: $bpmSystemID"
+    log_debug "===> adminUsername: $adminUsername"
+    log_debug "===> adminPassword: $adminPassword"
 
     secret_name=$(oc get icp4acluster -n ${_NS} $(oc get icp4acluster -n ${_NS} --no-headers | awk '{print $1}') -o jsonpath='{.spec.bai_configuration.business_performance_center.workforce_insights_secret}')
     if [[ ! -z ${secret_name} ]]; then
@@ -257,7 +294,7 @@ stringData:
     rm ${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
 
   else
-    echo -e "${_CLR_RED}[✗] ERROR: _createBAIWorkforceSecret secret name or namespace empty${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] ERROR: _createBAIWorkforceSecret secret name or namespace empty${_CLR_NC}"
     exit 1
   fi
 }
@@ -289,7 +326,7 @@ _createBAIWorkforceConfiguration () {
 
       _OK_TO_PATCH=1
     else
-      echo -e "${_CLR_YELLOW}[✗] WARNING: _createBAIWorkforceConfiguration GenAI not yet implemented for 'production' type deployment.${_CLR_NC}"
+      log_warning "${_CLR_YELLOW}[✗] WARNING: _createBAIWorkforceConfiguration GenAI not yet implemented for 'production' type deployment.${_CLR_NC}"
     fi
 
     if [[ ${_OK_TO_PATCH} -eq 1 ]]; then
@@ -297,7 +334,7 @@ _createBAIWorkforceConfiguration () {
       rm "${_WX_BAI_WKF_TMP}" 2>/dev/null 1>/dev/null
     fi
   else
-    echo -e "${_CLR_RED}[✗] ERROR: _createBAIWorkforceConfiguration GenAI configuration error, ICP4ACluster object not found.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] ERROR: _createBAIWorkforceConfiguration GenAI configuration error, ICP4ACluster object not found.${_CLR_NC}"
     exit 1
   fi
 }
@@ -320,22 +357,22 @@ configureBAIWorkforce() {
         _createBAIWorkforceSecret $1 ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
         _createBAIWorkforceConfiguration $1
       else
-        echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
+        log_error "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
         exit 1
       fi
     fi
   else
-    echo -e "${_CLR_YELLOW}[✗] Warning, BAI or BPC WORKFORCE not enabled in configuration file.${_CLR_NC}"
+    log_warning "${_CLR_YELLOW}[✗] Warning, BAI or BPC WORKFORCE not enabled in configuration file.${_CLR_NC}"
   fi
 }
 
 #==================================
 
-echo -e "=============================================================="
-echo -e "${_CLR_GREEN}Configuring BAI Workforce '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
+log_msg "=============================================================="
+log_info "${_CLR_GREEN}Configuring BAI Workforce '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
 
 setTemporaryFolder
 
-echo -e "${_CLR_YELLOW}TBD: if runtime deployment iterate on BAWs if more than one...${_CLR_NC}"
+log_msg "${_CLR_YELLOW}TBD: if runtime deployment iterate on BAWs if more than one...${_CLR_NC}"
 configureBAIWorkforce ${CP4BA_INST_NAMESPACE}
 

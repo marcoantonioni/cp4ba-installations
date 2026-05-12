@@ -47,13 +47,13 @@ setTemporaryFolder () {
     fi
 
     if [[ $_OK -lt 1 ]]; then
-      echo -e "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
-      echo -e "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
+      log_error "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
       exit 1
     fi
     export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
   fi
-  echo -e "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
 
 }
 
@@ -103,7 +103,7 @@ if [[ -z "${_CFG}" ]]; then
 fi
 
 if [[ ! -f "${_CFG}" ]]; then
-  echo "Configuration file not found: "${_CFG}
+  echo "Configuration file not found: ${_CFG}"
   usage
   exit 1
 fi
@@ -121,6 +121,12 @@ _SCRIPT_PATH="$(readlink -f "${_SCRIPT_PATH}")"
 _SCRIPT_DIR="$(cd -P "$(dirname -- "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
 
 #----------------------------------------------------
+if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh" ]]; then
+  echo "Error, log package not found !"
+  echo "Clone it alongside with other cp4ba-..."
+  echo "use the command: git clone https://github.com/marcoantonioni/cp4ba-logger"
+  exit 1
+fi
 source $_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh
 if [[ -z "${CP4BA_LOGGING_ENABLED}" ]]; then 
   export CP4BA_LOGGING_ENABLED=true
@@ -147,72 +153,71 @@ fi
 checkPrereqTools () {
   which curl &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, curl not installed, cannot proceed.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, curl not installed, cannot proceed.${_CLR_NC}"
     exit 1
   fi
 
   which kubectl &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, kubectl not installed, cannot proceed.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, kubectl not installed, cannot proceed.${_CLR_NC}"
     exit 1
   fi
 
   which podman &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, podman not installed, cannot proceed.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, podman not installed, cannot proceed.${_CLR_NC}"
     exit 1
   fi
 
-
   which jq &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, jq not installed, cannot proceed.${_CLR_NC}"
     exit 1
   fi
 
   which yq &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_RED}[✗] Error, yq not installed, cannot proceed.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Error, yq not installed, cannot proceed.${_CLR_NC}"
     exit 1
   fi
 
   which openssl &>/dev/null
   if [[ $? -ne 0 ]]; then
-    echo -e "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
+    log_error "${_CLR_YELLOW}[✗] Warning, openssl not installed, some activities may fail.${_CLR_NC}"
   fi
 }
 
 checkExtDbCertificates() {
 
-    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
-      CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
-    fi
-    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-      CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
-    fi
+  if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
+    CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
+  fi
+  if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+    CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
+  fi
 
-    if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
-      if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-        echo -e "${_CLR_RED}[✗] ERROR folder path not defined in 'CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER'${_CLR_GREEN}"
-        exit 1
-      else
-        if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
-          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
-          exit 1
-        fi      
-      fi
+  if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      log_error "${_CLR_RED}[✗] ERROR folder path not defined in 'CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER'${_CLR_GREEN}"
+      exit 1
     else
-      if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-        if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
-          exit 1        
-        fi
-        if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
-          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
-          exit 1
-        fi      
-      fi
+      if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
+        log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+        exit 1
+      fi      
     fi
+  else
+    if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+        log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
+        exit 1        
+      fi
+      if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
+        log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+        exit 1
+      fi      
+    fi
+  fi
 }
 
 testConfiguration () {
@@ -258,28 +263,28 @@ onboardUsers () {
 
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     if [[ -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
-      echo -e "${_CLR_RED}Error, LDAP configuration file value not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      log_error "${_CLR_RED}Error, LDAP configuration file value not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
       exit 1
     fi
     if [[ ! -f "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
-      echo -e "${_CLR_RED}Error, LDAP configuration file not not found for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      log_error "${_CLR_RED}Error, LDAP configuration file not not found for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
       exit 1
     fi
 
     if [[ -z "${CP4BA_INST_IDP_CFG_FILE}" ]]; then
-      echo -e "${_CLR_RED}Error, IDP configuration file value not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      log_error "${_CLR_RED}Error, IDP configuration file value not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
       exit 1
     fi
     if [[ ! -f "${CP4BA_INST_IDP_CFG_FILE}" ]]; then
-      echo -e "${_CLR_RED}Error, LDAP configuration file not not found for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      log_error "${_CLR_RED}Error, LDAP configuration file not not found for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
       exit 1
     fi
   fi
 
   source ${CP4BA_INST_LDAP_CFG_FILE}
   source ${CP4BA_INST_IDP_CFG_FILE} 
-  echo -e "=============================================================="
-  echo -e "${_CLR_GREEN}CP4BA Onboarding users${_CLR_NC}"
+  log_msg "=============================================================="
+  log_info "${_CLR_GREEN}CP4BA Onboarding users${_CLR_NC}"
 
   # !!! cp4admin perde ruoli Automation Administrator, Automation Developer se remove-and-add
   ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -e ${CP4BA_INST_NAMESPACE} -s -o add
@@ -287,11 +292,11 @@ onboardUsers () {
 
 #-------------------------------
 storageClassExist () {
-    if [ $(oc get sc $1 2>/dev/null | grep $1 2>/dev/null | wc -l) -lt 1 ];
-    then
-        return 0
-    fi
-    return 1
+  if [ $(oc get sc $1 2>/dev/null | grep $1 2>/dev/null | wc -l) -lt 1 ];
+  then
+    return 0
+  fi
+  return 1
 }
 
 checkStorageClasses () {
@@ -299,13 +304,13 @@ checkStorageClasses () {
 
   storageClassExist ${CP4BA_INST_SC_FILE}
   if [ $? -eq 0 ]; then
-    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not present in your OCP cluster${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_FILE}' not present in your OCP cluster${_CLR_NC}"
     _OK_VARS=0
   fi
 
   storageClassExist ${CP4BA_INST_SC_BLOCK}
   if [ $? -eq 0 ]; then
-    echo -e "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_BLOCK}' not present in your OCP cluster${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] Storage class '${CP4BA_INST_SC_BLOCK}' not present in your OCP cluster${_CLR_NC}"
     _OK_VARS=0
   fi
 
@@ -343,23 +348,23 @@ installAndVerifyCasePkgMgr () {
   fi
   if [[ $_ERR_PKG_MGR -eq 0 ]]; then
     if [[ ! -d "${_SCRIPTS}" ]]; then
-      echo -e "${_CLR_RED}Scripts folder not found: ${_SCRIPTS}${_CLR_NC}" 
+      log_error "${_CLR_RED}Scripts folder not found: ${_SCRIPTS}${_CLR_NC}" 
       usage
       exit 1
     fi
     if [[ ! -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
-      echo -e "${_CLR_RED}Script 'cp4a-clusteradmin-setup.sh' not found in folder: ${_SCRIPTS}${_CLR_NC}" 
+      log_error "${_CLR_RED}Script 'cp4a-clusteradmin-setup.sh' not found in folder: ${_SCRIPTS}${_CLR_NC}" 
       exit 1
     fi
     _COMMON_SCRIPT="${_SCRIPTS}/helper/common.sh"
     if [[ ! -f "${_COMMON_SCRIPT}" ]]; then
-      echo -e "${_CLR_RED}Script '${_COMMON_SCRIPT}' not found in folder: ${_SCRIPTS}${_CLR_NC}" 
+      log_error "${_CLR_RED}Script '${_COMMON_SCRIPT}' not found in folder: ${_SCRIPTS}${_CLR_NC}" 
       exit 1
     fi
 
     _RELEASE_BASE=$(grep "CP4BA_RELEASE_BASE=" ${_COMMON_SCRIPT} | sed 's/CP4BA_RELEASE_BASE="//g' | sed 's/"//g')
     if [[ -z "${_RELEASE_BASE}" ]]; then
-      echo -e "${_CLR_RED}Error, cannot detect value of 'CP4BA_RELEASE_BASE' in file '${_COMMON_SCRIPT}'${_CLR_NC}" 
+      log_error "${_CLR_RED}Error, cannot detect value of 'CP4BA_RELEASE_BASE' in file '${_COMMON_SCRIPT}'${_CLR_NC}" 
       exit 1
     fi
 
@@ -400,16 +405,16 @@ installAndVerifyCasePkgMgr () {
     _GREP_WHAT="REQUIREDVER_POSTGRESQL"
     export _REQUIREDVER_POSTGRESQL=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
-    echo -e "${_CLR_GREEN}Using CP4BA Case Manager v${_CPAK_MGR_VER} (Release/Patch version)${_CLR_NC}"
-    echo -e "${_CLR_GREEN}Release base                     '${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_GREEN}'${_CLR_NC}"
-    echo -e "${_CLR_GREEN}CP4BA patch version              '${_CLR_YELLOW}${_CP4BA_PATCH_VERSION}${_CLR_GREEN}'${_CLR_NC}"
-    echo -e "${_CLR_GREEN}CP4BA CSV version                '${_CLR_YELLOW}${_CP4BA_CSV_VERSION}${_CLR_GREEN}'${_CLR_NC}"
-    echo -e "${_CLR_GREEN}Common services operator version '${_CLR_YELLOW}${_CS_OPERATOR_VERSION}${_CLR_GREEN}'${_CLR_NC}"
-    echo -e "${_CLR_GREEN}Common services channel version  '${_CLR_YELLOW}${_CS_CHANNEL_VERSION}${_CLR_GREEN}'${_CLR_NC}"
-    echo -e "${_CLR_GREEN}Common services catalog version  '${_CLR_YELLOW}${_CS_CATALOG_VERSION}${_CLR_GREEN}'${_CLR_NC}"
-    echo -e "${_CLR_GREEN}Zen operator version             '${_CLR_YELLOW}${_ZEN_OPERATOR_VERSION}${_CLR_GREEN}'${_CLR_NC}"
-    echo -e "${_CLR_GREEN}BTS required version             '${_CLR_YELLOW}${_REQUIREDVER_BTS}${_CLR_GREEN}'${_CLR_NC}"
-    echo -e "${_CLR_GREEN}PostgreSQL required version      '${_CLR_YELLOW}${_REQUIREDVER_POSTGRESQL}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}Using CP4BA Case Manager v${_CPAK_MGR_VER} (Release/Patch version)${_CLR_NC}"
+    log_info "${_CLR_GREEN}Release base                     '${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}CP4BA patch version              '${_CLR_YELLOW}${_CP4BA_PATCH_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}CP4BA CSV version                '${_CLR_YELLOW}${_CP4BA_CSV_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}Common services operator version '${_CLR_YELLOW}${_CS_OPERATOR_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}Common services channel version  '${_CLR_YELLOW}${_CS_CHANNEL_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}Common services catalog version  '${_CLR_YELLOW}${_CS_CATALOG_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}Zen operator version             '${_CLR_YELLOW}${_ZEN_OPERATOR_VERSION}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}BTS required version             '${_CLR_YELLOW}${_REQUIREDVER_BTS}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}PostgreSQL required version      '${_CLR_YELLOW}${_REQUIREDVER_POSTGRESQL}${_CLR_GREEN}'${_CLR_NC}"
 
   fi
 }
@@ -422,7 +427,7 @@ initialChecks () {
   # verify logged in OCP
   oc whoami 2>/dev/null 1>/dev/null
   if [ $? -gt 0 ]; then
-    echo -e "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
+    log_error "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
     exit 1
   fi
 
@@ -433,7 +438,7 @@ oneShotInstallation () {
 
   _TRACE_PARAM=""
   if [[ $_TRACE -gt 0 ]]; then
-    echo -e "===>>> ${_CLR_YELLOW}RUNNING WITH TRACE ENABLED${_CLR_GREEN} <<<===${_CLR_NC}"
+    log_warning "===>>> ${_CLR_YELLOW}RUNNING WITH TRACE ENABLED${_CLR_GREEN} <<<===${_CLR_NC}"
 
     _TRACE_PARAM="-t"
   fi
@@ -484,21 +489,22 @@ oneShotInstallation () {
     TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
 
-    log_msg "${_CLR_YELLOW}***********************************************************************"
-    log_msg "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
-    log_msg "Terminated at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+    log_info "${_CLR_YELLOW}***********************************************************************"
+    log_info "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
+    _STOP_AT=$(date)
+    log_info "Terminated at ${_CLR_GREEN}${_STOP_AT}${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
 
-    log_msg "${_CLR_GREEN}Verifying pod status and Case initialization logs...${_CLR_NC}"
+    log_info "${_CLR_GREEN}Verifying pod status and Case initialization logs...${_CLR_NC}"
     _CASE_INIT_ERRORS=0
     _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
     if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
       _CASE_INIT_ERRORS=$(oc logs -n ${CP4BA_INST_NAMESPACE} $(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job  | awk '{print $1}') 2>/dev/null | egrep "SEVERE|Exception" | wc -l)
     fi
     if [[ $_PENDING -gt 0 ]]; then
-      log_msg "\x1B[1mPlease note${_CLR_NC}, some pods may be not yet ready. Check before using the system."
+      log_info "\x1B[1mPlease note${_CLR_NC}, some pods may be not yet ready. Check before using the system."
       oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending
       log_msg ""
-      log_msg "${_CLR_GREEN}For pod status run manually: ${_CLR_YELLOW}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
+      log_info "${_CLR_GREEN}For pod status run manually: ${_CLR_YELLOW}oc get pods -n ${CP4BA_INST_NAMESPACE} | grep Pending${_CLR_NC}"
     fi
 
     if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
@@ -510,12 +516,12 @@ oneShotInstallation () {
       fi
 
       log_warning "${_CLR_GREEN}PAY ATTENTION: The case completion job may take more time to complete${_CLR_NC}"
-      log_msg "${_CLR_GREEN}To verify the completion of Case subsys. installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
-      log_msg "${_CLR_GREEN}For Case initialization log/status/errors run manually:${_CLR_GREEN}"
-      log_msg "  logs   : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
-      log_msg "  errors : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | egrep 'SEVERE|Exception'${_CLR_GREEN}"
-      log_msg "  success: ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | grep 'INFO: Configuration Completed'${_CLR_GREEN}"
-      log_msg "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
+      log_info "${_CLR_GREEN}To verify the completion of Case subsys. installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
+      log_info "${_CLR_GREEN}For Case initialization log/status/errors run manually:${_CLR_GREEN}"
+      log_info "  logs   : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
+      log_info "  errors : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | egrep 'SEVERE|Exception'${_CLR_GREEN}"
+      log_info "  success: ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | grep 'INFO: Configuration Completed'${_CLR_GREEN}"
+      log_info "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
 
     fi
 
@@ -526,9 +532,8 @@ onExit () {
   # if pckgmgr dinamico rm folder
   if [[ "${_CPAK_MGR_FOLDER_REMOVE}" = "true" ]]; then
     if [[ -d "${_CPAK_MGR_FOLDER}" ]]; then 
-      echo -e "\n"
-      echo -e "Removing temporary folder: '${_CLR_GREEN}${_CPAK_MGR_FOLDER}${_CLR_NC}'"    
-      rm -fR ${_CPAK_MGR_FOLDER}
+      log_info "Removing temporary folder: '${_CLR_GREEN}${_CPAK_MGR_FOLDER}${_CLR_NC}'"    
+      rm -fR ${_CPAK_MGR_FOLDER} 2 >/dev/null
     fi
   fi
 }
@@ -536,9 +541,9 @@ onExit () {
 
 log_msg ""
 log_msg "${_CLR_GREEN}***********************************************************************"
-log_msg "Install CP4BA version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}' complete environment in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'"
+log_info "Install CP4BA version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}' complete environment in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'"
 _START_AT=$(date)
-log_msg "Started at ${CLR_YELLOW}${_START_AT}${_CLR_GREEN}"
+log_info "Started at ${CLR_YELLOW}${_START_AT}${_CLR_GREEN}"
 log_msg "***********************************************************************${_CLR_NC}"
 
 trap 'onExit' EXIT

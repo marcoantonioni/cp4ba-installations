@@ -15,6 +15,7 @@ _CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
+
 #--------------------------------------------------------
 _INST_TMP_FOLDER="/tmp"
 setTemporaryFolder () {
@@ -40,7 +41,7 @@ setTemporaryFolder () {
     fi
     export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
   fi
-  echo -e "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
 
 }
 
@@ -60,6 +61,46 @@ if [[ -z "${_CFG}" ]]; then
 fi
 
 source "${_CFG}"
+
+#----------------------------------------------------
+_SCRIPT_PATH="${BASH_SOURCE}"
+while [ -L "${_SCRIPT_PATH}" ]; do
+  _SCRIPT_DIR="$(cd -P "$(dirname "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+  _SCRIPT_PATH="$(readlink "${_SCRIPT_PATH}")"
+  [[ ${_SCRIPT_PATH} != /* ]] && _SCRIPT_PATH="${_SCRIPT_DIR}/${_SCRIPT_PATH}"
+done
+_SCRIPT_PATH="$(readlink -f "${_SCRIPT_PATH}")"
+_SCRIPT_DIR="$(cd -P "$(dirname -- "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+
+#----------------------------------------------------
+if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh" ]]; then
+  echo "Error, log package not found !"
+  echo "Clone it alongside with other cp4ba-..."
+  echo "use the command: git clone https://github.com/marcoantonioni/cp4ba-logger"
+  exit 1
+fi
+source $_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh
+if [[ -z "${CP4BA_LOGGING_ENABLED}" ]]; then 
+  export CP4BA_LOGGING_ENABLED=true
+fi
+if [[ -z "${CP4BA_LOG_LEVEL}" ]]; then 
+  export CP4BA_LOG_LEVEL="INFO"
+fi
+if [[ -z "${CP4BA_LOG_TO_CONSOLE}" ]]; then 
+  export CP4BA_LOG_TO_CONSOLE=true
+fi
+if [[ -z "${CP4BA_LOG_TO_FILE}" ]]; then 
+  export CP4BA_LOG_TO_FILE=false
+fi
+if [[ -z "${CP4BA_LOG_FILE}" ]]; then 
+  export CP4BA_LOG_FILE=""
+fi
+if [[ -z "${CP4BA_LOG_MAX_SIZE}" ]]; then 
+  export CP4BA_LOG_MAX_SIZE=$((10 * 1024 * 1024))
+fi
+if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then 
+  export CP4BA_LOG_BACKUP_COUNT=5
+fi
 
 resourceExist () {
 #    echo "namespace name: $1"
@@ -104,8 +145,8 @@ _deployDBClusterEDB () {
       _PG_IMAGE_NAME="${CP4BA_INST_DB_IMAGE}"
     fi
 
-    echo "Deploying cluster postgresql.k8s.enterprisedb.io name '$1'"
-    echo "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_PG_IMAGE_NAME}
+    log_info "Deploying cluster postgresql.k8s.enterprisedb.io name '$1'"
+    log_info "  CP4BA '${CP4BA_INST_APPVER}' use image name: "${_PG_IMAGE_NAME}
 
     _PG_CLUSTER_CR_TMP="${_INST_TMP_FOLDER}/cp4ba-pg-cluster-$USER-$RANDOM"
 
@@ -192,7 +233,7 @@ EOF
         
         # -- if OK end loop
         if [ $? -eq 1 ]; then
-          echo "Deployed cluster postgresql.k8s.enterprisedb.io name '$1'"
+          log_info "Deployed cluster postgresql.k8s.enterprisedb.io name '$1'"
           break
         else
           sleep 1
@@ -203,7 +244,7 @@ EOF
     rm ${_PG_CLUSTER_CR_TMP} 2>/dev/null 1>/dev/null
 
   else
-    echo -e "${_CLR_RED}[✗] ERROR: _deployDBClusterEDB name or namespace empty${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] ERROR: _deployDBClusterEDB name or namespace empty${_CLR_NC}"
     exit 1
   fi
 }
@@ -236,7 +277,7 @@ _deployPostgresNoSSL () {
     if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE}"  ]]; then
       cp ${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE} ${_PG_CONF_FOLDER}/
     else
-      echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresNoSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE}${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] ERROR: _deployPostgresNoSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE}${_CLR_NC}"
       exit 1
     fi
 
@@ -263,7 +304,7 @@ _deployPostgresNoSSL () {
         
         # -- if OK end loop
         if [ $? -eq 1 ]; then
-          echo -e "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
+          log_info "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
           break
         else
           sleep 1
@@ -278,7 +319,7 @@ _deployPostgresNoSSL () {
     fi
 
   else
-    echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresNoSSL name or namespace empty${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] ERROR: _deployPostgresNoSSL name or namespace empty${_CLR_NC}"
     exit 1
   fi
 }
@@ -389,22 +430,22 @@ checkExtDbCertificates() {
 
     if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
       if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-        echo -e "${_CLR_RED}[✗] ERROR folder path not defined in 'CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER'${_CLR_GREEN}"
+        log_error "${_CLR_RED}[✗] ERROR folder path not defined in 'CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER'${_CLR_GREEN}"
         exit 1
       else
         if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
-          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+          log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
           exit 1
         fi      
       fi
     else
       if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
         if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
+          log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
           exit 1        
         fi
         if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
-          echo -e "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+          log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
           exit 1
         fi      
       fi
@@ -462,13 +503,13 @@ _deployPostgresSSL () {
       if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}"  ]]; then
         cp ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE} ${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
       else
-        echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}${_CLR_NC}"
+        log_error "${_CLR_RED}[✗] ERROR: _deployPostgresSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}${_CLR_NC}"
         exit 1
       fi
       if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE}"  ]]; then
         cp ${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE} ${_PG_HBA_CONF_FILE_TMP} 2>/dev/null 1>/dev/null
       else
-        echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE}${_CLR_NC}"
+        log_error "${_CLR_RED}[✗] ERROR: _deployPostgresSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_PGHBA_TEMPLATE}${_CLR_NC}"
         exit 1
       fi
 
@@ -503,7 +544,7 @@ _deployPostgresSSL () {
           
           # -- if OK end loop
           if [ $? -eq 1 ]; then
-            echo -e "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
+            log_info "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
             break
           else
             sleep 1
@@ -554,13 +595,13 @@ _deployPostgresSSL () {
           rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
         fi
       else
-        echo -e "${_CLR_GREEN}The database server is configured with self signed certificates stored in folder '${_CLR_YELLOW}${_PG_SECRETS_FOLDER}${_CLR_GREEN}' reuse it for client side components with following export."
-        echo -e "${_CLR_YELLOW}export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=\"${_PG_SECRETS_FOLDER}\"${_CLR_GREEN}"
+        log_info "${_CLR_GREEN}The database server is configured with self signed certificates stored in folder '${_CLR_YELLOW}${_PG_SECRETS_FOLDER}${_CLR_GREEN}' reuse it for client side components with following export."
+        log_info "${_CLR_YELLOW}export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=\"${_PG_SECRETS_FOLDER}\"${_CLR_GREEN}"
       fi
 
     fi
   else
-    echo -e "${_CLR_RED}[✗] ERROR: _deployPostgresSSL name or namespace empty${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] ERROR: _deployPostgresSSL name or namespace empty${_CLR_NC}"
     exit 1
   fi
 }
@@ -590,11 +631,11 @@ deployDBCluster() {
 # $2: CR name
 # $3: namespace
   if [[ "$1" = "true" ]]; then
-    echo -e "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_GREEN}' in namespace '${_CLR_YELLOW}$3${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_GREEN}' in namespace '${_CLR_YELLOW}$3${_CLR_GREEN}'${_CLR_NC}"
     _deployDBCluster "$2" "$3" "$4"
   else
     if [[ "${CP4BA_INST_DB_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
-      echo -e "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_GREEN}' in external namespace '${_CLR_YELLOW}$3${_CLR_GREEN}'${_CLR_NC}"
+      log_info "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_GREEN}' in external namespace '${_CLR_YELLOW}$3${_CLR_GREEN}'${_CLR_NC}"
 
       namespaceExist "${CP4BA_INST_DB_NAMESPACE}"
       if [ $? -eq 0 ]; then
@@ -614,13 +655,13 @@ EOF
 
       _deployDBCluster "$2" "$3" "$4"
     else
-      echo -e "${_CLR_YELLOW}Skipping deployment of DB Cluster '${_CLR_GREEN}$1${_CLR_YELLOW}'${_CLR_NC}"
+      log_info "${_CLR_YELLOW}Skipping deployment of DB Cluster '${_CLR_GREEN}$1${_CLR_YELLOW}'${_CLR_NC}"
     fi
   fi
 }
 
 waitForClustersPostgresCRD () {
-  echo "Wait for CR and Operator of 'clusters.postgresql.k8s.enterprisedb.io' (may take minutes)"
+  log_info "Wait for CR and Operator of 'clusters.postgresql.k8s.enterprisedb.io' (may take minutes)"
 
   if [ $(oc get crd clusters.postgresql.k8s.enterprisedb.io --no-headers 2> /dev/null | wc -l) -lt 1 ]; then
     while true 
@@ -648,7 +689,7 @@ waitForClustersPostgresCRD () {
     #echo ""
   fi
 
-  echo "Wait for pod 'postgresql-operator-controller-manager' creation ..."
+  log_info "Wait for pod 'postgresql-operator-controller-manager' creation ..."
 
   while true 
   do
@@ -659,7 +700,7 @@ waitForClustersPostgresCRD () {
     fi
   done
 
-  echo "Wait for pod 'postgresql-operator-controller-manager...' ready ..."
+  log_info "Wait for pod 'postgresql-operator-controller-manager...' ready ..."
   START_SECONDS=$SECONDS
 
   while true 
@@ -669,7 +710,7 @@ waitForClustersPostgresCRD () {
     if [[ ! -z "${_PSQL_OCM_POD}" ]]; then
       _IS_READY=$(oc get pods -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PSQL_OCM_POD} | grep -m 1 "Running" | wc -l)
       if [ $_IS_READY -gt 0 ]; then
-        echo "Pod 'postgresql-operator-controller-manager...' is ready"
+        log_info "Pod 'postgresql-operator-controller-manager...' is ready"
         break
       else
         NOW_SECONDS=$SECONDS
@@ -710,8 +751,7 @@ deployDBClusters() {
 
 #==================================
 
-# echo -e "=============================================================="
-echo -e "${_CLR_GREEN}Deploying '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' DB Clusters in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
+log_info "${_CLR_GREEN}Deploying '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' DB Clusters in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 setTemporaryFolder
 checkExtDbCertificates

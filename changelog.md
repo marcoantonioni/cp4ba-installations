@@ -1,6 +1,16 @@
 
 # Change Log
 
+## [1.4.1] - 2026-05-12
+
+### Added
+
+### Changed
+
+Log messages
+
+### Fixed
+
 ## [1.4] - 2026-05-10
 
 ### Added

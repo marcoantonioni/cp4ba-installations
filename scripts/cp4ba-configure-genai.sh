@@ -14,6 +14,7 @@ _CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
+
 #--------------------------------------------------------
 _INST_TMP_FOLDER="/tmp"
 setTemporaryFolder () {
@@ -39,7 +40,7 @@ setTemporaryFolder () {
     fi
     export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
   fi
-  echo -e "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
 
 }
 
@@ -58,6 +59,46 @@ if [[ -z "${_CFG}" ]]; then
 fi
 
 source "${_CFG}"
+
+#----------------------------------------------------
+_SCRIPT_PATH="${BASH_SOURCE}"
+while [ -L "${_SCRIPT_PATH}" ]; do
+  _SCRIPT_DIR="$(cd -P "$(dirname "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+  _SCRIPT_PATH="$(readlink "${_SCRIPT_PATH}")"
+  [[ ${_SCRIPT_PATH} != /* ]] && _SCRIPT_PATH="${_SCRIPT_DIR}/${_SCRIPT_PATH}"
+done
+_SCRIPT_PATH="$(readlink -f "${_SCRIPT_PATH}")"
+_SCRIPT_DIR="$(cd -P "$(dirname -- "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
+
+#----------------------------------------------------
+if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh" ]]; then
+  echo "Error, log package not found !"
+  echo "Clone it alongside with other cp4ba-..."
+  echo "use the command: git clone https://github.com/marcoantonioni/cp4ba-logger"
+  exit 1
+fi
+source $_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh
+if [[ -z "${CP4BA_LOGGING_ENABLED}" ]]; then 
+  export CP4BA_LOGGING_ENABLED=true
+fi
+if [[ -z "${CP4BA_LOG_LEVEL}" ]]; then 
+  export CP4BA_LOG_LEVEL="INFO"
+fi
+if [[ -z "${CP4BA_LOG_TO_CONSOLE}" ]]; then 
+  export CP4BA_LOG_TO_CONSOLE=true
+fi
+if [[ -z "${CP4BA_LOG_TO_FILE}" ]]; then 
+  export CP4BA_LOG_TO_FILE=false
+fi
+if [[ -z "${CP4BA_LOG_FILE}" ]]; then 
+  export CP4BA_LOG_FILE=""
+fi
+if [[ -z "${CP4BA_LOG_MAX_SIZE}" ]]; then 
+  export CP4BA_LOG_MAX_SIZE=$((10 * 1024 * 1024))
+fi
+if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then 
+  export CP4BA_LOG_BACKUP_COUNT=5
+fi
 
 #--------------------------------------------------------
 resourceExist () {
@@ -94,7 +135,7 @@ _createWxSecret () {
     rm ${_WX_GENAI_TMP} 2>/dev/null 1>/dev/null
 
   else
-    echo -e "${_CLR_RED}[✗] ERROR: _createWxSecret secret name or namespace empty${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] ERROR: _createWxSecret secret name or namespace empty${_CLR_NC}"
     exit 1
   fi
 }
@@ -133,7 +174,7 @@ waitForBawStatefulSetReady () {
       break
     fi
   done
-  echo -e "${_CLR_YELLOW}READY${_CLR_GREEN}${_CLR_NC}"
+  log_info "${_CLR_YELLOW}READY${_CLR_GREEN}${_CLR_NC}"
 }
 
 #--------------------------------------------------------
@@ -141,7 +182,7 @@ _createGenAiConfiguration () {
 
   BA_DN=$(oc get ICP4ACluster -n $1 --no-headers | awk '{print $1}')
   if [[ ! -z "${BA_DN}" ]]; then
-    echo -e "${_CLR_GREEN}Patching ICP4ACluster '${_CLR_YELLOW}${BA_DN}${_CLR_GREEN}'${_CLR_NC}"
+    log_info "${_CLR_GREEN}Patching ICP4ACluster '${_CLR_YELLOW}${BA_DN}${_CLR_GREEN}'${_CLR_NC}"
 
     _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-$USER-$RANDOM"
 
@@ -169,7 +210,7 @@ _createGenAiConfiguration () {
       echo '        </server>' >> ${_WX_GENAI_TMP}
       echo '      </properties>' >> ${_WX_GENAI_TMP}
 
-      echo -e "${_CLR_GREEN}Patching BAS section in CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
+      log_info "${_CLR_GREEN}Patching BAS section in CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
       oc patch ICP4ACluster ${BA_DN} -n $1 --type=merge --patch-file=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
 
       rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
@@ -179,7 +220,7 @@ _createGenAiConfiguration () {
 
         if [[ "${CP4BA_INST_BAS_GENAI_ENABLED}" = "true" ]]; then
           waitForBawStatefulSetReady "bastudio" "deployment"
-          echo -e "${_CLR_GREEN}Patching BAS section in CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
+          log_info "${_CLR_GREEN}Patching BAS section in CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
           _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-100Custom-$USER-$RANDOM"
 
@@ -267,7 +308,7 @@ _createGenAiConfiguration () {
           _APIKEY="${!__BAW_WX_APIKEY}"
           if [[ "${_INST}" = "true" ]] && [[ "${_GENAI}" = "true" ]]; then
             waitForBawStatefulSetReady "${_NAME}" "baw-server"
-            echo -e "${_CLR_GREEN}Patching BAW section in CR '${_CLR_YELLOW}${_NAME}${_CLR_GREEN}'${_CLR_NC}"
+            log_info "${_CLR_GREEN}Patching BAW section in CR '${_CLR_YELLOW}${_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
             _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-100Custom-$USER-$RANDOM"
 
@@ -336,7 +377,7 @@ _createGenAiConfiguration () {
             _NAME=""
           else
             if [[ ! -z "${_NAME}" ]]; then
-              echo -e "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+              log_warning "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${_NAME}"${_CLR_GREEN}'${_CLR_NC}"
             fi 
           fi
           ((i=i+1))
@@ -345,10 +386,10 @@ _createGenAiConfiguration () {
 
     fi
 
-    echo -e "${_CLR_GREEN}Please wait for patched BAW to restart to enable the workflow assistant${_CLR_NC}"
+    log_info "${_CLR_GREEN}Please wait for patched BAW to restart to enable the workflow assistant${_CLR_NC}"
   else
     
-    echo -e "${_CLR_RED}[✗] ERROR: _createGenAiConfiguration GenAI configuration error, ICP4ACluster object not found.${_CLR_NC}"
+    log_error "${_CLR_RED}[✗] ERROR: _createGenAiConfiguration GenAI configuration error, ICP4ACluster object not found.${_CLR_NC}"
     exit 1
   fi
 }
@@ -387,7 +428,7 @@ _verifyVars() {
       fi
     fi
     if [[ "${_KO_CFG}" = "true" ]]; then
-      echo -e "${_CLR_RED}[✗] ERROR: _verifyVars GenAI configuration error, verify values for:${_CLR_YELLOW}${_WRONG_VARS}${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] ERROR: _verifyVars GenAI configuration error, verify values for:${_CLR_YELLOW}${_WRONG_VARS}${_CLR_NC}"
       return 0
     fi
     return 1
@@ -416,10 +457,10 @@ configureGenAI() {
       if [[ ${CP4BA_INST_DEPL_PATTERNS} == *"workflow"* ]]; then
         _createGenAiConfiguration $1
       else
-        echo -e "${_CLR_RED}[✗] Error, deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_RED}' capability.${_CLR_NC}"
+        log_error "${_CLR_RED}[✗] Error, deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_RED}' capability.${_CLR_NC}"
       fi
     else
-      echo -e "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
       exit 1
     fi
   fi  
@@ -428,8 +469,8 @@ configureGenAI() {
 
 #==================================
 
-echo -e "${_CLR_YELLOW}==============================================================${_CLR_NC}"
-echo -e "${_CLR_GREEN}Configuring GenAI in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
+log_msg "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+log_info "${_CLR_GREEN}Configuring GenAI in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 setTemporaryFolder
 configureGenAI ${CP4BA_INST_NAMESPACE}

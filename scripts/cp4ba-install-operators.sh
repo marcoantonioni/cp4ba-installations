@@ -15,6 +15,39 @@ _CLR_YELLOW="\033[1;33m"   #'1;32' is Yellow's ANSI color code
 _CLR_BLUE="\033[0;34m"   #'0;34' is Blue's ANSI color code
 _CLR_NC="\033[0m"
 
+
+#--------------------------------------------------------
+# read command line params
+while getopts c:s: flag
+do
+    case "${flag}" in
+        c) _CFG=${OPTARG};;
+        s) _SCRIPTS=${OPTARG};;
+    esac
+done
+
+usage () {
+  echo ""
+  echo "${_CLR_GREEN}usage: $_me
+    -c full-path-to-config-file
+       (eg: '../configs/env1.properties')
+    -s full-path-to-folder-for-case-package-manager${_CLR_NC}"
+}
+
+if [[ -z "${_CFG}" ]]; then
+  echo "Configuration file name empty"
+  usage
+  exit 1
+fi
+
+if [[ ! -f "${_CFG}" ]]; then
+  echo "Configuration file not found: "${_CFG}
+  usage
+  exit 1
+fi
+
+source "${_CFG}"
+
 #----------------------------------------------------
 _SCRIPT_PATH="${BASH_SOURCE}"
 while [ -L "${_SCRIPT_PATH}" ]; do
@@ -26,6 +59,12 @@ _SCRIPT_PATH="$(readlink -f "${_SCRIPT_PATH}")"
 _SCRIPT_DIR="$(cd -P "$(dirname -- "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
 
 #----------------------------------------------------
+if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh" ]]; then
+  echo "Error, log package not found !"
+  echo "Clone it alongside with other cp4ba-..."
+  echo "use the command: git clone https://github.com/marcoantonioni/cp4ba-logger"
+  exit 1
+fi
 source $_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh
 if [[ -z "${CP4BA_LOGGING_ENABLED}" ]]; then 
   export CP4BA_LOGGING_ENABLED=true
@@ -48,39 +87,6 @@ fi
 if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then 
   export CP4BA_LOG_BACKUP_COUNT=5
 fi
-
-#--------------------------------------------------------
-# read command line params
-while getopts c:s: flag
-do
-    case "${flag}" in
-        c) _CFG=${OPTARG};;
-        s) _SCRIPTS=${OPTARG};;
-    esac
-done
-
-usage () {
-  log_msg ""
-  log_msg "${_CLR_GREEN}usage: $_me
-    -c full-path-to-config-file
-       (eg: '../configs/env1.properties')
-    -s full-path-to-folder-for-case-package-manager${_CLR_NC}"
-}
-
-if [[ -z "${_CFG}" ]]; then
-  log_error "Configuration file name empty"
-  usage
-  exit 1
-fi
-
-if [[ ! -f "${_CFG}" ]]; then
-  log_error "Configuration file not found: "${_CFG}
-  usage
-  exit 1
-fi
-
-source "${_CFG}"
-
 
 
 #-------------------------------
@@ -168,7 +174,7 @@ checkPrereqVars () {
 
 
 log_msg "${_CLR_NC}=============================================================="
-log_msg "Install CP4BA Operators in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
+log_info "Install CP4BA Operators in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
 log_msg "==============================================================${_CLR_NC}"
 
 START_SECONDS=$SECONDS
@@ -196,16 +202,16 @@ EOF
 
 if [[ -z "${CP4BA_INST_ANYUID}" || "${CP4BA_INST_ANYUID}" = "true" ]]; then 
   oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
-  log_msg "${_CLR_GREEN}Install ${_CLR_YELLOW}with${_CLR_GREEN} SCC anyuid${_CLR_NC}"
+  log_info "${_CLR_GREEN}Install ${_CLR_YELLOW}with${_CLR_GREEN} SCC anyuid${_CLR_NC}"
 else
-  log_msg "${_CLR_GREEN}Install ${_CLR_YELLOW}without${_CLR_GREEN} SCC anyuid${_CLR_NC}"
+  log_info "${_CLR_GREEN}Install ${_CLR_YELLOW}without${_CLR_GREEN} SCC anyuid${_CLR_NC}"
 fi
 
 _OK=false
 if [[ ! -z "${_SCRIPTS}" ]]; then
   if [[ -d "${_SCRIPTS}" ]]; then
     if [[ -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
-      log_msg "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
+      log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
       _ACT_DIR=$(pwd)
       cd ${_SCRIPTS}
       export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
@@ -243,7 +249,7 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
 
       if [ $? -eq 0 ]; then
         rm ./_clusteradmin.out
-        log_msg "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
+        log_info "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
         _OK=true
       else
         if [[ -f "./_clusteradmin.out" ]]; then
@@ -271,6 +277,7 @@ STOP_SECONDS=$SECONDS
 ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
 TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
 TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
-log_msg "CP4BA Operators installed at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+_MSG="CP4BA Operators installed at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+log_info "${_MSG}" 
 
 exit 0
