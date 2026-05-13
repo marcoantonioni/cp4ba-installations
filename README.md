@@ -29,6 +29,8 @@ The main objective of this repository is the further simplification and automati
 
 I hope it can help you and make CP4BA adoption even easier for novices.
 
+[Installation Guide detailed documentation](https://github.com/marcoantonioni/cp4ba-documentation)
+
 ## How this idea was born
 
 One day I was bored with having to repeat the same sequence of activities often and I asked myself: "what if I automate everything?"
