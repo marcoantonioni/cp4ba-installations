@@ -30,6 +30,7 @@ The main objective of this repository is the further simplification and automati
 I hope it can help you and make CP4BA adoption even easier for novices.
 
 [Installation Guide detailed documentation](https://github.com/marcoantonioni/cp4ba-documentation)
+<a href="https://github.com/marcoantonioni/cp4ba-documentation" target="_blank">Installation Guide detailed documentation</a>
 
 ## How this idea was born
 

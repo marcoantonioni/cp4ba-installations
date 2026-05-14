@@ -1,6 +1,7 @@
 output/*.yaml
 output/*.sql
 output/*.txt
+output/*.log
 scratchpad.txt
 
 
