@@ -40,8 +40,6 @@ Maybe to exaggerate even more I could also add a Portal Federation Server and co
 
 In the end I created this repository and since my role in IBM is that of presales I decided to make it public to help customers, business partners and also my IBM colleagues.
 
-I cannot exclude that in some time I will try to define some 'Skills' in <b>IBM watsonx Orchestrate</b> to simplify these activities even more ;)
-
 ## Compatibility with CP4BA versions
 
 These tools were developed starting from CP4BA v23.0.2 and Case Installation Manager v5.1.0.
