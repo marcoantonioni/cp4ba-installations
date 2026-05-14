@@ -469,7 +469,7 @@ configureGenAI() {
 
 #==================================
 
-log_msg "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+log_msg "==============================================================${_CLR_NC}"
 log_info "${_CLR_GREEN}Configuring GenAI in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 setTemporaryFolder

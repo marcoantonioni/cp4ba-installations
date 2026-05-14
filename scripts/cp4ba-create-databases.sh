@@ -341,7 +341,7 @@ createDatabases () {
   done  
 }
 
-log_msg "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+log_msg "==============================================================${_CLR_NC}"
 
 if [[ "${CP4BA_INST_DB}" = "true" ]] || [[ "${_FORCE}" == "true" ]]; then
   if [[ "${_GENERATE_SQL_ONLY}" = "false" ]]; then

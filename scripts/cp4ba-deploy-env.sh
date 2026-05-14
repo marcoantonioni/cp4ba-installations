@@ -411,7 +411,7 @@ deployPFS () {
       echo "CP4BA_INST_PFS_APP_VER=\"${CP4BA_INST_PFS_APP_VER}\"" >> ${_PFS_PARAMS_FILE}
       echo "CP4BA_INST_PFS_ADMINUSER=\"${CP4BA_INST_PFS_ADMINUSER}\"" >> ${_PFS_PARAMS_FILE}
 
-      log_msg "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+      log_msg "==============================================================${_CLR_NC}"
       log_info "${_CLR_GREEN}Deploy PFS: '${_CLR_YELLOW}${CP4BA_INST_PFS_NAME}${_CLR_GREEN}'${_CLR_NC}"
       # launch in embedded mode, no wait
       /bin/bash ${_PFS_SCRIPT} -c ${_PFS_PARAMS_FILE} -e 1>/dev/null
@@ -708,7 +708,7 @@ zenCertInTrustedList () {
 }
 
 waitDeploymentReadiness () {
-  log_msg "${_CLR_YELLOW}==============================================================${_CLR_NC}"
+  log_msg "==============================================================${_CLR_NC}"
   log_info "${_CLR_GREEN}Configuration and deployment complete for CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' in  namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
   log_info "Waiting for CR configurations to complete."
 
@@ -790,7 +790,7 @@ waitDeploymentReadiness () {
         for (( i=0; i<$NUM_KEYS; i++ ));
         do
           KEY=$(echo $ACC_INFO | jq keys[$i])
-          log_info "  saving access-info data for key: ${_CLR_YELLOW}${KEY}${_CLR_GREEN}"
+          log_info "${_CLR_GREEN}Saving access-info data for key: ${_CLR_YELLOW}${KEY}${_CLR_GREEN}"
           echo $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${_FULL_TXT_NAME}
         done
 
@@ -854,7 +854,7 @@ waitDeploymentReadiness () {
 }
 
 
-log_msg "${_CLR_GREEN}=============================================================="
+log_msg "=============================================================="
 log_info "Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 log_info "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
 
