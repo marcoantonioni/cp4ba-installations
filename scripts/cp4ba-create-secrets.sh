@@ -142,6 +142,7 @@ createSecretFNCM () {
   _ERR=0  
   if [[ ! -z "${CP4BA_INST_DB_BAWDOCS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWDOS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWTOS_USER}" ]]; then
     [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectstores users)${_CLR_NC}'"    
+    oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
       --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
       --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
@@ -173,6 +174,7 @@ createSecretFNCM () {
   else
     if [[ ! -z "${CP4BA_INST_DB_OS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_GCD_USER}" ]]; then
       [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM objectstores users)${_CLR_NC}'"
+      oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
       oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
         --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
         --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
@@ -185,6 +187,7 @@ createSecretFNCM () {
       _ERR=$?
     else
       [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-fncm-secret (APP only)${_CLR_NC}'"
+      oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
       oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
         --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
         --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
@@ -389,6 +392,7 @@ EOF
 
 _SECRET_NAME="my-liberty-custom-xml-secret"
 [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
 oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 if [[ $? -gt 0 ]]; then
   _ERROR=1
@@ -506,6 +510,7 @@ EOF
 
 _SECRET_NAME="my-lombardi-custom-xml-secret"
 [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
 oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
 if [[ $? -gt 0 ]]; then
@@ -542,6 +547,7 @@ createSecretADS () {
   [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-dba-ads-mongo-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-mongo-secret 2> /dev/null 1> /dev/null
   if [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_USER}" ]] && [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" ]]; then
+    oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-mongo-secret 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-dba-ads-mongo-secret \
       --from-literal=mongoUser="${CP4BA_INST_ADS_SECRETS_MONGO_USER}" \
       --from-literal=mongoPassword="${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" 2> /dev/null 1> /dev/null
