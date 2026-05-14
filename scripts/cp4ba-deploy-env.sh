@@ -791,7 +791,7 @@ waitDeploymentReadiness () {
         do
           KEY=$(echo $ACC_INFO | jq keys[$i])
           log_info "${_CLR_GREEN}Saving access-info data for key: ${_CLR_YELLOW}${KEY}${_CLR_GREEN}"
-          echo $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d') >> ${_FULL_TXT_NAME}
+          echo $(echo $ACC_INFO | jq .[$KEY] | sed 's/"//g' | sed '/^$/d' | sed 's/\\n/ - /g') >> ${_FULL_TXT_NAME}
         done
 
         _ADMINUSER=$(oc get secrets -n ${CP4BA_INST_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 -d)
