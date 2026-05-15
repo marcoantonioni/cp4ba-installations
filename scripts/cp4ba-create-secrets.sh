@@ -9,7 +9,7 @@ _CFG=""
 _WAIT="false"
 _SILENT="false"
 _ERROR=0
-_VERBOSE="false"
+_VERBOSE="true"
 
 _maxWait=5
 
