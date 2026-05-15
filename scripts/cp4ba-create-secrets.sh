@@ -635,7 +635,7 @@ metadata:
   labels:
     cp4ba.ibm.com/backup-type: mandatory
 data:
-  serverName: "${CP4BA_INST_DB_1_SERVICE_SSL}"
+  serverName: "${CP4BA_INST_DB_1_SERVER_NAME_SSL}"
   portNumber: "${CP4BA_INST_DB_SERVER_PORT}"
   databaseName: bts
   ssl: "true"

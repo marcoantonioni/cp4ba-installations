@@ -304,7 +304,8 @@ _deployPostgresNoSSL () {
         
         # -- if OK end loop
         if [ $? -eq 1 ]; then
-          log_info "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
+          log_info "${_CLR_GREEN}Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
+          log_info "${_CLR_GREEN}DB FQDN '${_CLR_YELLOW}${CP4BA_INST_DB_1_SERVER_NAME}${_CLR_GREEN}'"
           break
         else
           sleep 1
@@ -544,7 +545,8 @@ _deployPostgresSSL () {
           
           # -- if OK end loop
           if [ $? -eq 1 ]; then
-            log_info "Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
+            log_info "${_CLR_GREEN}Deployed statefulset name '${_CLR_YELLOW}${_PG_SS_NAME}${_CLR_NC}' using image name '${_CLR_YELLOW}${_PG_IMAGE_NAME}${_CLR_NC}'"
+            log_info "${_CLR_GREEN}DB FQDN '${_CLR_YELLOW}${CP4BA_INST_DB_1_SERVER_NAME_SSL}${_CLR_GREEN}'"
             break
           else
             sleep 1
