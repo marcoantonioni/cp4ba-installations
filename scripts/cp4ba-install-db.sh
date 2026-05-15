@@ -616,10 +616,11 @@ _deployDBCluster () {
     # always TLS
     _deployPostgresSSL "$3" "$2"
     sleep 5
+    log_info "${_CLR_GREEN}Installing DBs with CP4BA_INST_DB_ONLY_SSL=${CP4BA_INST_DB_ONLY_SSL}"
     if [[ -z "${CP4BA_INST_DB_ONLY_SSL}" ]]; then
       export CP4BA_INST_DB_ONLY_SSL="false"
     fi
-    if [[ "${CP4BA_INST_DB_ONLY_SSL}" != "true" ]]; then
+    if [[ "${CP4BA_INST_DB_ONLY_SSL}" = "false" ]]; then
       _deployPostgresNoSSL "$1" "$2"
       log_info "${_CLR_GREEN}This deployment uses two db, one with TLS configuration"
     else
