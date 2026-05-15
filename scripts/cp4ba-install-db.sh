@@ -608,11 +608,21 @@ _deployPostgresSSL () {
 
 _deployDBCluster () {
   if [[ -z "${CP4BA_INST_DB_USE_EDB}" ]] || [[ "${CP4BA_INST_DB_USE_EDB}" = "true" ]]; then
+    # To be refactored for TLS
     _deployDBClusterEDB "$1" "$2"
   else
-    _deployPostgresNoSSL "$1" "$2"
-    sleep 5
+    # always TLS
     _deployPostgresSSL "$3" "$2"
+    sleep 5
+    if [[ -z "${CP4BA_INST_DB_ONLY_SSL}" ]]; then
+      export CP4BA_INST_DB_ONLY_SSL="false"
+    fi
+    if [[ "${CP4BA_INST_DB_ONLY_SSL}" != "true" ]]; then
+      _deployPostgresNoSSL "$1" "$2"
+      log_info "${_CLR_GREEN}This deployment uses two db, one with TLS configuration"
+    else
+      log_info "${_CLR_GREEN}This deployment uses only one db with TLS configuration"
+    fi    
   fi
 
 }
