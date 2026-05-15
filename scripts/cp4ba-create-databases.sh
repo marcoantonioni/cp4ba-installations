@@ -327,7 +327,8 @@ createDatabases () {
         if [[ -z "${CP4BA_INST_DB_ONLY_SSL}" ]]; then
           export CP4BA_INST_DB_ONLY_SSL="false"
         fi
-        if [[ "${CP4BA_INST_DB_ONLY_SSL}" != "true" ]]; then
+        log_info "${_CLR_GREEN}Creating DBs with CP4BA_INST_DB_ONLY_SSL=${CP4BA_INST_DB_ONLY_SSL}"
+        if [[ "${CP4BA_INST_DB_ONLY_SSL}" = "false" ]]; then
           _createDatabases ${!_INST_DB_CR_NAME} ${!_INST_DB_TEMPLATE} ${_DB_CR_NAME_SUFFIX}
         fi    
 
