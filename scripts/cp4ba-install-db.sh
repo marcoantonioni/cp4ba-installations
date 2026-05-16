@@ -275,7 +275,7 @@ _deployPostgresNoSSL () {
     mkdir -p "${_PG_CONF_FOLDER}" 2>/dev/null 1>/dev/null
 
     if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE}"  ]]; then
-      cp ${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE} ${_PG_CONF_FOLDER}/
+      cp ${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE} ${_PG_CONF_FOLDER}/postgresql_nossl.conf
     else
       log_error "${_CLR_RED}[✗] ERROR: _deployPostgresNoSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_TEMPLATE}${_CLR_NC}"
       exit 1
@@ -502,7 +502,7 @@ _deployPostgresSSL () {
       _PG_HBA_CONF_FILE=${_PG_CONF_FOLDER}/pg_hba.conf
 
       if [[ -f "${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}"  ]]; then
-        cp ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE} ${_PG_CONF_FOLDER}/ 2>/dev/null 1>/dev/null
+        cp ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE} ${_PG_CONF_FOLDER}/postgresql_ssl.conf 2>/dev/null 1>/dev/null
       else
         log_error "${_CLR_RED}[✗] ERROR: _deployPostgresSSL template not found: ${CP4BA_INST_DB_POSTGRES_CONF_SSL_TEMPLATE}${_CLR_NC}"
         exit 1
