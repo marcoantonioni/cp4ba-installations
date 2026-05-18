@@ -30,11 +30,10 @@ spec:
             storage: ${CP4BA_INST_DB_STORAGE_SIZE}
         storageClassName: ${CP4BA_INST_SC_FILE} # ${CP4BA_SC_NAME}
         volumeMode: Filesystem
-      #status:
-      #  phase: Pending
+      status:
+        phase: Pending
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: ${_PG_SS_NAME}
     spec:
@@ -51,8 +50,6 @@ spec:
 
       # 20260223
       volumes:
-        #- name: data-volume
-        #  emptyDir: {}
         - name: config-vol
           configMap:
             name: ${_PG_CONFIG_CM}
@@ -67,7 +64,6 @@ spec:
             
       containers:
         - name: postgres
-
           image: '${_PG_IMAGE_NAME}'
           ports:
             - name: postgres
@@ -76,8 +72,6 @@ spec:
           env:
             - name: POSTGRES_PASSWORD
               value: "${CP4BA_INST_DB_OSS_ADMIN_PASSWORD}"
-            #- name: PGDATA
-            #  value: /etc/postgresql-data
           resources:
             limits:
               cpu: "${CP4BA_INST_DB_LIMITS_CPU}"
@@ -88,16 +82,14 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           imagePullPolicy: IfNotPresent
-
           #20260223
           volumeMounts:
             - name: config-vol
               mountPath: /etc/postgresql/
             - name: postgres-storage
-              mountPath: "${CP4BA_INST_DB_POSTGRES_MOUNTPATH}" # /var/lib/postgresql
+              mountPath: "${CP4BA_INST_DB_POSTGRES_MOUNTPATH}"
             - name: secret-vol
               mountPath: /etc/postgresql-secrets
-                  
           args:
             - -c
             - hba_file=/etc/postgresql/pg_hba.conf
