@@ -1,6 +1,16 @@
 
 # Change Log
 
+## [1.4.2] - 2026-05-18
+
+### Added
+
+### Changed
+
+Postgres storage configuration
+
+### Fixed
+
 ## [1.4.1] - 2026-05-12
 
 ### Added
