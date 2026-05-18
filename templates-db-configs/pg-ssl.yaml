@@ -28,10 +28,10 @@ spec:
         resources:
           requests:
             storage: ${CP4BA_INST_DB_STORAGE_SIZE}
-        storageClassName: ${CP4BA_SC_NAME}
+        storageClassName: ${CP4BA_INST_SC_FILE} # ${CP4BA_SC_NAME}
         volumeMode: Filesystem
-      status:
-        phase: Pending
+      #status:
+      #  phase: Pending
   template:
     metadata:
       creationTimestamp: null
@@ -93,8 +93,8 @@ spec:
           volumeMounts:
             - name: config-vol
               mountPath: /etc/postgresql/
-            - name: postgres-storage # data-volume
-              mountPath: /var/lib/postgresql
+            - name: postgres-storage
+              mountPath: "${CP4BA_INST_DB_POSTGRES_MOUNTPATH}" # /var/lib/postgresql
             - name: secret-vol
               mountPath: /etc/postgresql-secrets
                   

@@ -528,6 +528,13 @@ _deployPostgresSSL () {
       oc delete secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
       oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
 
+      if [[ -z "${CP4BA_INST_DB_POSTGRES_MOUNTPATH}" ]]; then
+        export CP4BA_INST_DB_POSTGRES_MOUNTPATH="/var/lib/postgresql"
+        log_warning "Automatically set mount path for Postgres to '${CP4BA_INST_DB_POSTGRES_MOUNTPATH}'"
+      else
+        log_info "Using mount path for Postgres '${CP4BA_INST_DB_POSTGRES_MOUNTPATH}'"
+      fi
+
       # create PG CR Statefulset and Services
       envsubst < ${CP4BA_INST_DB_POSTGRES_CR_SSL_TEMPLATE} > ${_PG_SS_CR_TMP}
       envsubst < ${CP4BA_INST_DB_POSTGRES_SRV_CR_TEMPLATE} >> ${_PG_SS_CR_TMP}

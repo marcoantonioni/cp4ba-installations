@@ -66,6 +66,10 @@ A linux box (scripts are only available in the bash shell)
 
 'podman' (mandatory)
 
+**Warning: Use recent versions of the tools.**
+
+**If YAML file verification fails with 'yq', update to the latest version (problems with a pre-installed version have been found in Ubuntu).**
+
 ### OpenSSL and mac users
 You need to install OpenSSL and add it to path.
 ```

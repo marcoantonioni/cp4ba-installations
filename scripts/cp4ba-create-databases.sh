@@ -157,7 +157,14 @@ _createDatabases () {
   #else
   #  _PG_BASE_FOLDER="tmp"
   #fi
-  _PG_BASE_FOLDER="tmp/postgresql"
+  if [[ -z "${CP4BA_INST_DB_POSTGRES_MOUNTPATH}" ]]; then
+    export CP4BA_INST_DB_POSTGRES_MOUNTPATH="/var/lib/postgresql"
+    log_warning "Automatically set mount path for Postgres to '${CP4BA_INST_DB_POSTGRES_MOUNTPATH}'"
+  else
+    log_info "Using mount path for Postgres '${CP4BA_INST_DB_POSTGRES_MOUNTPATH}'"
+  fi
+
+  _PG_BASE_FOLDER="${CP4BA_INST_DB_POSTGRES_MOUNTPATH}/cp4ba"
 
   _generateSQL ${_DB_CR_NAME} ${_DB_TEMPLATE} "${_PG_BASE_FOLDER}"
   if [[ "${_GENERATE_SQL_ONLY}" = "true" ]]; then
