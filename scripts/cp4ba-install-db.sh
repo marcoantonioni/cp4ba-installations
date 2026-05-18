@@ -532,7 +532,7 @@ _deployPostgresSSL () {
         export CP4BA_INST_DB_POSTGRES_MOUNTPATH="/var/lib/postgresql"
         log_warning "Automatically set mount path for Postgres to '${CP4BA_INST_DB_POSTGRES_MOUNTPATH}'"
       else
-        log_info "Using mount path for Postgres '${CP4BA_INST_DB_POSTGRES_MOUNTPATH}'"
+        log_debug "Using mount path for Postgres '${CP4BA_INST_DB_POSTGRES_MOUNTPATH}'"
       fi
 
       # create PG CR Statefulset and Services
@@ -623,7 +623,7 @@ _deployDBCluster () {
     # always TLS
     _deployPostgresSSL "$3" "$2"
     sleep 5
-    log_info "${_CLR_GREEN}Installing DBs with CP4BA_INST_DB_ONLY_SSL=${CP4BA_INST_DB_ONLY_SSL}"
+    log_debug "${_CLR_GREEN}Installing DBs with CP4BA_INST_DB_ONLY_SSL=${CP4BA_INST_DB_ONLY_SSL}"
     if [[ -z "${CP4BA_INST_DB_ONLY_SSL}" ]]; then
       export CP4BA_INST_DB_ONLY_SSL="false"
     fi

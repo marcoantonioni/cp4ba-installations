@@ -9,7 +9,6 @@ _CFG=""
 _WAIT="false"
 _SILENT="false"
 _ERROR=0
-_VERBOSE="true"
 
 _maxWait=5
 
@@ -51,14 +50,13 @@ setTemporaryFolder () {
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:t:wsv flag
+while getopts c:t:ws flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         t) _maxWait=${OPTARG};;
         w) _WAIT="true";;
         s) _SILENT="true";;
-        v) _VERBOSE="true";;
     esac
 done
 
@@ -124,7 +122,7 @@ resourceExist () {
 
 #-------------------------------
 createSecretLDAP () {
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${CP4BA_INST_LDAP_SECRET}${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${CP4BA_INST_LDAP_SECRET}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_LDAP_SECRET} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_LDAP_SECRET} \
     --from-literal=ldapUsername="cn=admin,dc=vuxprod,dc=net" \
@@ -141,7 +139,7 @@ createSecretFNCM () {
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
   _ERR=0  
   if [[ ! -z "${CP4BA_INST_DB_BAWDOCS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWDOS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWTOS_USER}" ]]; then
-    [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectstores users)${_CLR_NC}'"    
+    log_debug "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectstores users)${_CLR_NC}'"    
     oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
       --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
@@ -173,7 +171,7 @@ createSecretFNCM () {
     _ERR=$?
   else
     if [[ ! -z "${CP4BA_INST_DB_OS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_GCD_USER}" ]]; then
-      [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM objectstores users)${_CLR_NC}'"
+      log_debug "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM objectstores users)${_CLR_NC}'"
       oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
       oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
         --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
@@ -186,7 +184,7 @@ createSecretFNCM () {
         --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 2> /dev/null 1> /dev/null
       _ERR=$?
     else
-      [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-fncm-secret (APP only)${_CLR_NC}'"
+      log_debug "Secret '${_CLR_YELLOW}ibm-fncm-secret (APP only)${_CLR_NC}'"
       oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
       oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
         --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
@@ -205,7 +203,7 @@ createSecretFNCM () {
 
 #-------------------------------
 createSecretFNCMBpmOnly () {
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
     --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
@@ -220,7 +218,7 @@ createSecretFNCMBpmOnly () {
 
 #-------------------------------
 createSecretBAN () {
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-ban-secret${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}ibm-ban-secret${_CLR_NC}'"
 
   if [[ -z "${CP4BA_INST_DB_ICN_USER}" ]]; then
     CP4BA_INST_DB_ICN_USER="${CP4BA_INST_PAKBA_ADMIN_USER}"
@@ -247,7 +245,7 @@ createSecretBAW () {
 # $2 username
 # $3 password
 
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}$1${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}$1${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} $1 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic $1 \
     --from-literal=dbUser="$2" \
@@ -264,7 +262,7 @@ createSecretWFAssistantBAW () {
 # $3=URL
 
   _SECRET_NAME="ibm-workflow-assistant-secrets"
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=WATSONX_API_KEY="$1" \
@@ -281,7 +279,7 @@ createSecretWFAssistantBAW () {
 #-------------------------------
 #createSecretAE () {
 #  if [[ ! -z "${CP4BA_INST_AE_1_AD_SECRET_NAME}" ]]; then
-#    [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${CP4BA_INST_AE_1_AD_SECRET_NAME}${_CLR_NC}'"
+#    log_debug "Secret '${_CLR_YELLOW}${CP4BA_INST_AE_1_AD_SECRET_NAME}${_CLR_NC}'"
 #
 #    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_AE_1_AD_SECRET_NAME} 2> /dev/null 1> /dev/null
 #    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_AE_1_AD_SECRET_NAME} \
@@ -303,7 +301,7 @@ _AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
 #---------------------------
 
   _SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-app-engine-admin-secret"
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
@@ -312,7 +310,7 @@ _AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
 #---------------------------
 
   _SECRET_NAME="${CP4BA_INST_CR_NAME}-pbk-app-engine-admin-secret"
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
@@ -321,7 +319,7 @@ _AE_DB_PWD=$(echo ${CP4BA_INST_DB_AE_PWD} | base64)
 #---------------------------
 
   _SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-aae-app-engine-admin-secret"
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_AE_USER}" \
@@ -335,7 +333,7 @@ createSecretBAS () {
 # $2 password
 
 if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
     --from-literal=dbUsername="$1" \
@@ -356,7 +354,7 @@ fi
 
 #---------------------------------------------
   _SECRET_NAME="ibm-workflow-assistant-secrets"
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=WATSONX_API_KEY="${CP4BA_INST_BAS_GENAI_WX_APIKEY}" \
@@ -391,7 +389,7 @@ cat <<EOF > ${_SECRET_FILE_NAME}
 EOF
 
 _SECRET_NAME="my-liberty-custom-xml-secret"
-[[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
 oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
 oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 if [[ $? -gt 0 ]]; then
@@ -509,7 +507,7 @@ cat <<EOF > ${_SECRET_FILE_NAME}
 EOF
 
 _SECRET_NAME="my-lombardi-custom-xml-secret"
-[[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
 oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
 oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
@@ -524,7 +522,7 @@ rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 
 #-------------------------------
 createSecretADS () {
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-dba-ads-runtime-secret${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}ibm-dba-ads-runtime-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-runtime-secret 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-dba-ads-runtime-secret \
     --from-literal=asraManagerUsername="${CP4BA_INST_ADS_SECRETS_ASRA_MGR_USER}" \
@@ -544,7 +542,7 @@ createSecretADS () {
     log_error "${_CLR_RED}Secret ibm-dba-ads-runtime-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
 
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}ibm-dba-ads-mongo-secret${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}ibm-dba-ads-mongo-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-mongo-secret 2> /dev/null 1> /dev/null
   if [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_USER}" ]] && [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" ]]; then
     oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-mongo-secret 2> /dev/null 1> /dev/null
@@ -616,14 +614,14 @@ data:
 
 #-------------------------------
 createConfigMapADS() {
-  [[ "${_VERBOSE}" = "true" ]] && log_info "ConfigMap '${_CLR_YELLOW}${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}${_CLR_NC}'"
+  log_debug "ConfigMap '${_CLR_YELLOW}${CP4BA_INST_ADS_TLS_CERTS_CFGMAP_NAME}${_CLR_NC}'"
   grabCertificates
 }
 
 _createConfigMapBts() {
 
 _CM_NAME="ibm-bts-config-extension"
-[[ "${_VERBOSE}" = "true" ]] && log_info "ConfigMap '${_CLR_YELLOW}${_CM_NAME}${_CLR_NC}'"
+log_debug "ConfigMap '${_CLR_YELLOW}${_CM_NAME}${_CLR_NC}'"
 oc delete cm -n ${CP4BA_INST_NAMESPACE} ${_CM_NAME} 2>/dev/null 1>/dev/null
 
 cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
@@ -652,7 +650,7 @@ EOF
 _createConfigMapIm() {
 
 _CM_NAME="im-datastore-edb-cm"
-[[ "${_VERBOSE}" = "true" ]] && log_info "ConfigMap '${_CLR_YELLOW}${_CM_NAME}${_CLR_NC}'"
+log_debug "ConfigMap '${_CLR_YELLOW}${_CM_NAME}${_CLR_NC}'"
 oc delete cm -n ${CP4BA_INST_NAMESPACE} ${_CM_NAME} 2>/dev/null 1>/dev/null
 
 cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
@@ -697,7 +695,7 @@ EOF
 _createConfigMapZen() {
 
 _CM_NAME="ibm-zen-metastore-edb-cm"
-[[ "${_VERBOSE}" = "true" ]] && log_info "ConfigMap '${_CLR_YELLOW}${_CM_NAME}${_CLR_NC}'"
+log_debug "ConfigMap '${_CLR_YELLOW}${_CM_NAME}${_CLR_NC}'"
 oc delete cm -n ${CP4BA_INST_NAMESPACE} ${_CM_NAME} 2>/dev/null 1>/dev/null
 
 cat <<EOF | oc apply -f - 2>/dev/null 1>/dev/null
@@ -911,26 +909,26 @@ createSecretsExternalDBs () {
 
     if [[ "${CP4BA_INST_DB_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
       # create certificates and secrets to connect to external db (other namespace)
-      [[ "${_VERBOSE}" = "true" ]] && log_info "Create TLS secrets for external database${_CLR_NC}'"
+      log_debug "Create TLS secrets for external database${_CLR_NC}'"
       _createDbCertsAndSecrets "${CP4BA_INST_DB_1_CR_NAME_SSL}"
     fi
 
     _SEC_NAME="im-datastore-edb-secret"
     resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}
     if [ $? -eq 1 ]; then
-      [[ "${_VERBOSE}" = "true" ]] && log_info "Secret found: '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+      log_debug "Secret found: '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
     fi
 
     _SEC_NAME="ibm-zen-metastore-edb-secret"
     resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}
     if [ $? -eq 1 ]; then
-      [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+      log_debug "Secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
     fi
 
     _SEC_NAME="bts-datastore-edb-secret"
     resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}
     if [ $? -eq 1 ]; then
-      [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+      log_debug "Secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
     fi
 
   fi
@@ -943,7 +941,7 @@ createSecretBAML () {
 #---------------------------------------------
 
   _SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-itp-admin-secret"
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
@@ -956,7 +954,7 @@ createSecretBAML () {
 #---------------------------------------------
 
   _SECRET_NAME="${CP4BA_INST_CR_NAME}-ibm-mls-wfi-admin-secret"
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=adminUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
@@ -969,7 +967,7 @@ createSecretBAML () {
 #---------------------------------------------
 # empty values, to let the 'insights' installation progress
   _SECRET_NAME="${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}"
-  [[ "${_VERBOSE}" = "true" ]] && log_info "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=bpmSystemId="to-be-defined" \
