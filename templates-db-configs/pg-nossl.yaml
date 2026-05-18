@@ -30,8 +30,6 @@ spec:
             storage: ${CP4BA_INST_DB_STORAGE_SIZE}
         storageClassName: ${CP4BA_INST_SC_FILE} # ${CP4BA_SC_NAME}
         volumeMode: Filesystem
-      status:
-        phase: Pending
   template:
     metadata:
       labels:
