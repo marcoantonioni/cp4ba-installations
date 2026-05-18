@@ -51,12 +51,15 @@ spec:
 
       # 20260223
       volumes:
-        - name: data-volume
-          emptyDir: {}
+        #- name: data-volume
+        #  emptyDir: {}
         - name: config-vol
           configMap:
             name: ${_PG_CONFIG_CM}
             defaultMode: 0640
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: ${_PG_SS_NAME}-${_PG_SS_NAME}-0
 
       containers:
         - name: postgres
@@ -69,6 +72,8 @@ spec:
           env:
             - name: POSTGRES_PASSWORD
               value: "${CP4BA_INST_DB_OSS_ADMIN_PASSWORD}"
+            #- name: PGDATA
+            #  value: /var/lib/postgresql
           resources:
             limits:
               cpu: "${CP4BA_INST_DB_LIMITS_CPU}"
@@ -84,8 +89,8 @@ spec:
           volumeMounts:
             - name: config-vol
               mountPath: /etc/postgresql/
-            - name: data-volume
-              mountPath: /etc/postgresql-data
+            - name: postgres-storage # data-volume
+              mountPath: /var/lib/postgresql
                   
           args:
             - -c
