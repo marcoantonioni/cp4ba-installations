@@ -175,7 +175,6 @@ checkPrereqVars () {
 
 log_msg "=============================================================="
 log_info "Install CP4BA Operators in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
-log_msg "=============================================================="
 
 START_SECONDS=$SECONDS
 
