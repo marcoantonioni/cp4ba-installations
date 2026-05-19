@@ -769,8 +769,7 @@ deployDBClusters() {
   done  
 }
 
-#==================================
-
+log_msg "=============================================================="
 log_info "${_CLR_GREEN}Deploying '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' DB Clusters in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 setTemporaryFolder
