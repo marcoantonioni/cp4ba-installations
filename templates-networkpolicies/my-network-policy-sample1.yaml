@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: "${CP4BA_INST_CR_NAME}-cp4a-egress-allow-all"
+  namespace: "${CP4BA_INST_NAMESPACE}"
+  labels:
+    app.kubernetes.io/component: Operator
+    app.kubernetes.io/instance: ${CP4BA_INST_CR_NAME}
+    app.kubernetes.io/managed-by: Operator
+    app.kubernetes.io/name: ${CP4BA_INST_CR_NAME}-platform-egress
+    app.kubernetes.io/version: ${CP4BA_INST_APPVER}
+    release: ${CP4BA_INST_APPVER}
+
+spec:
+  podSelector:
+    matchLabels:
+      com.ibm.cp4a.networking/egress-allow-all: 'true'
+  egress:
+    - {}
+  policyTypes:
+    - Egress

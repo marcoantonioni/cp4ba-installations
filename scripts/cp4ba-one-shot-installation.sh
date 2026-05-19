@@ -405,6 +405,7 @@ installAndVerifyCasePkgMgr () {
     _GREP_WHAT="REQUIREDVER_POSTGRESQL"
     export _REQUIREDVER_POSTGRESQL=$(grep "${_GREP_WHAT}=" ${_COMMON_SCRIPT} | sed 's/'${_GREP_WHAT}'="//g' | sed 's/"//g')
 
+    log_msg "=============================================================="
     log_info "${_CLR_GREEN}Using CP4BA Case Manager v${_CPAK_MGR_VER} (Release/Patch version)${_CLR_NC}"
     log_info "${_CLR_GREEN}Release base                     '${_CLR_YELLOW}${_RELEASE_BASE}${_CLR_GREEN}'${_CLR_NC}"
     log_info "${_CLR_GREEN}CP4BA patch version              '${_CLR_YELLOW}${_CP4BA_PATCH_VERSION}${_CLR_GREEN}'${_CLR_NC}"
@@ -435,11 +436,9 @@ initialChecks () {
 }
 
 oneShotInstallation () {
-
   _TRACE_PARAM=""
   if [[ $_TRACE -gt 0 ]]; then
     log_warning "===>>> ${_CLR_YELLOW}RUNNING WITH TRACE ENABLED${_CLR_GREEN} <<<===${_CLR_NC}"
-
     _TRACE_PARAM="-t"
   fi
 
@@ -453,7 +452,14 @@ oneShotInstallation () {
   if [[ $_ERR_PKG_MGR -eq 0 ]]; then
     ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
     if [[ $? -eq 0 ]]; then
-    
+
+      # 20260519 Networkpolicies
+      if [[ -z "${CP4BA_INST_NP_DEPLOY}" ]]; then
+        export CP4BA_INST_NP_DEPLOY="false"
+      fi
+      if [[ "${CP4BA_INST_NP_DEPLOY}" = "true" ]]; then
+        ./cp4ba-create-networkpolicies.sh -c ${_CFG} 
+      fi
       _LDAP_PARAMS=""
       if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
         _LDAP_PARAMS="-l ${CP4BA_INST_LDAP_CFG_FILE}"
@@ -490,10 +496,10 @@ oneShotInstallation () {
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
 
     log_info "${_CLR_YELLOW}***********************************************************************"
-    log_info "${_CLR_GREEN}[✔] Installation completed successfully for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
+    log_info "${_CLR_GREEN}[✔] Installation completed for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
     _STOP_AT=$(date)
     log_info "Terminated at ${_CLR_GREEN}${_STOP_AT}${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
-
+    log_info "Please note: Some components may require additional time to complete their configuration."
     log_info "${_CLR_GREEN}Verifying pod status and Case initialization logs...${_CLR_NC}"
     _CASE_INIT_ERRORS=0
     _PENDING=$(oc get pods -n ${CP4BA_INST_NAMESPACE} 2>/dev/null | grep Pending | wc -l)
@@ -516,7 +522,7 @@ oneShotInstallation () {
       fi
 
       log_warning "${_CLR_GREEN}PAY ATTENTION: The case completion job may take more time to complete${_CLR_NC}"
-      log_info "${_CLR_GREEN}To verify the completion of Case subsys. installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
+      log_info "${_CLR_GREEN}To verify the completion of installation access Job log, the pod name is something like '...case-init-job...'${_CLR_NC}"
       log_info "${_CLR_GREEN}For Case initialization log/status/errors run manually:${_CLR_GREEN}"
       log_info "  logs   : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
       log_info "  errors : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | egrep 'SEVERE|Exception'${_CLR_GREEN}"

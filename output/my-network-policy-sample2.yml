@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: "icp4adeploy-cp4ba-baw-auth-bai-cp4a-egress-allow-ldap"
+  namespace: "cp4ba-baw-auth-bai"
+  labels:
+    app.kubernetes.io/component: Operator
+    app.kubernetes.io/instance: icp4adeploy
+    app.kubernetes.io/managed-by: Operator
+    app.kubernetes.io/name: icp4adeploy-platform-egress
+    app.kubernetes.io/version: 25.0.1
+    release: 25.0.1
+
+spec:
+  podSelector:
+    matchLabels:
+      com.ibm.cp4a.networking/egress-allow-ldap: 'true'
+  egress:
+
+    - to:
+      - ipBlock:
+          cidr: "172.30.221.58/32"
+      ports:
+        - protocol: TCP  
+          port: 389
+     
+    - to:
+      - ipBlock:
+          cidr: "::/128" 
+      ports:
+        - protocol: TCP  
+          port: 389
+
+  policyTypes:
+    - Egress

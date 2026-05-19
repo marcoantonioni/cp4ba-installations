@@ -322,7 +322,7 @@ createDatabases () {
     _INST_DB_TEMPLATE="CP4BA_INST_DB_"$i"_TEMPLATE"
 
     if [[ ! -f "${!_INST_DB_TEMPLATE}" ]]; then
-      log_error -e ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< SQL Statements file not found: "${!_INST_DB_TEMPLATE}
+      log_error ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< SQL Statements file not found: "${!_INST_DB_TEMPLATE}
       log_msg ""
       exit 1
     fi

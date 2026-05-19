@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: "icp4adeploy-cp4ba-operator-default-ingress"
+  namespace: "cp4ba-baw-auth-bai"
+  labels:
+    app.kubernetes.io/component: Operator
+    app.kubernetes.io/instance: icp4adeploy
+    app.kubernetes.io/managed-by: Operator
+    app.kubernetes.io/name: icp4adeploy-platform-ingress
+    app.kubernetes.io/version: 25.0.1
+    release: 25.0.1
+
+spec:
+  podSelector:
+    matchLabels:
+      name: ibm-cp4a-operator
+  ingress:
+    - {}
+  policyTypes:
+    - Ingress

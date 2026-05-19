@@ -1,6 +1,18 @@
 
 # Change Log
 
+## [1.4.3] - 2026-05-19
+
+### Added
+
+Network policy installation 
+
+see cp4ba-create-networkpolicies.sh and folder templates-networkpolicies for policy samples
+
+### Changed
+
+### Fixed
+
 ## [1.4.2] - 2026-05-18
 
 ### Added
