@@ -1,0 +1,22 @@
+#===============================================
+# WARNING This policy blocks any network comunication
+# Use it only for demo/test to create a error situation
+#===============================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: "cp4ba-ingress-egress-deny-all"
+  namespace: "${CP4BA_INST_NAMESPACE}"
+  labels:
+    app.kubernetes.io/component: Operator
+    app.kubernetes.io/instance: ${CP4BA_INST_CR_NAME}
+    app.kubernetes.io/managed-by: Operator
+    app.kubernetes.io/name: cp4ba-platform-ingress-egress
+    app.kubernetes.io/version: 25.0.1
+    release: 25.0.1
+
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress

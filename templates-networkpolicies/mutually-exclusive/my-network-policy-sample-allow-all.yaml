@@ -1,0 +1,26 @@
+#===============================================
+# WARNING This policy open any network comunication
+# DO NOT use this policy in production without understanding its effects.
+#===============================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: "cp4ba-ingress-egress-allow-all"
+  namespace: "${CP4BA_INST_NAMESPACE}"
+  labels:
+    app.kubernetes.io/component: Operator
+    app.kubernetes.io/instance: ${CP4BA_INST_CR_NAME}
+    app.kubernetes.io/managed-by: Operator
+    app.kubernetes.io/name: cp4ba-platform-ingress-egress
+    app.kubernetes.io/version: 25.0.1
+    release: 25.0.1
+
+spec:
+  podSelector: {}
+  ingress:
+    - {}
+  egress:
+    - {}
+  policyTypes:
+    - Ingress
+    - Egress

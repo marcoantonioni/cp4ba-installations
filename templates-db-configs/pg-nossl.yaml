@@ -79,10 +79,10 @@ spec:
           #20260223
           volumeMounts:
             - name: config-vol
-              mountPath: /etc/postgresql/
+              mountPath: "/etc/conf" #/etc/postgresql/
             - name: postgres-storage
               mountPath: "${CP4BA_INST_DB_POSTGRES_MOUNTPATH}"
           args:
             - -c
-            - config_file=/etc/postgresql/postgresql_nossl.conf
+            - config_file=/etc/conf/postgresql_nossl.conf
 

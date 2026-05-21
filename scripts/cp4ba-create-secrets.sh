@@ -366,6 +366,21 @@ fi
   fi
 
 #---------------------------------------------
+# custom DB for applications
+if [[ -z "${CP4BA_INST_DB_CUSTOMDB_SERVER}" ]]; then
+  export CP4BA_INST_DB_CUSTOMDB_SERVER="${CP4BA_INST_DB_1_SERVER_NAME}"
+fi
+if [[ -z "${CP4BA_INST_DB_CUSTOMDB_NAME}" ]]; then
+  export CP4BA_INST_DB_CUSTOMDB_NAME="mydb"
+fi
+if [[ -z "${CP4BA_INST_DB_CUSTOMDB_USER}" ]]; then
+  export CP4BA_INST_DB_CUSTOMDB_USER="myuser"
+fi
+if [[ -z "${CP4BA_INST_DB_CUSTOMDB_PWD}" ]]; then
+  export CP4BA_INST_DB_CUSTOMDB_PWD="dem0s"
+fi
+
+#---------------------------------------------
 _SECRET_FILE_NAME="${_INST_TMP_FOLDER}/secret-baw-runtime-$USER-$RANDOM.xml"
 cat <<EOF > ${_SECRET_FILE_NAME}
 <?xml version="1.0" encoding="UTF-8"?>
@@ -375,10 +390,10 @@ cat <<EOF > ${_SECRET_FILE_NAME}
     <!-- Settings related to the BAW runtime server -->
 
     <!-- CUSTOM DB EXAMPLE -->
-    <dataSource commitOrRollbackOnCleanup="commit" id="jdbc/bawexternal" isolationLevel="TRANSACTION_READ_COMMITTED" jndiName="jdbc/bawexternal" type="javax.sql.XADataSource">
+    <dataSource commitOrRollbackOnCleanup="commit" id="jdbc/${CP4BA_INST_DB_CUSTOMDB_NAME}" isolationLevel="TRANSACTION_READ_COMMITTED" jndiName="jdbc/${CP4BA_INST_DB_CUSTOMDB_NAME}" type="javax.sql.XADataSource">
       <jdbcDriver libraryRef="PostgreSQLLib"/>
-      <connectionManager maxPoolSize="50" minPoolSize="2"/>
-        <properties.postgresql URL="jdbc:postgresql://${CP4BA_INST_DB_1_SERVER_NAME}:${CP4BA_INST_DB_SERVER_PORT}/bawexternal" user="bawexternal" password="dem0s"/>
+      <connectionManager maxPoolSize="100" minPoolSize="10"/>
+        <properties.postgresql URL="jdbc:postgresql://${CP4BA_INST_DB_CUSTOMDB_SERVER}:${CP4BA_INST_DB_SERVER_PORT}/${CP4BA_INST_DB_CUSTOMDB_NAME}" user="${CP4BA_INST_DB_CUSTOMDB_USER}" password="${CP4BA_INST_DB_CUSTOMDB_PWD}"/>
     </dataSource>
 
     <!-- AI Features START -->
@@ -395,6 +410,10 @@ oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=
 if [[ $? -gt 0 ]]; then
   _ERROR=1
   log_error "${_CLR_RED}Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_RED}' NOT created !!!${_CLR_NC}"
+else
+  if [[ "${CP4BA_INST_DB_CUSTOM}" = "true" ]]; then
+    log_info "${_CLR_GREEN}Custom database jndi name is '${_CLR_YELLOW}jdbc/${CP4BA_INST_DB_CUSTOMDB_NAME}${_CLR_GREEN}'"
+  fi
 fi
 rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
 

@@ -42,7 +42,7 @@ spec:
       serviceAccount: ibm-cp4ba-anyuid
       securityContext:
         runAsUser: 999
-        runAsGroup: 999   
+        runAsGroup: 999 
         fsGroup: 999
       schedulerName: default-scheduler
 
@@ -83,14 +83,14 @@ spec:
           #20260223
           volumeMounts:
             - name: config-vol
-              mountPath: /etc/postgresql/
+              mountPath: "/etc/conf" #/etc/postgresql/
             - name: postgres-storage
               mountPath: "${CP4BA_INST_DB_POSTGRES_MOUNTPATH}"
             - name: secret-vol
-              mountPath: /etc/postgresql-secrets
+              mountPath: "/etc/postgresql-secrets"
           args:
             - -c
-            - hba_file=/etc/postgresql/pg_hba.conf
+            - hba_file=/etc/conf/pg_hba.conf
             - -c
-            - config_file=/etc/postgresql/postgresql_ssl.conf
+            - config_file=/etc/conf/postgresql_ssl.conf
 

@@ -1,6 +1,32 @@
 # Configurations
 
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.0
+_KK=25.0.1
+CONFIG_FILE=${_PTC}/env1-authoring-baw-bai.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
+
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.0
+_KK=25.0.1
+CONFIG_FILE=${_PTC}/env1-authoring-baw-multi-db.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
+
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.0
+_KK=25.0.1
+CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-crash-np-denyall.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
+
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.0
+_KK=25.0.1
+CONFIG_FILE=${_PTC}/env1-runtime-wfps-np.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
+
+#----------------------------------------------------------------------
+
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.1
 _KK=25.0.1-IF001
 

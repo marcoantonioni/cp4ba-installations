@@ -5,6 +5,7 @@
 _me=$(basename "$0")
 
 _CFG=""
+_errorBuild=0
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -143,7 +144,6 @@ waitForResourceCreated () {
 #--------------------------------------------------------
 _createBAIWorkforceSecret () {
   if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
-
     _NS=$1
 
     resourceExist ${CP4BA_INST_NAMESPACE} "routes" "cpd"
@@ -209,15 +209,42 @@ _createBAIWorkforceSecret () {
     log_debug "===> iamhost: ${iamhost}"
     log_debug "===> platformauth: ${platformauth}"
 
+    iamaccesstoken=""
+    _curlResult=""
     if [[ ${_ROUTE_NAME} = "platform-id-provider" ]]; then
-      iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${platformauth}/v1/auth/identitytoken | jq -r .access_token)
+      # iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${platformauth}/v1/auth/identitytoken | jq -r .access_token)
+      _curlResult=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${platformauth}/v1/auth/identitytoken)
     else
-      iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${iamhost}/idprovider/v1/auth/identitytoken | jq -r .access_token)
+      # iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${iamhost}/idprovider/v1/auth/identitytoken | jq -r .access_token)
+      _curlResult=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=${username}&password=${password}&scope=openid" ${iamhost}/idprovider/v1/auth/identitytoken)
+    fi
+    if [[ ! -z "${_curlResult}" ]]; then
+      iamaccesstoken=$(echo ${_curlResult} | jq -r .access_token 2>/dev/null)
+      if [[ -z "${iamaccesstoken}" ]]; then
+        log_error "IAM token is empty !"
+      log_error "${_curlResult}"
+        _errorBuild=1
+      fi
+    else
+      log_error "Cannot get IAM token !"
+      _errorBuild=1
     fi
 
     log_debug "===> iamaccesstoken: ${iamaccesstoken}"
 
-    zentoken=$(curl -sk ${platformauth}/v1/preauth/validateAuth -H "username:${username}" -H "iam-token: ${iamaccesstoken}" | jq -r .accessToken)
+    #zentoken=$(curl -sk ${platformauth}/v1/preauth/validateAuth -H "username:${username}" -H "iam-token: ${iamaccesstoken}" | jq -r .accessToken)
+    _curlResult=$(curl -sk ${platformauth}/v1/preauth/validateAuth -H "username:${username}" -H "iam-token: ${iamaccesstoken}")
+    if [[ ! -z "${_curlResult}" ]]; then
+      zentoken=$(echo ${_curlResult} | jq -r .accessToken 2>/dev/null)
+      if [[ -z "${zentoken}" ]]; then
+        log_error "ZEN token is empty !"
+        log_error "${_curlResult}"
+        _errorBuild=1
+      fi
+    else
+      log_error "Cannot get ZEN token !"
+      _errorBuild=1
+    fi
         
     log_debug "===> zentoken: ${zentoken}"
 
@@ -230,7 +257,20 @@ _createBAIWorkforceSecret () {
       _IS_SLASH="/"
     fi
 
-    bpmSystemID=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}" | jq -r .data.systems[].systemID)
+    #bpmSystemID=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}" | jq -r .data.systems[].systemID)
+    bpmSystemID=""
+    _curlResult=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}")
+    if [[ ! -z "${_curlResult}" ]]; then
+      bpmSystemID=$(echo ${_curlResult} | jq -r .data.systems[].systemID 2>/dev/null)
+      if [[ -z "${bpmSystemID}" ]]; then
+        log_error "BPM System ID is empty !"
+        log_error "${_curlResult}"
+        _errorBuild=1
+      fi
+    else
+      log_error "Cannot get BPM System ID !"
+      _errorBuild=1
+    fi
 
     _adminSecret="bas-admin-secret"
     _DEV_ENV=$(oc get secret --no-headers -n ${_NS} | grep "${CP4BA_INST_CR_NAME}-bas" | wc -l)
@@ -288,9 +328,13 @@ stringData:
       password: $adminPassword
 " > ${_BAI_WKF_TMP}
 
-    # create secret for BAI Workforce
-    oc create secret generic -n $1 $2 --from-file=workforce-insights-configuration.yml=${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
-
+    if [[ ${_errorBuild} -eq 0 ]]; then
+      # create secret for BAI Workforce
+      log_info "Creating BAI Workforce secret '${_CLR_YELLOW}${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}${_CLR_GREEN}'"
+      oc create secret generic -n $1 $2 --from-file=workforce-insights-configuration.yml=${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
+    else
+      log_error "Cannot set BAI Workforce configuration try to run the tool manually './cp4ba-configure-bai-workforce.sh -c ${CONFIG_FILE}'"
+    fi
     rm ${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
 
   else
@@ -309,7 +353,7 @@ _createBAIWorkforceConfiguration () {
 
     _WX_BAI_WKF_TMP="${_INST_TMP_FOLDER}/cp4ba-bai-workforce-$USER-$RANDOM"
     _OK_TO_PATCH=0
-    if [[ "${CP4BA_INST_TYPE}" = "starter" ]]; then
+    if [[ "${CP4BA_INST_TYPE}" = "starter" ]] || [[ "${CP4BA_INST_TYPE}" = "production" ]]; then
       echo 'spec:' > ${_WX_BAI_WKF_TMP}
       echo '  bastudio_configuration:' >> ${_WX_BAI_WKF_TMP}
       echo '    custom_secret_name: '${CP4BA_INST_GENAI_WX_AUTH_SECRET} >> ${_WX_BAI_WKF_TMP}
@@ -330,7 +374,8 @@ _createBAIWorkforceConfiguration () {
     fi
 
     if [[ ${_OK_TO_PATCH} -eq 1 ]]; then
-      oc patch ICP4ACluster ${BA_DN} -n $1 --type=merge --patch-file=${_WX_BAI_WKF_TMP}
+      log_info "Patching CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' for BAI Workforce"
+      oc patch ICP4ACluster ${BA_DN} -n $1 --type=merge --patch-file=${_WX_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
       rm "${_WX_BAI_WKF_TMP}" 2>/dev/null 1>/dev/null
     fi
   else
@@ -355,7 +400,9 @@ configureBAIWorkforce() {
       namespaceExist $1
       if [ $? -eq 1 ]; then
         _createBAIWorkforceSecret $1 ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
-        _createBAIWorkforceConfiguration $1
+        if [[ ${_errorBuild} -eq 0 ]]; then
+          _createBAIWorkforceConfiguration $1
+        fi
       else
         log_error "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
         exit 1

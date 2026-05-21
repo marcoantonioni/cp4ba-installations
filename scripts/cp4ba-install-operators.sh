@@ -206,6 +206,14 @@ else
   log_info "${_CLR_GREEN}Install ${_CLR_YELLOW}without${_CLR_GREEN} SCC anyuid${_CLR_NC}"
 fi
 
+# 20260519 Networkpolicies
+if [[ -z "${CP4BA_INST_NP_DEPLOY}" ]]; then
+  export CP4BA_INST_NP_DEPLOY="false"
+fi
+if [[ "${CP4BA_INST_NP_DEPLOY}" = "true" ]]; then
+  ./cp4ba-create-networkpolicies.sh -c ${_CFG} 
+fi
+
 _OK=false
 if [[ ! -z "${_SCRIPTS}" ]]; then
   if [[ -d "${_SCRIPTS}" ]]; then

@@ -107,12 +107,24 @@ _generateSQL () {
   _DB_BASE_PATH=$3
   ENV_STATS="${CP4BA_INST_OUTPUT_FOLDER}/env-statements.$RANDOM.sql"
 
+  if [[ -z "${CP4BA_INST_DB_CUSTOMDB_NAME}" ]]; then
+    export CP4BA_INST_DB_CUSTOMDB_NAME="mydb"
+  fi
+  if [[ -z "${CP4BA_INST_DB_CUSTOMDB_USER}" ]]; then
+    export CP4BA_INST_DB_CUSTOMDB_USER="myuser"
+  fi
+  if [[ -z "${CP4BA_INST_DB_CUSTOMDB_PWD}" ]]; then
+    export CP4BA_INST_DB_CUSTOMDB_PWD="dem0s"
+  fi
+
   # _DB_BASE_PATH may contain / chars so use # in 'sed' line
   cat ${_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' \
     | sed 's/-\{2,\}/@@savecomment@@/g' \
     | sed 's/-/_/g' \
     | sed 's/@@savecomment@@/--/g' \
     | sed 's#§§dbBasePath§§#'"${_DB_BASE_PATH}"'#g' \
+    | sed 's/§§dbCUSTOMowner§§/'"${CP4BA_INST_DB_CUSTOMDB_USER}"'/g' | sed 's/§§dbCUSTOMowner_password§§/'"${CP4BA_INST_DB_CUSTOMDB_PWD}"'/g' \
+    | sed 's/§§dbCUSTOMname§§/'"${CP4BA_INST_DB_CUSTOMDB_NAME}"'/g' \
     | sed 's/§§dbPBKowner§§/'"${CP4BA_INST_DB_PBK_USER}"'/g' | sed 's/§§dbPBKowner_password§§/'"${CP4BA_INST_DB_PBK_PWD}"'/g' \
     | sed 's/§§dbAPPowner§§/'"${CP4BA_INST_DB_APP_USER}"'/g' | sed 's/§§dbAPPowner_password§§/'"${CP4BA_INST_DB_APP_PWD}"'/g' \
     | sed 's/§§dbAWSowner§§/'"${CP4BA_INST_DB_AWS_USER}"'/g' | sed 's/§§dbAWSowner_password§§/'"${CP4BA_INST_DB_AWS_PWD}"'/g' \
@@ -200,7 +212,7 @@ _createDatabases () {
   _DONE=0
   _KO=0
   if [[ "$_FOUND" = "1" ]]; then
-    _MAX_WAIT_READY=600
+    _MAX_WAIT_READY=1800
     log_info "${_CLR_GREEN}Wait for pod '${_CLR_YELLOW}"${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}"${_CLR_GREEN}' ready (may take minutes)${_CLR_NC}"
     _RES=$(oc wait -n ${CP4BA_INST_SUPPORT_NAMESPACE} pod/${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} --for condition=Ready --timeout="${_MAX_WAIT_READY}"s 2>/dev/null)
     _IS_READY=$(echo $_RES | grep "condition met" | wc -l)
@@ -250,32 +262,33 @@ _createDatabases () {
         oc cp ${_FULL_TARGET} ${CP4BA_INST_SUPPORT_NAMESPACE}/${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}:/${_PG_BASE_FOLDER}/setupdb/db-statements.sql -c='postgres' 2>/dev/null 1>/dev/null
         if [ $? -gt 0 ]; then
           _KO=1
-          log_error "${_CLR_RED}Error copying SQL statements file if f.s. of pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}'${_CLR_NC}"        
+          log_error "${_CLR_RED}Error copying SQL statements file to pod filesystem '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}'${_CLR_NC}"        
         fi
       fi
 
       if [ $_KO -eq 0 ]; then
 
-        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} chown -R postgres:postgres /${_PG_BASE_FOLDER}/setupdb /${_PG_BASE_FOLDER}/tbs 2>/dev/null 1>/dev/null
+        # oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} chown -R postgres:postgres /${_PG_BASE_FOLDER}/setupdb /${_PG_BASE_FOLDER}/tbs 2>/dev/null 1>/dev/null
+        oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} chown -R postgres:postgres ${_PG_BASE_FOLDER} 2>/dev/null 1>/dev/null
 
         # execute sql statements
         _retry=0
-        while [[ $_retry -le 10 ]]
+        while [[ $_retry -le 100 ]]
         do
-          # echo -e "${_CLR_GREEN}... execute sql statements${_CLR_NC}"
-          
+          _sqlResult=0
           if [[ "${_VERBOSE}" == "true" ]]; then
             log_msg "SQL Statements BEGIN ---------------------------"
             oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} psql -U postgres -f /${_PG_BASE_FOLDER}/setupdb/db-statements.sql
+            _sqlResult=$?
             log_msg "SQL Statements END ---------------------------"
           else
             oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} -c='postgres' ${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX} psql -U postgres -f /${_PG_BASE_FOLDER}/setupdb/db-statements.sql 2>/dev/null 1>/dev/null
+            _sqlResult=$?
           fi
-
           
-          if [ $? -gt 0 ]; then
+          if [ $_sqlResult -gt 0 ]; then
             _KO=1
-            log_error "${_CLR_RED}Error executing SQL statements in pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_RED}', retry...${_CLR_NC}" 
+            log_warning "${_CLR_GREEN}Cannot execute SQL statements in pod '${_CLR_YELLOW}${_DB_CR_NAME}-${_DB_CR_NAME_SUFFIX}${_CLR_GREEN}', retry...${_CLR_NC}" 
             sleep 10
           else
             _KO=0
@@ -328,6 +341,7 @@ createDatabases () {
     fi
     
     if [[ "${!_INST_ITEM}" = "true" ]]; then
+      log_info "------------------------------------------------------------"
       log_info "Installing '${_CLR_YELLOW}${_INST_ITEM}${_CLR_NC}' "
       if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_TEMPLATE}" ]]; then
 
@@ -350,7 +364,7 @@ createDatabases () {
         exit 1
       fi
     else
-      log_warning "Warning '${_CLR_YELLOW}${_INST_ITEM}${_CLR_NC}' for db '${_CLR_YELLOW}${!_INST_DB_CR_NAME}${_CLR_NC}' is disabled, skipping configuration."
+      log_debug "${_CLR_GREEN}'${_CLR_YELLOW}${_INST_ITEM}${_CLR_GREEN}' for db '${_CLR_YELLOW}${!_INST_DB_CR_NAME}${_CLR_GREEN}' is disabled, skipping configuration."
     fi
     ((i = i + 1))
   done  
@@ -361,9 +375,9 @@ log_msg "==============================================================${_CLR_NC
 if [[ "${CP4BA_INST_DB}" = "true" ]] || [[ "${_FORCE}" == "true" ]]; then
   if [[ "${_GENERATE_SQL_ONLY}" = "false" ]]; then
     log_info "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers${_CLR_NC}"
-    if [[ "${CP4BA_INST_DB}" = "false" ]] || [[ "${_FORCE}" == "true" ]]; then
-      log_info "${_CLR_GREEN}Using external dbms '${_CLR_YELLOW}${CP4BA_INST_DB_1_SERVER_NAME}${_CLR_GREEN}'"
-    fi
+    #if [[ "${CP4BA_INST_DB}" = "false" ]] || [[ "${_FORCE}" == "true" ]]; then
+    #  log_info "${_CLR_GREEN}Using external dbms '${_CLR_YELLOW}${CP4BA_INST_DB_1_SERVER_NAME}${_CLR_GREEN}'"
+    #fi
   fi
   createDatabases "CP4BA_INST_DB_ZENBTSIM_EXT"
   createDatabases "CP4BA_INST_BAS"
@@ -371,6 +385,12 @@ if [[ "${CP4BA_INST_DB}" = "true" ]] || [[ "${_FORCE}" == "true" ]]; then
   createDatabases "CP4BA_INST_CONTENT"
   createDatabases "CP4BA_INST_ICN"
   createDatabases "CP4BA_INST_DB_WFPS_EXT"
+  createDatabases "CP4BA_INST_CUSTOMDB"
+  
+  if [[ "${CP4BA_INST_DB_CUSTOM}" = "true" ]]; then
+    _createDatabases ${CP4BA_INST_DB_CUSTOM_CR_NAME_SSL} ${CP4BA_INST_DB_CUSTOM_TEMPLATE} ${CP4BA_INST_DB_CUSTOM_SUFFIX}
+  fi
+
 else
   log_info "${_CLR_GREEN}Skipping creation of databases${_CLR_NC}"
 fi

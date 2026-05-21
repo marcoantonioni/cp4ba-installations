@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.4.4] - 2026-05-21
+
+### Added
+
+Custom database (Postgres pod in namespace) and JNDI configuration in authoring environment. 
+see 'Custom db' section in env1-authoring-baw-multi-db.properties
+
+### Changed
+
+### Fixed
+
 ## [1.4.3] - 2026-05-19
 
 ### Added

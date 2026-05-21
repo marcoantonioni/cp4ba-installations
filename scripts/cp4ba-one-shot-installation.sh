@@ -450,16 +450,10 @@ oneShotInstallation () {
   installAndVerifyCasePkgMgr
 
   if [[ $_ERR_PKG_MGR -eq 0 ]]; then
+
     ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
     if [[ $? -eq 0 ]]; then
 
-      # 20260519 Networkpolicies
-      if [[ -z "${CP4BA_INST_NP_DEPLOY}" ]]; then
-        export CP4BA_INST_NP_DEPLOY="false"
-      fi
-      if [[ "${CP4BA_INST_NP_DEPLOY}" = "true" ]]; then
-        ./cp4ba-create-networkpolicies.sh -c ${_CFG} 
-      fi
       _LDAP_PARAMS=""
       if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
         _LDAP_PARAMS="-l ${CP4BA_INST_LDAP_CFG_FILE}"

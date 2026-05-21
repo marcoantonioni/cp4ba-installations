@@ -114,7 +114,7 @@ _createNPNamesFromVars () {
       log_debug "Adding policy file '${_CLR_YELLOW}${_NP_CR_NAME}${_CLR_NC}' "
 
       _BASE_NAME=$(basename ${_NP_CR_NAME})
-      _DEST_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${_BASE_NAME}"
+      _DEST_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${CP4BA_INST_ENV}-$USER-$RANDOM-${_BASE_NAME}"
 
       envsubst < ${_NP_CR_NAME} > ${_DEST_FILE}
       if [[ $? -ne 0 ]]; then
