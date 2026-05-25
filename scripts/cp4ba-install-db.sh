@@ -333,6 +333,9 @@ _deployPostgresNoSSL () {
 # Postgres instance with SSL enabled (ZEN,BTS,IM external databases)
 
 _createDBCertificates () {
+
+log_debug "_createDBCertificates: $1"
+  
 # $1 = certificate folder
 # $2 = server name
 _CERT_FOLDER=$1
@@ -454,9 +457,11 @@ checkExtDbCertificates() {
 }
 
 
-_PG_SECRETS_FOLDER=""
+export _PG_SECRETS_FOLDER=""
 _KEEP_SSL=""
 _deployPostgresSSL () {
+
+  log_debug "_deployPostgresSSL: ${_PG_SECRETS_FOLDER}"
 
   if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
 
@@ -609,7 +614,7 @@ EOF
 
       oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${3} 2>/dev/null 1>/dev/null
 
-      _deployDBCluster "$2" "$3" "$4"
+      _deployDBCluster "$2" "$3" "$4" "$5"
     else
       log_info "${_CLR_YELLOW}Skipping deployment of DB Cluster '${_CLR_GREEN}$1${_CLR_YELLOW}'${_CLR_NC}"
     fi
@@ -694,13 +699,13 @@ setupCertificatesAndSecrets () {
   fi
   
   if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
-    _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
+    export _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
     _KEEP_SSL="true"
   else
     if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-      _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
+      export _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
     else
-      _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
+      export _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
       _KEEP_SSL="false"
     fi
   fi
@@ -766,7 +771,7 @@ deployDBClusters() {
     waitForClustersPostgresCRD
   fi
 
-  setupCertificatesAndSecretsAndSecrets
+  setupCertificatesAndSecrets
 
   i=1
   _IDX_END=$CP4BA_INST_DB_INSTANCES

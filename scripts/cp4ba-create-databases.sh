@@ -153,6 +153,7 @@ _generateSQL () {
 }
 
 #-------------------------------
+# MUST BE aligned with wfps-deploy.sh (to be refactored for single source...)
 _createDatabases () {
 # $1 CP4BA_INST_DB_CR_NAME
 # $2 CP4BA_INST_DB_TEMPLATE
@@ -317,6 +318,7 @@ _createDatabases () {
 
 }
 
+# MUST BE aligned with wfps-deploy.sh (to be refactored for single source...)
 createDatabases () {
 # $1: prefix key
 
