@@ -1,6 +1,16 @@
 
 # Change Log
 
+## [1.4.5] - 2026-05-25
+
+### Added
+
+### Changed
+
+### Fixed
+
+cp4ba-install-db.sh, wrong call to function setupCertificatesAndSecrets
+
 ## [1.4.4] - 2026-05-21
 
 ### Added
