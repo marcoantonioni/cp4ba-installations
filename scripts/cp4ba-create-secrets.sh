@@ -380,6 +380,14 @@ if [[ -z "${CP4BA_INST_DB_CUSTOMDB_PWD}" ]]; then
   export CP4BA_INST_DB_CUSTOMDB_PWD="dem0s"
 fi
 
+if [[ -z "${CP4BA_INST_DB_CUSTOMDB_MAX_POOL_SIZE}" ]]; then
+  export CP4BA_INST_DB_CUSTOMDB_MAX_POOL_SIZE="30"
+fi
+if [[ -z "${CP4BA_INST_DB_CUSTOMDB_MIN_POOL_SIZE}" ]]; then
+  export CP4BA_INST_DB_CUSTOMDB_MIN_POOL_SIZE="10"
+fi
+
+
 #---------------------------------------------
 _SECRET_FILE_NAME="${_INST_TMP_FOLDER}/secret-baw-runtime-$USER-$RANDOM.xml"
 cat <<EOF > ${_SECRET_FILE_NAME}
@@ -392,7 +400,7 @@ cat <<EOF > ${_SECRET_FILE_NAME}
     <!-- CUSTOM DB EXAMPLE -->
     <dataSource commitOrRollbackOnCleanup="commit" id="jdbc/${CP4BA_INST_DB_CUSTOMDB_NAME}" isolationLevel="TRANSACTION_READ_COMMITTED" jndiName="jdbc/${CP4BA_INST_DB_CUSTOMDB_NAME}" type="javax.sql.XADataSource">
       <jdbcDriver libraryRef="PostgreSQLLib"/>
-      <connectionManager maxPoolSize="100" minPoolSize="10"/>
+      <connectionManager maxPoolSize="${CP4BA_INST_DB_CUSTOMDB_MAX_POOL_SIZE}" minPoolSize="${CP4BA_INST_DB_CUSTOMDB_MIN_POOL_SIZE}"/>
         <properties.postgresql URL="jdbc:postgresql://${CP4BA_INST_DB_CUSTOMDB_SERVER}:${CP4BA_INST_DB_SERVER_PORT}/${CP4BA_INST_DB_CUSTOMDB_NAME}" user="${CP4BA_INST_DB_CUSTOMDB_USER}" password="${CP4BA_INST_DB_CUSTOMDB_PWD}"/>
     </dataSource>
 
@@ -583,7 +591,7 @@ createSecretADS () {
 # $3: output file
 getCertificate () {
 
-  log_info "Getting certificate from: "$1  
+  log_info "${_CLR_GREEN}Getting certificate from: $1"  
   _FILE_TMP="${_INST_TMP_FOLDER}/cp4ba-ads-cert-$USER-$RANDOM"
   openssl s_client -showcerts -connect $1 < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ${_FILE_TMP}
   
@@ -746,7 +754,7 @@ createConfigMapBtsImZenForExternalDBs() {
   # https://www.ibm.com/docs/en/cloud-paks/foundational-services/4.x_cd?topic=management-configuring-external-postgresql-database-im
 
   if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
-    log_info "${_CLR_GREEN}Creating config maps for BTS, IM, ZEN external Postgres database in '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
+    log_info "${_CLR_GREEN}Creating config maps for BTS, IM, ZEN external Postgres database${_CLR_NC}"
 
     _createConfigMapBts
     _createConfigMapIm
@@ -926,11 +934,9 @@ _createDbCertsAndSecrets () {
 createSecretsExternalDBs () {
   if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
 
-    if [[ "${CP4BA_INST_DB_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
-      # create certificates and secrets to connect to external db (other namespace)
-      log_debug "Create TLS secrets for external database${_CLR_NC}'"
-      _createDbCertsAndSecrets "${CP4BA_INST_DB_1_CR_NAME_SSL}"
-    fi
+    # create certificates and secrets to connect to external db (other namespace)
+    log_info "${_CLR_GREEN}Create TLS secrets for external database${_CLR_NC}'"
+    _createDbCertsAndSecrets "${CP4BA_INST_DB_1_CR_NAME_SSL}"
 
     _SEC_NAME="im-datastore-edb-secret"
     resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}

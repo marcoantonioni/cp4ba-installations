@@ -28,7 +28,7 @@ spec:
         resources:
           requests:
             storage: ${CP4BA_INST_DB_STORAGE_SIZE}
-        storageClassName: ${CP4BA_INST_SC_FILE} # ${CP4BA_SC_NAME}
+        storageClassName: ${CP4BA_INST_SC_BLOCK}
         volumeMode: Filesystem
   template:
     metadata:

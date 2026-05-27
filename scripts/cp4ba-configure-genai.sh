@@ -216,7 +216,7 @@ _createGenAiConfiguration () {
       rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
     else
 
-      if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]]; then
+      if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
 
         if [[ "${CP4BA_INST_BAS_GENAI_ENABLED}" = "true" ]]; then
           waitForBawStatefulSetReady "bastudio" "deployment"

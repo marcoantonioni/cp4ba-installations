@@ -343,7 +343,6 @@ createDatabases () {
     fi
     
     if [[ "${!_INST_ITEM}" = "true" ]]; then
-      log_info "------------------------------------------------------------"
       log_info "Installing '${_CLR_YELLOW}${_INST_ITEM}${_CLR_NC}' "
       if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_TEMPLATE}" ]]; then
 

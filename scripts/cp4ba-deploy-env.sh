@@ -485,7 +485,43 @@ generateCR () {
 }
 
 #-------------------------------
+checkEnvVarsForCR () {
+
+  if [[ -z "${CP4BA_INST_DB_MAX_POOL_SIZE}" ]]; then
+    export CP4BA_INST_DB_MAX_POOL_SIZE="100"
+    log_warning "${_CLR_GREEN}CP4BA_INST_DB_MAX_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_DB_MAX_POOL_SIZE}${_CLR_GREEN}'"
+  fi
+  if [[ -z "${CP4BA_INST_DB_MIN_POOL_SIZE}" ]]; then
+    export CP4BA_INST_DB_MIN_POOL_SIZE="30"
+    log_warning "${_CLR_GREEN}CP4BA_INST_DB_MIN_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_DB_MIN_POOL_SIZE}${_CLR_GREEN}'"
+  fi
+
+  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
+    if [[ -z "${CP4BA_INST_BAS_1_MAX_POOL_SIZE}" ]]; then
+      export CP4BA_INST_BAS_1_MAX_POOL_SIZE="${CP4BA_INST_DB_MAX_POOL_SIZE}"
+      log_warning "${_CLR_GREEN}CP4BA_INST_BAS_1_MAX_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_BAS_1_MAX_POOL_SIZE}${_CLR_GREEN}'"
+    fi
+    if [[ -z "${CP4BA_INST_BAS_1_MIN_POOL_SIZE}" ]]; then
+      export CP4BA_INST_BAS_1_MIN_POOL_SIZE="${CP4BA_INST_DB_MIN_POOL_SIZE}"
+      log_warning "${_CLR_GREEN}CP4BA_INST_BAS_1_MIN_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_BAS_1_MIN_POOL_SIZE}${_CLR_GREEN}'"
+    fi
+  else
+    if [[ -z "${CP4BA_INST_BAW_1_MAX_POOL_SIZE}" ]]; then
+      export CP4BA_INST_BAW_1_MAX_POOL_SIZE="${CP4BA_INST_DB_MAX_POOL_SIZE}"
+      log_warning "${_CLR_GREEN}CP4BA_INST_BAW_1_MAX_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_BAW_1_MAX_POOL_SIZE}${_CLR_GREEN}'"
+    fi
+    if [[ -z "${CP4BA_INST_BAW_1_MIN_POOL_SIZE}" ]]; then
+      export CP4BA_INST_BAW_1_MIN_POOL_SIZE="${CP4BA_INST_DB_MIN_POOL_SIZE}"
+      log_warning "${_CLR_GREEN}CP4BA_INST_BAW_1_MIN_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_BAW_1_MIN_POOL_SIZE}${_CLR_GREEN}'"
+    fi
+  fi
+
+}
+
+#-------------------------------
 deployEnvironment () {
+
+  checkEnvVarsForCR
 
   export CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
 

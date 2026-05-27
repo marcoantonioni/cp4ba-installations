@@ -1,6 +1,19 @@
 
 # Change Log
 
+## [1.4.6] - 2026-05-27
+
+### Added
+
+Variables and configurations for tuning database connection pools.
+
+### Changed
+
+### Fixed
+
+Secrets not configured for external IM/ZEN/BTS db in authoring environment.
+
+
 ## [1.4.5] - 2026-05-25
 
 ### Added

@@ -791,6 +791,8 @@ spec:
       database_name: "bawdb0"
       ## Workflow Server database port. This parameter is required. For DB2, the default value is "50000"
       port: "5432"
+      cm_max_pool_size: ${CP4BA_INST_BAW_1_MAX_POOL_SIZE}
+      cm_min_pool_size: ${CP4BA_INST_BAW_1_MIN_POOL_SIZE}
       ## Workflow Server database secret name. This parameter is required.
       ## apiVersion: v1
       ## kind: Secret

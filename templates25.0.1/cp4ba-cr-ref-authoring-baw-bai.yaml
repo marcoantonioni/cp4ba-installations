@@ -508,6 +508,8 @@ spec:
       name: ${CP4BA_INST_BAS_1_DB_BAW_NAME}
       port: "${CP4BA_INST_BAS_1_DB_PORT}"
       type: ${CP4BA_INST_DB_SERVER_TYPE}
+      cm_min_pool_size: ${CP4BA_INST_BASTUDIO_DB_MIN_POOL}
+      cm_max_pool_size: ${CP4BA_INST_BASTUDIO_DB_MAX_POOL}
     playback_server:
       admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
       database:

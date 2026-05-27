@@ -345,6 +345,7 @@ spec:
         secret_name: "${CP4BA_INST_BAW_1_DB_SECRET}"
         use_custom_jdbc_drivers: false
         cm_max_pool_size: ${CP4BA_INST_BAW_1_MAX_POOL_SIZE}
+        cm_min_pool_size: ${CP4BA_INST_BAW_1_MIN_POOL_SIZE}
       security_context:
         selinux_options:
         fs_groupchangepolicy:

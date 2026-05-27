@@ -591,7 +591,6 @@ deployDBCluster() {
 # $2: CR name
 # $3: namespace
   if [[ "$1" = "true" ]]; then
-    log_info "------------------------------------------------------------"
     log_info "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_GREEN}' in namespace '${_CLR_YELLOW}$3${_CLR_GREEN}'${_CLR_NC}"
     _deployDBCluster "$2" "$3" "$4" "$5"
   else
