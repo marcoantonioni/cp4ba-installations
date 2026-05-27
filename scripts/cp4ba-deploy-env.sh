@@ -279,49 +279,7 @@ updateZenServiceCertificate () {
   return $_ZENCONFIGURED
 }
 
-#-------------------------------
-deployPreEnv () {
-  if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
-    if [[ ! -z "${_LDAP}" ]]; then
-      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-ldap.sh -p "${_LDAP}" -n ${CP4BA_INST_NAMESPACE} -c "${_CFG}"
-      if [[ $? -ne 0 ]]; then
-        log_error "${_CLR_RED}[✗] Error, LDAP not installed.${_CLR_NC}"
-        exit 1
-      fi
-    else
-      log_error "${_CLR_RED}[✗] Error, LDAP configuration file not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
-      exit 1
-    fi
-  fi
-
-  if [[ "${CP4BA_INST_TYPE}" != "starter" ]]; then
-    ./cp4ba-create-secrets.sh -c ${_CFG} -s -t 0
-    if [[ $? -ne 0 ]]; then
-      log_error "${_CLR_RED}[✗] Error, secrets not configured.${_CLR_NC}"
-      exit 1
-    fi
-  fi
-}
-
-#-------------------------------
-deployPostEnv () {
-
-  if [[ "${CP4BA_INST_DB}" = "true" ]]; then
-    ./cp4ba-install-db.sh -c ${_CFG}
-    if [[ $? -ne 0 ]]; then
-      log_error "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
-      exit 1
-    fi
-  fi
-
-  if [[ "${CP4BA_INST_DB}" = "true" ]]; then
-    ./cp4ba-create-databases.sh -c ${_CFG} -w
-    if [[ $? -ne 0 ]]; then
-      log_error "${_CLR_RED}[✗] Error, databases not created.${_CLR_NC}"
-      exit 1
-    fi
-  fi
-
+verifyCreateSecretsForExternalDb () {
   if [[ "${CP4BA_INST_DB}" = "false" ]]; then
 
     _SHOW_WARN=0
@@ -373,7 +331,6 @@ deployPostEnv () {
         log_msg "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory"
       fi
 
-
       _SEC_NAME="bts-datastore-edb-secret"
       resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
       if [ $? -eq 0 ]; then
@@ -389,7 +346,61 @@ deployPostEnv () {
     fi
 
   fi
+}
 
+installAndCreateDb () {
+  if [[ "${CP4BA_INST_DB}" = "true" ]]; then
+    ./cp4ba-install-db.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      log_error "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+  if [[ "${CP4BA_INST_DB}" = "true" ]]; then
+    ./cp4ba-create-databases.sh -c ${_CFG} -w
+    if [[ $? -ne 0 ]]; then
+      log_error "${_CLR_RED}[✗] Error, databases not created.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+  verifyCreateSecretsForExternalDb
+}
+
+
+#-------------------------------
+#-------------------------------
+deployPreEnv () {
+  if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+    if [[ ! -z "${_LDAP}" ]]; then
+      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-ldap.sh -p "${_LDAP}" -n ${CP4BA_INST_NAMESPACE} -c "${_CFG}"
+      if [[ $? -ne 0 ]]; then
+        log_error "${_CLR_RED}[✗] Error, LDAP not installed.${_CLR_NC}"
+        exit 1
+      fi
+    else
+      log_error "${_CLR_RED}[✗] Error, LDAP configuration file not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+  if [[ "${CP4BA_INST_TYPE}" != "starter" ]]; then
+    ./cp4ba-create-secrets.sh -c ${_CFG} -s -t 0
+    if [[ $? -ne 0 ]]; then
+      log_error "${_CLR_RED}[✗] Error, secrets not configured.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+  # NEW sequence, no need to wait EDB Operator
+  installAndCreateDb
+}
+
+deployPostEnv () {
+
+  # OLD sequence for EDB Operator: installAndCreateDb
+  return 0
 }
 
 #-------------------------------
@@ -484,7 +495,7 @@ generateCR () {
 checkEnvVarsForCR () {
 
   log_msg "==============================================================${_CLR_NC}"
-  log_msg "${_CLR_GREEN}Verify tuning configuration for db connection pools${_CLR_NC}"
+  log_info "${_CLR_GREEN}Verify tuning configuration for db connection pools${_CLR_NC}"
   if [[ -z "${CP4BA_INST_DB_MAX_POOL_SIZE}" ]]; then
     export CP4BA_INST_DB_MAX_POOL_SIZE="100"
     log_warning "${_CLR_GREEN}CP4BA_INST_DB_MAX_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_DB_MAX_POOL_SIZE}${_CLR_GREEN}'"
@@ -521,6 +532,8 @@ deployEnvironment () {
 
   checkEnvVarsForCR
 
+  log_msg "==============================================================${_CLR_NC}"
+  log_info "${_CLR_GREEN}Deploy the environment${_CLR_NC}"
   export CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
 
   generateCR

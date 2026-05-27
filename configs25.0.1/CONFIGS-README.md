@@ -84,6 +84,11 @@ CONFIG_FILE=${_PTC}/env1-runtime-wfps-pfs-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 
 
+## --------------
+CONFIG_FILE=${_PTC}/env1-runtime-baw-bai-perf-test.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+
+
 #===================================
 
 ./cp4ba-remove-namespace.sh -n cp4ba-baw-authoring-prod

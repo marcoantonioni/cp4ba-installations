@@ -520,8 +520,7 @@ spec:
       # Production, Staging, Test, Development
       env_type: Test
       
-      # 'replicas' commented out just as workaround for operator bug (25.0.1) 
-      # replicas: ${CP4BA_INST_BAW_1_REPLICAS}
+      replicas: ${CP4BA_INST_BAW_1_REPLICAS}
       
       resources:
         limits:

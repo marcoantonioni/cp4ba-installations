@@ -1006,8 +1006,29 @@ createSecretBAML () {
 
 } 
 
+createSecretAdminRegistry () {
+
+  if [[ ! -z "${CP4BA_AUTO_ENTITLEMENT_KEY}" ]]; then
+    _SECRET_NAME="admin.registrykey"
+    log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+    oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+    oc create secret -n ${CP4BA_INST_NAMESPACE} docker-registry ${_SECRET_NAME} \
+      --docker-server=cp.icr.io \
+      --docker-username=cp \
+      --docker-password="${CP4BA_AUTO_ENTITLEMENT_KEY}" 2> /dev/null 1> /dev/null
+    if [[ $_ERR -gt 0 ]]; then
+      log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'cp.icr.io/cp/password' for secret) !!!${_CLR_NC}"
+    fi
+  else
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'CP4BA_AUTO_ENTITLEMENT_KEY' variable) !!!${_CLR_NC}"
+  fi
+
+}
+
 #-------------------------------
 createSecrets () {
+  createSecretAdminRegistry
+
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     createSecretLDAP
   fi

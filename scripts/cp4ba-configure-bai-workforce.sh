@@ -353,7 +353,9 @@ _createBAIWorkforceConfiguration () {
 
     _WX_BAI_WKF_TMP="${_INST_TMP_FOLDER}/cp4ba-bai-workforce-$USER-$RANDOM"
     _OK_TO_PATCH=0
-    if [[ "${CP4BA_INST_TYPE}" = "starter" ]] || [[ "${CP4BA_INST_TYPE}" = "production" ]]; then
+
+    if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
+    #if [[ "${CP4BA_INST_TYPE}" = "starter" ]] || [[ "${CP4BA_INST_TYPE}" = "production" ]]; then
       echo 'spec:' > ${_WX_BAI_WKF_TMP}
       echo '  bastudio_configuration:' >> ${_WX_BAI_WKF_TMP}
       echo '    custom_secret_name: '${CP4BA_INST_GENAI_WX_AUTH_SECRET} >> ${_WX_BAI_WKF_TMP}
