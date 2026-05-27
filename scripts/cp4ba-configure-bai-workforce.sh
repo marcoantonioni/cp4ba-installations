@@ -333,7 +333,7 @@ stringData:
       log_info "Creating BAI Workforce secret '${_CLR_YELLOW}${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}${_CLR_GREEN}'"
       oc create secret generic -n $1 $2 --from-file=workforce-insights-configuration.yml=${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
     else
-      log_error "Cannot set BAI Workforce configuration try to run the tool manually './cp4ba-configure-bai-workforce.sh -c ${CONFIG_FILE}'"
+      log_error "Cannot set BAI Workforce configuration try to run the tool manually './cp4ba-configure-bai-workforce.sh -c your-config-file.properties'"
     fi
     rm ${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
 
