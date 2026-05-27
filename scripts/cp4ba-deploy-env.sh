@@ -487,6 +487,8 @@ generateCR () {
 #-------------------------------
 checkEnvVarsForCR () {
 
+  log_msg "==============================================================${_CLR_NC}"
+  log_msg "${_CLR_GREEN}Verify tuning configuration for db connection pools${_CLR_NC}"
   if [[ -z "${CP4BA_INST_DB_MAX_POOL_SIZE}" ]]; then
     export CP4BA_INST_DB_MAX_POOL_SIZE="100"
     log_warning "${_CLR_GREEN}CP4BA_INST_DB_MAX_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_DB_MAX_POOL_SIZE}${_CLR_GREEN}'"
