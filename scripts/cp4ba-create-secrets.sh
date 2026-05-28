@@ -1016,8 +1016,8 @@ stringData:
   workforce-insights-configuration.yml: |-
     - bpmSystemId: 0
       url: 'https://127.0.0.1'
-      username: ${CP4BA-CP4BA_INST_PAKBA_ADMIN_USER}
-      password: ${CP4BA-CP4BA_INST_PAKBA_ADMIN_PWD}
+      username: ${CP4BA_INST_PAKBA_ADMIN_USER}
+      password: ${CP4BA_INST_PAKBA_ADMIN_PWD}
 " > ${_BAI_WKF_TMP}
     log_debug "Secret '${_CLR_YELLOW}${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}${_CLR_NC}'"
   oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET} --from-file=workforce-insights-configuration.yml=${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
