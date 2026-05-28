@@ -991,18 +991,41 @@ createSecretBAML () {
 
 #---------------------------------------------
 # empty values, to let the 'insights' installation progress
-  _SECRET_NAME="${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}"
-  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+##  _SECRET_NAME="${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}"
+##  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+##  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+##  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+##    --from-literal=bpmSystemId="to-be-defined" \
+##    --from-literal=url="https://to-be-defined" \
+##    --from-literal=adminUsername="to-be-defined" \
+##    --from-literal=adminPassword="to-be-defined" 2> /dev/null 1> /dev/null
+##  if [[ $_ERR -gt 0 ]]; then
+##    _ERROR=1
+##    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+##  fi
+
+  # this secret contains fake server address not known at this time, will be updated later by cp4ba-configure-bai-workforce.sh 
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
-  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
-    --from-literal=bpmSystemId="to-be-defined" \
-    --from-literal=url="https://to-be-defined" \
-    --from-literal=adminUsername="to-be-defined" \
-    --from-literal=adminPassword="to-be-defined" 2> /dev/null 1> /dev/null
+  _BAI_WKF_TMP="${_INST_TMP_FOLDER}/cp4ba-bai-wkf-secret-$USER-$RANDOM"
+echo "apiVersion: v1
+kind: Secret
+metadata:
+  name: ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
+  namespace: ${CP4BA_INST_NAMESPACE}
+stringData:
+  workforce-insights-configuration.yml: |-
+    - bpmSystemId: 0
+      url: 'https://127.0.0.1'
+      username: ${CP4BA-CP4BA_INST_PAKBA_ADMIN_USER}
+      password: ${CP4BA-CP4BA_INST_PAKBA_ADMIN_PWD}
+" > ${_BAI_WKF_TMP}
+    log_debug "Secret '${_CLR_YELLOW}${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}${_CLR_NC}'"
+  oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET} --from-file=workforce-insights-configuration.yml=${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
   if [[ $_ERR -gt 0 ]]; then
     _ERROR=1
-    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created !!!${_CLR_NC}"
   fi
+  rm ${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
 
 } 
 
@@ -1103,7 +1126,7 @@ createSecrets () {
 
 }
 
-echo -e "=============================================================="
+log_msg "=============================================================="
 log_info "${_CLR_GREEN}Creating secrets in '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' namespace${_CLR_NC}"
 
 setTemporaryFolder
