@@ -935,7 +935,7 @@ createSecretsExternalDBs () {
   if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
 
     # create certificates and secrets to connect to external db (other namespace)
-    log_info "${_CLR_GREEN}Create TLS secrets for external database${_CLR_NC}'"
+    log_info "${_CLR_GREEN}Create TLS secrets for external database${_CLR_NC}"
     _createDbCertsAndSecrets "${CP4BA_INST_DB_1_CR_NAME_SSL}"
 
     _SEC_NAME="im-datastore-edb-secret"
