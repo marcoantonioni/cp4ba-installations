@@ -344,49 +344,6 @@ stringData:
 }
 
 #--------------------------------------------------------
-## _createBAIWorkforceConfiguration () {
-## 
-##   BA_DN=$(oc get ICP4ACluster -n $1 --no-headers | awk '{print $1}')
-## 
-##   if [[ ! -z "${BA_DN}" ]]; then
-##     # echo "Patching ICP4ACluster: "${BA_DN}
-## 
-##     _WX_BAI_WKF_TMP="${_INST_TMP_FOLDER}/cp4ba-bai-workforce-$USER-$RANDOM"
-##     _OK_TO_PATCH=0
-## 
-##     if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
-##     #if [[ "${CP4BA_INST_TYPE}" = "starter" ]] || [[ "${CP4BA_INST_TYPE}" = "production" ]]; then
-##       echo 'spec:' > ${_WX_BAI_WKF_TMP}
-##       echo '  bastudio_configuration:' >> ${_WX_BAI_WKF_TMP}
-##       echo '    custom_secret_name: '${CP4BA_INST_GENAI_WX_AUTH_SECRET} >> ${_WX_BAI_WKF_TMP}
-##       echo '    bastudio_custom_xml: |' >> ${_WX_BAI_WKF_TMP}
-##       echo '      <properties>' >> ${_WX_BAI_WKF_TMP}
-##       echo '        <server>' >> ${_WX_BAI_WKF_TMP}
-##       echo '          <gen-ai merge="mergeChildren">' >> ${_WX_BAI_WKF_TMP} 
-##       echo '            <project-id>'${CP4BA_INST_GENAI_WX_PRJ_ID}'</project-id>' >> ${_WX_BAI_WKF_TMP}
-##       echo '            <provider-url>'${CP4BA_INST_GENAI_WX_URL_PROVIDER}'</provider-url>' >> ${_WX_BAI_WKF_TMP}
-##       echo '            <auth-alias>watsonx.ai_auth_alias</auth-alias>' >> ${_WX_BAI_WKF_TMP}
-##       echo '          </gen-ai>' >> ${_WX_BAI_WKF_TMP}
-##       echo '        </server>' >> ${_WX_BAI_WKF_TMP}
-##       echo '      </properties>' >> ${_WX_BAI_WKF_TMP}
-## 
-##       _OK_TO_PATCH=1
-##     else
-##       log_warning "${_CLR_YELLOW}[✗] WARNING: _createBAIWorkforceConfiguration GenAI not yet implemented for 'production' type deployment.${_CLR_NC}"
-##     fi
-## 
-##     if [[ ${_OK_TO_PATCH} -eq 1 ]]; then
-##       log_info "Patching CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' for BAI Workforce"
-##       oc patch ICP4ACluster ${BA_DN} -n $1 --type=merge --patch-file=${_WX_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
-##       rm "${_WX_BAI_WKF_TMP}" 2>/dev/null 1>/dev/null
-##     fi
-##   else
-##     log_error "${_CLR_RED}[✗] ERROR: _createBAIWorkforceConfiguration GenAI configuration error, ICP4ACluster object not found.${_CLR_NC}"
-##     exit 1
-##   fi
-## }
-
-#--------------------------------------------------------
 _verifyVars() {
   if [[ -z "${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}" ]]; then
     export CP4BA_INST_BAI_BPC_WORKFORCE_SECRET="custom-bpc-workforce-secret"
@@ -402,9 +359,6 @@ configureBAIWorkforce() {
       namespaceExist $1
       if [ $? -eq 1 ]; then
         _createBAIWorkforceSecret $1 ${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}
-        #if [[ ${_errorBuild} -eq 0 ]]; then
-        #  _createBAIWorkforceConfiguration $1
-        #fi
       else
         log_error "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
         exit 1
