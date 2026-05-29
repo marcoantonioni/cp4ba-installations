@@ -283,8 +283,8 @@ onboardUsers () {
 
   source ${CP4BA_INST_LDAP_CFG_FILE}
   source ${CP4BA_INST_IDP_CFG_FILE} 
-  log_msg "=============================================================="
-  log_info "${_CLR_GREEN}CP4BA Onboarding users${_CLR_NC}"
+  #log_msg "=============================================================="
+  #log_info "${_CLR_GREEN}CP4BA Onboarding users${_CLR_NC}"
 
   # !!! cp4admin perde ruoli Automation Administrator, Automation Developer se remove-and-add
   ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -e ${CP4BA_INST_NAMESPACE} -s -o add
@@ -489,7 +489,7 @@ oneShotInstallation () {
     TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
 
-    log_info "${_CLR_YELLOW}***********************************************************************"
+    log_msg "${_CLR_GREEN}**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**"
     log_info "${_CLR_GREEN}[✔] Installation completed for environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' !!!${_CLR_NC}"
     _STOP_AT=$(date)
     log_info "Terminated at ${_CLR_GREEN}${_STOP_AT}${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
@@ -521,7 +521,7 @@ oneShotInstallation () {
       log_info "  logs   : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}')${_CLR_GREEN}"
       log_info "  errors : ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | egrep 'SEVERE|Exception'${_CLR_GREEN}"
       log_info "  success: ${_CLR_YELLOW}oc logs -n ${CP4BA_INST_NAMESPACE} \$(oc get pods -n ${CP4BA_INST_NAMESPACE} | grep case-init-job | awk '{print \$1}') | grep 'INFO: Configuration Completed'${_CLR_GREEN}"
-      log_info "${_CLR_YELLOW}***********************************************************************${_CLR_NC}"
+      log_msg "${_CLR_YELLOW}"
 
     fi
 
@@ -540,11 +540,11 @@ onExit () {
 
 
 log_msg ""
-log_msg "${_CLR_GREEN}***********************************************************************"
+log_msg "${_CLR_GREEN}**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**"
 log_info "Install CP4BA version '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}' complete environment in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'"
 _START_AT=$(date)
 log_info "Started at ${CLR_YELLOW}${_START_AT}${_CLR_GREEN}"
-log_msg "***********************************************************************${_CLR_NC}"
+log_msg "${_CLR_GREEN}**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**^^**"
 
 trap 'onExit' EXIT
 
