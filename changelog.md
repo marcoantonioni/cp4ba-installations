@@ -1,6 +1,16 @@
 
 # Change Log
 
+## [1.4.7] - 2026-05-31
+
+### Added
+
+### Changed
+
+Postgres max connections up to 1000 in .conf
+
+### Fixed
+
 ## [1.4.6] - 2026-05-27
 
 ### Added
