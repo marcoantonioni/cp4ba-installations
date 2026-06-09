@@ -5,6 +5,9 @@
 
 ### Added
 
+Configuration for virtual users (up to 1000 for stress tests).
+Configuration for crash tests (insufficent resources/connections/etc...).
+
 ### Changed
 
 Creation order for self signed certificates.
