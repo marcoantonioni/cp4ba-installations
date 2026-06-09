@@ -337,7 +337,7 @@ _deployPostgresSSL () {
 
     export _PG_IMAGE_NAME="${CP4BA_INST_DB_OSS_IMAGE}"
     export _PG_CONFIG_CM=my-postgresql-config-ssl
-    export _PG_SECRET=my-postgresql-secret
+    export _PG_SECRET="${CP4BA_INST_DB_POSTGRES_SECRET_NAME:=my-postgresql-secret}"
     export _PG_SS_NAME=$1
     export _PG_TARGET_NS=$2
 

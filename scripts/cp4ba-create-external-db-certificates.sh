@@ -224,7 +224,7 @@ setupCertificatesAndSecrets () {
 
   # https://www.ibm.com/docs/en/cloud-paks/foundational-services/4.x_cd?topic=management-configuring-external-postgresql-database-im
 
-  export _PG_SECRET=my-postgresql-secret
+  export _PG_SECRET="${CP4BA_INST_DB_POSTGRES_SECRET_NAME:=my-postgresql-secret}"
   log_info "Create secret '${_CLR_YELLOW}${_PG_SECRET}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'"
   oc delete secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRET} 2>/dev/null 1>/dev/null
   oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRET} --from-file=${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ 2>/dev/null 1>/dev/null

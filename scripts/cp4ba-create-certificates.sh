@@ -165,11 +165,12 @@ createCertificates () {
 
   if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
 
-    _PG_SECRETS_FOLDER=$1
+    _CERTS_FOLDER=$1
 
-    mkdir -p ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
+    log_debug "Creating certificates in folder '${_CERTS_FOLDER}' for service '${CP4BA_INST_DB_1_SERVICE_SSL}'"
+    mkdir -p ${_CERTS_FOLDER} 2>/dev/null 1>/dev/null
 
-    _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVICE_SSL}
+    _createDBCertificates ${_CERTS_FOLDER} ${CP4BA_INST_DB_1_SERVICE_SSL}
 
   else
     log_error "${_CLR_RED}[✗] ERROR: createCertificates target folder or service name empty${_CLR_NC}"
