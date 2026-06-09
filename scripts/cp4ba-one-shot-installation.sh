@@ -466,7 +466,7 @@ oneShotInstallation () {
 
     _RESULT_OPERATORS=0
     if [[ "${_SKIP_OPERATORS}" = "false" ]]; then
-      ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
+      ${_SCRIPT_DIR}/cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
       _RESULT_OPERATORS=$?
     else
       log_info "Skip install operators"
@@ -487,7 +487,7 @@ oneShotInstallation () {
         _LDAP_PARAMS="-l ${CP4BA_INST_LDAP_CFG_FILE}"
       fi
 
-      ./cp4ba-deploy-env.sh -c ${_CFG} ${_TRACE_PARAM} ${_LDAP_PARAMS}
+      ${_SCRIPT_DIR}/cp4ba-deploy-env.sh -c ${_CFG} ${_TRACE_PARAM} ${_LDAP_PARAMS}
       if [[ $? -eq 0 ]]; then
         if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
           onboardUsers

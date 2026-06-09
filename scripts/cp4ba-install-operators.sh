@@ -211,7 +211,7 @@ if [[ -z "${CP4BA_INST_NP_DEPLOY}" ]]; then
   export CP4BA_INST_NP_DEPLOY="false"
 fi
 if [[ "${CP4BA_INST_NP_DEPLOY}" = "true" ]]; then
-  ./cp4ba-create-networkpolicies.sh -c ${_CFG} 
+  ${_SCRIPT_DIR}/cp4ba-create-networkpolicies.sh -c ${_CFG} 
 fi
 
 _OK=false
@@ -220,40 +220,16 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
     if [[ -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
       log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
       _ACT_DIR=$(pwd)
+
+      # change folder (do not use $_SCRIPT_DIR until: cd ${_ACT_DIR})
       cd ${_SCRIPTS}
       export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
-
-      # 20260302
-      # _CAS="./cp4a-clusteradmin-setup.sh"
-      # _CAS2="./cp4a-clusteradmin-setup-240.sh"
-      # cat "${_CAS}" | sed 's/ATTEMPTS -eq 120/ATTEMPTS -eq 240/g' > "${_CAS2}"
-# 
-      # if [[ -f ./deployOperator.sh ]]; then
-      #   echo "BEFORE:"
-      #   cat ./deployOperator.sh | grep "Timeout waiting for CP4BA operator to start"        
-      #   cat ./deployOperator.sh | grep "local maxRetry"
-      # fi
-# 
-      # cat ./deployOperator.sh | sed 's/local maxRetry=20/local maxRetry=100/g' > ./deployOperator-mod.sh
-      # cat ./deployOperator-mod.sh | sed 's/Waiting for CP4A Operator Catalog pod initialization/Waiting for CP4A Operator Catalog pod initialization (maxRetry=100)/g' | sed 's/Timeout waiting for CP4BA operator to start/Timeout waiting for CP4BA operator to start (retries: 100)/g' > ./deployOperator.sh
-      # #cp ./deployOperator-mod.sh ./deployOperator.sh
-# 
-      # if [[ -f ./deployOperator.sh ]]; then
-      #   echo "BEFORE:"
-      #   cat ./deployOperator.sh | grep "Timeout waiting for CP4BA operator to start"
-      #   cat ./deployOperator.sh | grep "local maxRetry"
-      # fi
-      # echo "Executing scripts with modified retries/timeouts"
-      # /bin/bash "${_CAS2}" &> ./_clusteradmin.out
-
       /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
-
       if [ $? -ne 0 ]; then
         # retry once, since v25, timeouts have been noted during operator setup...
         log_warning "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try one more time...'"
         /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
       fi
-
       if [ $? -eq 0 ]; then
         rm ./_clusteradmin.out
         log_info "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
@@ -269,8 +245,8 @@ if [[ ! -z "${_SCRIPTS}" ]]; then
         log_error "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
         log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
       fi
+      # change folder back to original location
       cd ${_ACT_DIR}
-      
     fi
   fi
 fi

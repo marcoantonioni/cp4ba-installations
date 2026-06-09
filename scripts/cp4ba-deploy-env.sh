@@ -512,7 +512,7 @@ installAndCreateDb () {
   verifyCreateSecretsForExternalDb
 
   if [[ "${CP4BA_INST_DB}" = "true" ]]; then
-    ./cp4ba-install-db.sh -c ${_CFG}
+    ${_SCRIPT_DIR}/cp4ba-install-db.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
       log_error "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
       exit 1
@@ -604,7 +604,7 @@ postInstallationSteps () {
 
   # Configure GenAI
   if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
-    ./cp4ba-configure-genai.sh -c ${_CFG}
+    ${_SCRIPT_DIR}/cp4ba-configure-genai.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
       log_error "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
       exit 1
@@ -613,7 +613,7 @@ postInstallationSteps () {
 
   # Configure BAIWorkforce
   if [[ "${CP4BA_INST_BAI_BPC_WORKFORCE}" = "true" ]]; then
-    ./cp4ba-configure-bai-workforce.sh -c ${_CFG}
+    ${_SCRIPT_DIR}/cp4ba-configure-bai-workforce.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
       log_error "${_CLR_RED}[✗] Error, BAIWorkforce not configured.${_CLR_NC}"
       exit 1
@@ -1077,7 +1077,7 @@ checkPrereqVars
 
 if [[ "${_GENERATE_ONLY}" = "true" ]]; then
   generateCR
-  ./cp4ba-create-databases.sh -c ${_CFG} -g
+  ${_SCRIPT_DIR}/cp4ba-create-databases.sh -c ${_CFG} -g
   if [[ -z "${_LDAP}" ]] && [[ "${CP4BA_INST_TYPE}" = "production" ]]; then
     log_msg ""
     log_warning "${_CLR_YELLOW}WARNING${_CLR_GREEN}: no LDAP data has been configured, update manually the generated CR.${_CLR_NC}" 
