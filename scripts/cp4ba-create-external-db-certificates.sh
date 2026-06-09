@@ -231,18 +231,6 @@ setupCertificatesAndSecrets () {
 
 }
 
-#DONOTUSE_removeCertificates () {
-  #log_debug "removeCertificates folder ${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
-  #if [[ "${_KEEP_SSL}" = "false" ]]; then
-  #  if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-  #    rm -fr ${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER} 2>/dev/null 1>/dev/null
-  #  fi
-  #else
-  #  log_info "${_CLR_GREEN}The database server is configured with self signed certificates stored in folder '${_CLR_YELLOW}${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}${_CLR_GREEN}' reuse it for client side components with following export."
-  #  log_info "${_CLR_YELLOW}export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=\"${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}\"${_CLR_GREEN}"
-  #fi
-#}
-
 #-------------------------------------------------
 
 log_msg "=============================================================="

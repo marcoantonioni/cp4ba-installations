@@ -15,15 +15,6 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai.properties
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.0
 _KK=25.0.1
-CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-onedb-int-sogei.properties
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
-```
-
----
-```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
-_VV=25.1.0
-_KK=25.0.1
 CONFIG_FILE=${_PTC}/env1-authoring-baw-multi-db.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
