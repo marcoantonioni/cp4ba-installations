@@ -1,6 +1,18 @@
 
 # Change Log
 
+## [1.4.8] - 2026-06-09
+
+### Added
+
+### Changed
+
+Creation order for self signed certificates.
+Configuration for external DBs (out of namespace).
+
+### Fixed
+
+
 ## [1.4.7] - 2026-05-31
 
 ### Added

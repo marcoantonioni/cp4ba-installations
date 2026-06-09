@@ -279,82 +279,251 @@ updateZenServiceCertificate () {
   return $_ZENCONFIGURED
 }
 
-verifyCreateSecretsForExternalDb () {
-  if [[ "${CP4BA_INST_DB}" = "false" ]]; then
+#------------------------------------------------
+_createDBCertificates () {
+# $1 = certificate folder
+# $2 = server name
+_CERT_FOLDER=$1
+_CERT_SERVER_NAME=$2
 
-    _SHOW_WARN=0
-    
-    _SEC_NAME="im-datastore-edb-secret"
-    resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-    if [ $? -eq 0 ]; then
-      _SHOW_WARN=1
-    fi
+_CERT_PASS=marco
+_CERT_VERIFY="false"
+_CERT_CA_PREFIX_NAME="my-ca"
+_CERT_SERVER_PREFIX_NAME="my-server"
+_CERT_CLIENT_PREFIX_NAME="my-client"
 
-    _SEC_NAME="ibm-zen-metastore-edb-secret"
-    resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-    if [ $? -eq 0 ]; then
-      _SHOW_WARN=1
-    fi
+_CERT_ISSUER_SUBJ="/CN=my-postgres"
+_CERT_SUBJ_SERVER="/CN=${_CERT_SERVER_NAME}"
+_CERT_SUBJ_CLIENT="/CN=client.${_CERT_SERVER_NAME}"
 
-    _SEC_NAME="bts-datastore-edb-secret"
-    resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-    if [ $? -eq 0 ]; then
-      _SHOW_WARN=1
-    fi
+# CA conf
+mkdir -p ${_CERT_FOLDER}/ca.db.certs   # Signed certificates storage
+touch ${_CERT_FOLDER}/ca.db.index      # Index of signed certificates
+echo 01 > ${_CERT_FOLDER}/ca.db.serial # Next (sequential) serial number
 
-    if [[ ${_SHOW_WARN} -eq 1 ]]; then
+# Configuration cert server
+cat <<EOF > ${_CERT_FOLDER}/req.conf
+[ req ]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_ca
+prompt = no
+[ req_distinguished_name ]
+C = CN
+ST = MA
+O = CP4BA
+CN = root
+[ v3_ca ]
+basicConstraints = critical,CA:TRUE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+[ v3_req ]
+keyUsage = keyEncipherment, dataEncipherment, digitalSignature
+extendedKeyUsage = clientAuth, serverAuth
+subjectAltName = @alt_names
+[ alt_names ]
+IP.1 = 127.0.0.1
+DNS.1 = ${CP4BA_INST_DB_1_CR_NAME_SSL}
+DNS.2 = ${CP4BA_INST_DB_1_SERVICE_SSL}
+DNS.3 = ${CP4BA_INST_DB_1_SERVICE_SSL_R}
+DNS.4 = ${CP4BA_INST_DB_1_SERVER_NAME_SSL}
+DNS.5 = ${CP4BA_INST_DB_1_SERVER_NAME_SSL_R}
+DNS.6 = localhost
 
-      log_msg ""
+EOF
 
-      log_warning "${_CLR_YELLOW}[!] WARNING, if you are using an external DB you must manually create and label the following TLS secrets:${_CLR_NC}"
+# Configuration cert client
+cat <<EOF > ${_CERT_FOLDER}/req-client.conf
+[ req ]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_ca
+prompt = no
+[ req_distinguished_name ]
+C = CN
+ST = MA
+O = CP4BAClient
+CN = root
+[ v3_ca ]
+basicConstraints = critical,CA:TRUE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+[ v3_req ]
+keyUsage = keyEncipherment, dataEncipherment, digitalSignature
+extendedKeyUsage = clientAuth
 
-      _SEC_NAME="im-datastore-edb-secret"
-      resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-      if [ $? -eq 0 ]; then
-        log_msg ""
-        log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+EOF
 
-        log_msg "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
-        log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls"
-        log_msg "oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE}"
-        log_msg ""
-      fi
+# CA
+openssl genrsa -out ${_CERT_FOLDER}/ca.key 2048 2>/dev/null 1>/dev/null
+openssl req -x509 -new -key ${_CERT_FOLDER}/ca.key -sha256 -days 36500 -out ${_CERT_FOLDER}/ca.cert -extensions 'v3_ca' -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
 
-      _SEC_NAME="ibm-zen-metastore-edb-secret"
-      resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-      if [ $? -eq 0 ]; then
-        log_msg ""
-        log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+# SERVER
+openssl genrsa -out ${_CERT_FOLDER}/server.key 2048 2>/dev/null 1>/dev/null
+openssl req -new -sha256 -key ${_CERT_FOLDER}/server.key -out ${_CERT_FOLDER}/server-req.pem -subj "/CN=${CP4BA_INST_DB_1_CR_NAME_SSL}" -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
+openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/server-req.pem -out ${_CERT_FOLDER}/server.cert -extfile ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
 
-        log_msg "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
-        log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls" 
-        log_msg "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory"
-      fi
+# CLIENT
+openssl genrsa -out ${_CERT_FOLDER}/client.key 2048 2>/dev/null 1>/dev/null
+openssl req -new -sha256 -key ${_CERT_FOLDER}/client.key -out ${_CERT_FOLDER}/client-req.pem -subj "/CN=postgres-client" -config ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
+openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/client-req.pem -out ${_CERT_FOLDER}/client.cert -extfile ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
 
-      _SEC_NAME="bts-datastore-edb-secret"
-      resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-      if [ $? -eq 0 ]; then
-        log_msg ""
-        log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
-        log_msg "openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt -in ./client.key -out ./tls_key.pk8"
-        log_msg "oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME}" 
-        log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./tls_key.pk8" 
-        log_msg "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory" 
-        log_msg ""
-      fi
-
-    fi
-
-  fi
 }
 
+verifyCreateSecretsForExternalDb () {
+
+  export _PG_TARGET_NS=${CP4BA_INST_NAMESPACE}
+
+  if [[ "${CP4BA_INST_DB}" = "false" ]]; then
+
+    if [[ "${CP4BA_INST_NAMESPACE}" != "${CP4BA_INST_SUPPORT_NAMESPACE}" ]]; then
+
+      if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+        log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' not defined.${_CLR_GREEN}"
+        log_error "${_CLR_RED}[✗] When CP4BA_INST_DB is false then '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' must be defined to use certificates.${_CLR_GREEN}"
+        exit 1
+      else
+        if [[ -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+          _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
+          log_info "${_CLR_GREEN}Reusing certificates in folder '${_CLR_YELLOW}${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}${_CLR_GREEN}'"
+        else  
+          log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
+          exit 1
+        fi    
+      fi 
+
+    fi
+
+    # NO ----------------------
+    #_SHOW_WARN=0
+    #
+    #_SEC_NAME="im-datastore-edb-secret"
+    #resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
+    #if [ $? -eq 0 ]; then
+    #  _SHOW_WARN=1
+    #fi
+#
+    #_SEC_NAME="ibm-zen-metastore-edb-secret"
+    #resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
+    #if [ $? -eq 0 ]; then
+    #  _SHOW_WARN=1
+    #fi
+#
+    #_SEC_NAME="bts-datastore-edb-secret"
+    #resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
+    #if [ $? -eq 0 ]; then
+    #  _SHOW_WARN=1
+    #fi
+#
+    #if [[ ${_SHOW_WARN} -eq 1 ]]; then
+#
+    #  log_msg ""
+#
+    #  log_warning "${_CLR_YELLOW}[!] WARNING, if you are using an external DB you must manually create and label the following TLS secrets:${_CLR_NC}"
+#
+    #  _SEC_NAME="im-datastore-edb-secret"
+    #  resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
+    #  if [ $? -eq 0 ]; then
+    #    log_msg ""
+    #    log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+#
+    #    log_msg "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
+    #    log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls"
+    #    log_msg "oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE}"
+    #    log_msg ""
+    #  fi
+#
+    #  _SEC_NAME="ibm-zen-metastore-edb-secret"
+    #  resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
+    #  if [ $? -eq 0 ]; then
+    #    log_msg ""
+    #    log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+#
+    #    log_msg "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
+    #    log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls" 
+    #    log_msg "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory"
+    #  fi
+#
+    #  _SEC_NAME="bts-datastore-edb-secret"
+    #  resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
+    #  if [ $? -eq 0 ]; then
+    #    log_msg ""
+    #    log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
+    #    log_msg "openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt -in ./client.key -out ./tls_key.pk8"
+    #    log_msg "oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME}" 
+    #    log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./tls_key.pk8" 
+    #    log_msg "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory" 
+    #    log_msg ""
+    #  fi
+#
+    #fi
+
+  else
+    export _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
+    export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="${_PG_SECRETS_FOLDER}"
+    log_info "Creating self signed temporary certificates in folder '${_CLR_YELLOW}${_PG_SECRETS_FOLDER}${_CLR_GREEN}'"
+    _createDBCertificates ${_PG_SECRETS_FOLDER} ${CP4BA_INST_DB_1_SERVER_NAME_SSL}
+    _DELETE_TEMP_CERTS=1
+  fi
+
+  log_info "Creating secret '${_CLR_YELLOW}${_PG_SECRETS}${_CLR_GREEN}'"
+  oc delete secret -n ${_PG_TARGET_NS} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
+  oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
+
+  _SEC_NAME="im-datastore-edb-secret"
+  log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
+  oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} >/dev/null 2>&1
+  oc create secret generic ${_SEC_NAME} -n ${_PG_TARGET_NS} \
+    --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert" \
+    --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert" \
+    --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key" \
+    --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
+  oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
+
+  _SEC_NAME="ibm-zen-metastore-edb-secret"
+  log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
+  oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
+  oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME} \
+    --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
+    --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
+    --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key"  \
+    --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
+  oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
+
+  _SEC_NAME="bts-datastore-edb-secret"
+  log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
+  openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
+    -in ${_PG_SECRETS_FOLDER}/client.key \
+    -out ${_PG_SECRETS_FOLDER}/tls_key.pk8 2>/dev/null 1>/dev/null
+
+  oc delete secret -n ${_PG_TARGET_NS} ${_SEC_NAME} 2>/dev/null 1>/dev/null
+  oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME}  \
+    --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
+    --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
+    --from-file=tls.key="${_PG_SECRETS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
+  oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
+
+}
+
+# used for SSL configuration in Postgres template 'pg-ssl.yaml'
+export _PG_SECRETS=my-postgresql-secret
+export _DELETE_TEMP_CERTS=0
+
 installAndCreateDb () {
+
+  verifyCreateSecretsForExternalDb
+
   if [[ "${CP4BA_INST_DB}" = "true" ]]; then
     ./cp4ba-install-db.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
       log_error "${_CLR_RED}[✗] Error, DB not installed.${_CLR_NC}"
       exit 1
     fi
+  else
+    log_info "${_CLR_GREEN}Using external DB at address '${_CLR_YELLOW}${CP4BA_INST_DB_1_SERVICE}${_CLR_GREEN}'"
+  fi
+
+  if [[ ${_DELETE_TEMP_CERTS} -eq 1 ]]; then
+    log_info "Removing self signed temporary certificates"
+    rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
   fi
 
   if [[ "${CP4BA_INST_DB}" = "true" ]]; then
@@ -365,7 +534,6 @@ installAndCreateDb () {
     fi
   fi
 
-  verifyCreateSecretsForExternalDb
 }
 
 
@@ -398,8 +566,6 @@ deployPreEnv () {
 }
 
 deployPostEnv () {
-
-  # OLD sequence for EDB Operator: installAndCreateDb
   return 0
 }
 
@@ -756,7 +922,7 @@ zenCertInTrustedList () {
 
 waitDeploymentReadiness () {
   log_msg "==============================================================${_CLR_NC}"
-  log_info "${_CLR_GREEN}Configuration and deployment complete for CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' in  namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}Configuration and deployment complete for CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
   log_info "Waiting for CR configurations to complete."
 
   _seconds=0

@@ -766,7 +766,7 @@ createConfigMapBtsImZenForExternalDBs() {
 #--------------------------------
 # Postgres instance with SSL enabled (ZEN,BTS,IM external databases)
 
-_createDBCertificates () {
+DONOTUSE__createDBCertificates () {
 # $1 = certificate folder
 # $2 = server name
 _CERT_FOLDER=$1
@@ -857,9 +857,8 @@ openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.
 # only db 1
 # certificates creation configuration must be kept aligned with cp4ba-install-db.sh (_deployPostgresSSL)
 # TO BE REFACTORED
-_createDbCertsAndSecrets () {
-    export _PG_SECRETS=my-postgresql-secrets
-    export _PG_SS_NAME=$1
+DONOTUSE_createDbCertsAndSecrets () {
+    export _PG_SECRETS=my-postgresql-secret
     export _PG_TARGET_NS=${CP4BA_INST_NAMESPACE}
 
     if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
@@ -882,9 +881,6 @@ _createDbCertsAndSecrets () {
         exit 1
       fi    
     fi 
-
-    _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
-    _INST_DB_CR_NAME_SSL="CP4BA_INST_DB_"$i"_CR_NAME_SSL"
 
     oc delete secret -n ${_PG_TARGET_NS} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
     oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
@@ -919,7 +915,7 @@ _createDbCertsAndSecrets () {
       --from-file=tls.key="${_PG_SECRETS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
     oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
 
-    rm ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
+    # rm ${_PG_SS_CR_TMP} 2>/dev/null 1>/dev/null
 
     if [[ ! -z "${_PG_CONF_FOLDER}" ]]; then
       rm -fr ${_PG_CONF_FOLDER} 2>/dev/null 1>/dev/null
@@ -931,29 +927,36 @@ _createDbCertsAndSecrets () {
     fi
 }
 
-createSecretsExternalDBs () {
+DONOTUSE_createSecretsExternalDBs () {
   if [[ "${CP4BA_INST_DB_USE_EDB}" = "false" ]]; then
 
     # create certificates and secrets to connect to external db (other namespace)
-    log_info "${_CLR_GREEN}Create TLS secrets for external database${_CLR_NC}"
-    _createDbCertsAndSecrets "${CP4BA_INST_DB_1_CR_NAME_SSL}"
+    # log_info "${_CLR_GREEN}Create TLS secrets for external database${_CLR_NC}"
+    log_info "${_CLR_GREEN}SKIP create TLS secrets for external database${_CLR_NC}"
+    #??? _createDbCertsAndSecrets "${CP4BA_INST_DB_1_CR_NAME_SSL}"
 
     _SEC_NAME="im-datastore-edb-secret"
     resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}
     if [ $? -eq 1 ]; then
       log_debug "Secret found: '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+    else
+      log_warning  "Secret NOT found: '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
     fi
 
     _SEC_NAME="ibm-zen-metastore-edb-secret"
     resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}
     if [ $? -eq 1 ]; then
       log_debug "Secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+    else
+      log_warning  "Secret NOT found: '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
     fi
 
     _SEC_NAME="bts-datastore-edb-secret"
     resourceExist ${_SEC_NAME} "secret" ${CP4BA_INST_NAMESPACE}
     if [ $? -eq 1 ]; then
       log_debug "Secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+    else
+      log_warning  "Secret NOT found: '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
     fi
 
   fi
@@ -1113,7 +1116,7 @@ createSecrets () {
 
   # External Postgres DBs 
   createConfigMapBtsImZenForExternalDBs
-  createSecretsExternalDBs
+  # createSecretsExternalDBs
 
   if [[ $_ERROR = 1 ]]; then
     if [[ "${_SILENT}" = "false" ]]; then

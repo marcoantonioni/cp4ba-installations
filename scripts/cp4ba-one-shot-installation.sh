@@ -20,6 +20,7 @@ _RELEASE_BASE=""
 _OK=0
 _ERR_PKG_MGR=0
 _TRACE=0
+_SKIP_OPERATORS=false
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -72,13 +73,14 @@ usage () {
     -k(optional) cert-kubernetes-version
     -d(optional) full-path-to-target-folder-for-case-package-manager [mandatory if -m is set, created if not exists]
        (eg: '/your-folder/my-cmgr')
+    -o(optional) skip install operators
     -x(optional) trace enabled${_CLR_NC}"
 }
 
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:p:s:v:k:d:mtx flag
+while getopts c:p:s:v:k:d:mtxo flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
@@ -89,6 +91,7 @@ do
         d) _CPAK_MGR_FOLDER=${OPTARG};;
         t) _TEST_CFG=true;;
         x) _TRACE=1;;
+        o) _SKIP_OPERATORS=true;;
         \?) # Invalid option
             echo "Invalid option: "${flag}
             usage
@@ -287,7 +290,17 @@ onboardUsers () {
   #log_info "${_CLR_GREEN}CP4BA Onboarding users${_CLR_NC}"
 
   # !!! cp4admin perde ruoli Automation Administrator, Automation Developer se remove-and-add
-  ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -e ${CP4BA_INST_NAMESPACE} -s -o add
+  if [[ -z "${CP4BA_INST_LDAP_USE_VOLUME}" || "${CP4BA_INST_LDAP_USE_VOLUME}" = "false" ]]; then 
+    ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -e ${CP4BA_INST_NAMESPACE} -s -o add
+  else
+    if [[ ! -z "${CP4BA_INST_IAM_ONBOARD_USERS_FILE}" ]]; then
+      if [[ -f "${CP4BA_INST_IAM_ONBOARD_USERS_FILE}" ]]; then
+        ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -e ${CP4BA_INST_NAMESPACE} -u ${CP4BA_INST_IAM_ONBOARD_USERS_FILE} -o add
+      else
+        log_error "Onboarding users, file not found '${CP4BA_INST_IAM_ONBOARD_USERS_FILE}'"
+      fi
+    fi
+  fi 
 }
 
 #-------------------------------
@@ -451,8 +464,23 @@ oneShotInstallation () {
 
   if [[ $_ERR_PKG_MGR -eq 0 ]]; then
 
-    ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
-    if [[ $? -eq 0 ]]; then
+    _RESULT_OPERATORS=0
+    if [[ "${_SKIP_OPERATORS}" = "false" ]]; then
+      ./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
+      _RESULT_OPERATORS=$?
+    else
+      log_info "Skip install operators"
+      _FOUND_OP=$(oc get csv -n cp4ba-baw-auth-bai-onedb-1000 | grep "ibm-cp4a-operator" | wc -l)
+      if [[ $_FOUND_OP -eq 1 ]]; then
+        _OP_NAME=$(oc get csv -n ${CP4BA_INST_NAMESPACE} | grep "ibm-cp4a-operator" | awk '{print $1}')
+        log_info "Found already installed operator '${_CLR_YELLOW}${_OP_NAME}${_CLR_GREEN}'"
+      else
+        log_error "No CP4BA operator found into namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}', run $_me without -o option"
+        exit 1
+      fi
+    fi
+    
+    if [[ $_RESULT_OPERATORS -eq 0 ]]; then
 
       _LDAP_PARAMS=""
       if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
@@ -464,16 +492,18 @@ oneShotInstallation () {
         if [[ "${CP4BA_INST_IAM}" = "true" ]]; then
           onboardUsers
         fi
+
+        # Configure PHPAdmin
+        if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+          if [[ "${CP4BA_INST_LDAP_USE_PHPADMIN}" = "true" ]]; then
+            ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-phpadmin.sh -p "${_CFG}" -n ${CP4BA_INST_NAMESPACE} -s common-web-ui-cert -w common-web-ui-cert
+          fi
+        fi
+
         _OK=1
       fi
     fi
-    #  # if pckgmgr dinamico rm folder
-    #  if [[ "${_CPAK_MGR_FOLDER_REMOVE}" = "true" ]]; then
-    #    if [[ -d "${_CPAK_MGR_FOLDER}" ]]; then 
-    #      echo -e "Removing temporary folder: '${_CLR_GREEN}${_CPAK_MGR_FOLDER}${_CLR_NC}'"    
-    #      rm -fR ${_CPAK_MGR_FOLDER}
-    #    fi
-    #  fi
+
   fi
 
   STOP_SECONDS=$SECONDS

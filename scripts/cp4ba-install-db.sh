@@ -2,11 +2,9 @@
 
 #set -euo pipefail
 
-
 _me=$(basename "$0")
 
 _CFG=""
-_KEEP_SSL="false"
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -47,16 +45,15 @@ setTemporaryFolder () {
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:k flag
+while getopts c: flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
-        k) _KEEP_SSL="true";;
     esac
 done
 
 if [[ -z "${_CFG}" ]]; then
-  echo "usage: $_me -c path-of-config-file -k(optional) keep certificate folder"
+  echo "usage: $_me -c path-of-config-file"
   exit 1
 fi
 
@@ -329,139 +326,7 @@ _deployPostgresNoSSL () {
 # Postgresql (StatefulSet)
 #--------------------------------
 
-#--------------------------------
-# Postgres instance with SSL enabled (ZEN,BTS,IM external databases)
-
-_createDBCertificates () {
-
-log_debug "_createDBCertificates: $1"
-  
-# $1 = certificate folder
-# $2 = server name
-_CERT_FOLDER=$1
-_CERT_SERVER_NAME="${CP4BA_INST_DB_1_SERVER_NAME_SSL}"
-
-_CERT_PASS=marco
-_CERT_VERIFY="false"
-_CERT_CA_PREFIX_NAME="my-ca"
-_CERT_SERVER_PREFIX_NAME="my-server"
-_CERT_CLIENT_PREFIX_NAME="my-client"
-
-_CERT_ISSUER_SUBJ="/CN=my-postgres"
-_CERT_SUBJ_SERVER="/CN=${_CERT_SERVER_NAME}"
-_CERT_SUBJ_CLIENT="/CN=client.${_CERT_SERVER_NAME}"
-
-# CA conf
-mkdir -p ${_CERT_FOLDER}/ca.db.certs   # Signed certificates storage
-touch ${_CERT_FOLDER}/ca.db.index      # Index of signed certificates
-echo 01 > ${_CERT_FOLDER}/ca.db.serial # Next (sequential) serial number
-
-# Configuration cert server
-cat <<EOF > ${_CERT_FOLDER}/req.conf
-[ req ]
-distinguished_name = req_distinguished_name
-x509_extensions = v3_ca
-prompt = no
-[ req_distinguished_name ]
-C = CN
-ST = MA
-O = CP4BA
-CN = root
-[ v3_ca ]
-basicConstraints = critical,CA:TRUE
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always,issuer:always
-[ v3_req ]
-keyUsage = keyEncipherment, dataEncipherment, digitalSignature
-extendedKeyUsage = clientAuth, serverAuth
-subjectAltName = @alt_names
-[ alt_names ]
-IP.1 = 127.0.0.1
-DNS.1 = ${CP4BA_INST_DB_1_CR_NAME_SSL}
-DNS.2 = ${CP4BA_INST_DB_1_SERVICE_SSL}
-DNS.3 = ${CP4BA_INST_DB_1_SERVICE_SSL_R}
-DNS.4 = ${CP4BA_INST_DB_1_SERVER_NAME_SSL}
-DNS.5 = ${CP4BA_INST_DB_1_SERVER_NAME_SSL_R}
-DNS.6 = localhost
-
-EOF
-
-# Configuration cert client
-cat <<EOF > ${_CERT_FOLDER}/req-client.conf
-[ req ]
-distinguished_name = req_distinguished_name
-x509_extensions = v3_ca
-prompt = no
-[ req_distinguished_name ]
-C = CN
-ST = MA
-O = CP4BAClient
-CN = root
-[ v3_ca ]
-basicConstraints = critical,CA:TRUE
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always,issuer:always
-[ v3_req ]
-keyUsage = keyEncipherment, dataEncipherment, digitalSignature
-extendedKeyUsage = clientAuth
-
-EOF
-
-# CA
-openssl genrsa -out ${_CERT_FOLDER}/ca.key 2048 2>/dev/null 1>/dev/null
-openssl req -x509 -new -key ${_CERT_FOLDER}/ca.key -sha256 -days 36500 -out ${_CERT_FOLDER}/ca.cert -extensions 'v3_ca' -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
-
-# SERVER
-openssl genrsa -out ${_CERT_FOLDER}/server.key 2048 2>/dev/null 1>/dev/null
-openssl req -new -sha256 -key ${_CERT_FOLDER}/server.key -out ${_CERT_FOLDER}/server-req.pem -subj "/CN=${CP4BA_INST_DB_1_CR_NAME_SSL}" -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
-openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/server-req.pem -out ${_CERT_FOLDER}/server.cert -extfile ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
-
-# CLIENT
-openssl genrsa -out ${_CERT_FOLDER}/client.key 2048 2>/dev/null 1>/dev/null
-openssl req -new -sha256 -key ${_CERT_FOLDER}/client.key -out ${_CERT_FOLDER}/client-req.pem -subj "/CN=postgres-client" -config ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
-openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/client-req.pem -out ${_CERT_FOLDER}/client.cert -extfile ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
-
-}
-
-checkExtDbCertificates() {
-
-    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
-      CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
-    fi
-    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-      CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
-    fi
-
-    if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
-      if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-        log_error "${_CLR_RED}[✗] ERROR folder path not defined in 'CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER'${_CLR_GREEN}"
-        exit 1
-      else
-        if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
-          log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
-          exit 1
-        fi      
-      fi
-    else
-      if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-        if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-          log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
-          exit 1        
-        fi
-        if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
-          log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
-          exit 1
-        fi      
-      fi
-    fi
-}
-
-
-export _PG_SECRETS_FOLDER=""
-_KEEP_SSL=""
 _deployPostgresSSL () {
-
-  log_debug "_deployPostgresSSL: ${_PG_SECRETS_FOLDER}"
 
   if [[ ! -z "$1" ]] && [[ ! -z "$2" ]]; then
 
@@ -472,6 +337,7 @@ _deployPostgresSSL () {
 
     export _PG_IMAGE_NAME="${CP4BA_INST_DB_OSS_IMAGE}"
     export _PG_CONFIG_CM=my-postgresql-config-ssl
+    export _PG_SECRET=my-postgresql-secret
     export _PG_SS_NAME=$1
     export _PG_TARGET_NS=$2
 
@@ -600,6 +466,7 @@ deployDBCluster() {
       namespaceExist "${CP4BA_INST_DB_NAMESPACE}"
       if [ $? -eq 0 ]; then
         oc new-project "${CP4BA_INST_DB_NAMESPACE}" 2>/dev/null 1>/dev/null
+        ${_SCRIPT_DIR}/cp4ba-create-external-db-certificates.sh -c ${_CFG}
       fi
 
 cat << EOF | oc create -n ${3} -f - 2>/dev/null 1>/dev/null
@@ -687,82 +554,6 @@ waitForClustersPostgresCRD () {
 
 }
 
-setupCertificatesAndSecrets () {
-  log_debug "setupCertificatesAndSecrets"
-
-  if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
-    CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
-  fi
-  if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-    CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
-  fi
-  
-  if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
-    export _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
-    _KEEP_SSL="true"
-  else
-    if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-      export _PG_SECRETS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
-    else
-      export _PG_SECRETS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
-      _KEEP_SSL="false"
-    fi
-  fi
-  mkdir -p ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
-  _createDBCertificates ${_PG_SECRETS_FOLDER}
-
-  # https://www.ibm.com/docs/en/cloud-paks/foundational-services/4.x_cd?topic=management-configuring-external-postgresql-database-im
-
-  export _PG_SECRETS=my-postgresql-secrets
-  oc delete secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} 2>/dev/null 1>/dev/null
-  oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRETS} --from-file=${_PG_SECRETS_FOLDER}/ 2>/dev/null 1>/dev/null
-
-  _SEC_NAME="im-datastore-edb-secret"
-  oc delete secret ${_SEC_NAME} -n "$2" >/dev/null 2>&1
-  oc create secret generic ${_SEC_NAME} \
-    --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert" \
-    --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert" \
-    --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key" \
-    --type=kubernetes.io/tls -n "$2" 2>/dev/null 1>/dev/null
-  oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n "$2" 2>/dev/null 1>/dev/null
-
-  _SEC_NAME="ibm-zen-metastore-edb-secret"
-  oc delete secret ${_SEC_NAME} -n "$2" 2>/dev/null 1>/dev/null
-  oc create secret generic -n "$2" ${_SEC_NAME} \
-    --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
-    --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
-    --from-file=tls.key="${_PG_SECRETS_FOLDER}/client.key"  \
-    --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
-  oc label secret -n "$2" ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
-
-  _SEC_NAME="bts-datastore-edb-secret"
-  openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
-    -in ${_PG_SECRETS_FOLDER}/client.key \
-    -out ${_PG_SECRETS_FOLDER}/tls_key.pk8 2>/dev/null 1>/dev/null
-
-  oc delete secret -n "$2" ${_SEC_NAME} 2>/dev/null 1>/dev/null
-  oc create secret generic -n "$2" ${_SEC_NAME}  \
-    --from-file=ca.crt="${_PG_SECRETS_FOLDER}/ca.cert"  \
-    --from-file=tls.crt="${_PG_SECRETS_FOLDER}/client.cert"  \
-    --from-file=tls.key="${_PG_SECRETS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
-  oc label secret -n "$2" ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
-
-  log_debug "setupCertificatesAndSecrets created in folder ${_PG_SECRETS_FOLDER}"
-}
-
-removeCertificates () {
-  log_debug "removeCertificates folder ${_PG_SECRETS_FOLDER}"
-  if [[ "${_KEEP_SSL}" = "false" ]]; then
-    if [[ ! -z "${_PG_SECRETS_FOLDER}" ]]; then
-      rm -fr ${_PG_SECRETS_FOLDER} 2>/dev/null 1>/dev/null
-    fi
-  else
-    log_info "${_CLR_GREEN}The database server is configured with self signed certificates stored in folder '${_CLR_YELLOW}${_PG_SECRETS_FOLDER}${_CLR_GREEN}' reuse it for client side components with following export."
-    log_info "${_CLR_YELLOW}export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=\"${_PG_SECRETS_FOLDER}\"${_CLR_GREEN}"
-  fi
-
-}
-
 deployDBClusters() {
 # $1: namespace
 
@@ -770,7 +561,7 @@ deployDBClusters() {
     waitForClustersPostgresCRD
   fi
 
-  setupCertificatesAndSecrets
+  # setupCertificatesAndSecrets
 
   i=1
   _IDX_END=$CP4BA_INST_DB_INSTANCES
@@ -787,14 +578,64 @@ deployDBClusters() {
     ((i = i + 1))
   done  
 
-  removeCertificates
 }
+
+checkDbCertificates() {
+
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
+    fi
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER=""
+    fi
+
+    # check path defined
+    if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      log_error "${_CLR_RED}[✗] ERROR folder path not defined in 'CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER'${_CLR_GREEN}"
+      exit 1
+    fi
+    # check is folder
+    if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+      log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
+      exit 1        
+    fi
+    # check is empty
+    if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
+      log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+      exit 1
+    fi      
+
+    #if [[ "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" = "true" ]]; then
+    #  if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+    #    log_error "${_CLR_RED}[✗] ERROR folder path not defined in 'CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER'${_CLR_GREEN}"
+    #    exit 1
+    #  else
+    #    if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
+    #      log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+    #      exit 1
+    #    fi      
+    #  fi
+    #else
+    #  if [[ ! -z "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+    #    if [[ ! -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
+    #      log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
+    #      exit 1        
+    #    fi
+    #    if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
+    #      log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+    #      exit 1
+    #    fi      
+    #  fi
+    #fi
+}
+
 
 log_msg "=============================================================="
 log_info "${_CLR_GREEN}Deploying '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' DB Clusters in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 setTemporaryFolder
-checkExtDbCertificates
+
+checkDbCertificates
 
 deployDBClusters ${CP4BA_INST_SUPPORT_NAMESPACE}
 
