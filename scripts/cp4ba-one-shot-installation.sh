@@ -458,7 +458,9 @@ oneShotInstallation () {
 
   initialChecks
 
-  START_SECONDS=$SECONDS
+  ${_SCRIPT_DIR}/cp4ba-show-cluster-config.sh
+
+  _OSI_START_SECONDS=$SECONDS
 
   installAndVerifyCasePkgMgr
 
@@ -515,7 +517,7 @@ oneShotInstallation () {
     log_warning "If the installation was started and subsequently interrupted it is recommended to remove the entire namespace using the 'remove-cp4ba' tool."
     log_warning "See link https://github.com/marcoantonioni/cp4ba-utilities"
   else
-    ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
+    ELAPSED_SECONDS=$(( STOP_SECONDS - _OSI_START_SECONDS ))
     TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
 

@@ -1,6 +1,18 @@
 
 # Change Log
 
+## [1.5.0] - 2026-06-10
+
+### Added
+
+Cluster configuration details.
+
+### Changed
+
+
+### Fixed
+
+
 ## [1.4.8] - 2026-06-09
 
 ### Added

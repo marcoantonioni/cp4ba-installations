@@ -176,7 +176,7 @@ checkPrereqVars () {
 log_msg "=============================================================="
 log_info "Install CP4BA Operators in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
 
-START_SECONDS=$SECONDS
+_INSTOP_START_SECONDS=$SECONDS
 
 checkPrereqTools
 checkPrereqVars
@@ -257,7 +257,7 @@ if [[ "${_OK}" = "false" ]]; then
 fi
 
 STOP_SECONDS=$SECONDS
-ELAPSED_SECONDS=$(( STOP_SECONDS - START_SECONDS ))
+ELAPSED_SECONDS=$(( STOP_SECONDS - _INSTOP_START_SECONDS ))
 TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
 TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
 _MSG="CP4BA Operators installed at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."

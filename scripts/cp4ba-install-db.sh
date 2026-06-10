@@ -528,7 +528,7 @@ waitForClustersPostgresCRD () {
   done
 
   log_info "Wait for pod 'postgresql-operator-controller-manager...' ready ..."
-  START_SECONDS=$SECONDS
+  _INSTDB_START_SECONDS=$SECONDS
 
   while true 
   do
@@ -541,7 +541,7 @@ waitForClustersPostgresCRD () {
         break
       else
         NOW_SECONDS=$SECONDS
-        ELAPSED_SECONDS=$(( $NOW_SECONDS - $START_SECONDS ))
+        ELAPSED_SECONDS=$(( $NOW_SECONDS - $_INSTDB_START_SECONDS ))
         TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
         TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
         TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))

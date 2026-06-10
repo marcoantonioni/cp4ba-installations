@@ -931,7 +931,7 @@ waitDeploymentReadiness () {
   _ROTOR="|/-\\|/-\\"
   _ROTOR_LEN=${#_ROTOR}
 
-  START_SECONDS=$SECONDS
+  _DENV_START_SECONDS=$SECONDS
 
   _PFS_READY=1
   while true ; 
@@ -984,7 +984,7 @@ waitDeploymentReadiness () {
         _ROTOR_CHAR="${_ROTOR:_ROTOR_CHAR_OFF:1}"
 
         NOW_SECONDS=$SECONDS
-        ELAPSED_SECONDS=$(( $NOW_SECONDS - $START_SECONDS ))
+        ELAPSED_SECONDS=$(( $NOW_SECONDS - $_DENV_START_SECONDS ))
         TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
         TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
         TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
@@ -1047,7 +1047,7 @@ waitDeploymentReadiness () {
     _ROTOR_CHAR="${_ROTOR:_ROTOR_CHAR_OFF:1}"
 
     NOW_SECONDS=$SECONDS
-    ELAPSED_SECONDS=$(( $NOW_SECONDS - $START_SECONDS ))
+    ELAPSED_SECONDS=$(( $NOW_SECONDS - $_DENV_START_SECONDS ))
     TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
     TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
     TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
