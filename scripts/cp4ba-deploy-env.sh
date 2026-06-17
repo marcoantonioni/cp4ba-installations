@@ -136,6 +136,13 @@ if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then
   export CP4BA_LOG_BACKUP_COUNT=5
 fi
 
+if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-config-tune/scripts/baw-create-custom-xml-secrets.sh" ]]; then
+  echo "Error, config-tune package not found !"
+  echo "Clone it alongside with other cp4ba-..."
+  echo "use the command: git clone https://github.com/marcoantonioni/cp4ba-config-tune"
+  exit 1
+fi
+
 #-------------------------------
 checkPrereqTools () {
   which jq &>/dev/null
@@ -369,7 +376,7 @@ openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.
 }
 
 verifyCreateSecretsForExternalDb () {
-
+  log_msg "=============================================================="
   export _PG_TARGET_NS=${CP4BA_INST_NAMESPACE}
 
   if [[ "${CP4BA_INST_DB}" = "false" ]]; then
@@ -391,70 +398,6 @@ verifyCreateSecretsForExternalDb () {
       fi 
 
     fi
-
-    # NO ----------------------
-    #_SHOW_WARN=0
-    #
-    #_SEC_NAME="im-datastore-edb-secret"
-    #resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-    #if [ $? -eq 0 ]; then
-    #  _SHOW_WARN=1
-    #fi
-#
-    #_SEC_NAME="ibm-zen-metastore-edb-secret"
-    #resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-    #if [ $? -eq 0 ]; then
-    #  _SHOW_WARN=1
-    #fi
-#
-    #_SEC_NAME="bts-datastore-edb-secret"
-    #resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-    #if [ $? -eq 0 ]; then
-    #  _SHOW_WARN=1
-    #fi
-#
-    #if [[ ${_SHOW_WARN} -eq 1 ]]; then
-#
-    #  log_msg ""
-#
-    #  log_warning "${_CLR_YELLOW}[!] WARNING, if you are using an external DB you must manually create and label the following TLS secrets:${_CLR_NC}"
-#
-    #  _SEC_NAME="im-datastore-edb-secret"
-    #  resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-    #  if [ $? -eq 0 ]; then
-    #    log_msg ""
-    #    log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
-#
-    #    log_msg "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
-    #    log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls"
-    #    log_msg "oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE}"
-    #    log_msg ""
-    #  fi
-#
-    #  _SEC_NAME="ibm-zen-metastore-edb-secret"
-    #  resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-    #  if [ $? -eq 0 ]; then
-    #    log_msg ""
-    #    log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
-#
-    #    log_msg "oc delete secret ${_SEC_NAME} -n ${CP4BA_INST_NAMESPACE}"
-    #    log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./client.key --type=kubernetes.io/tls" 
-    #    log_msg "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory"
-    #  fi
-#
-    #  _SEC_NAME="bts-datastore-edb-secret"
-    #  resourceExist ${CP4BA_INST_NAMESPACE} "secret" ${_SEC_NAME}
-    #  if [ $? -eq 0 ]; then
-    #    log_msg ""
-    #    log_info "${_CLR_GREEN}Secret: ${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}"
-    #    log_msg "openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt -in ./client.key -out ./tls_key.pk8"
-    #    log_msg "oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME}" 
-    #    log_msg "oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} --from-file=ca.crt=./ca.cert --from-file=tls.crt=./client.cert --from-file=tls.key=./tls_key.pk8" 
-    #    log_msg "oc label secret -n ${CP4BA_INST_NAMESPACE} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory" 
-    #    log_msg ""
-    #  fi
-#
-    #fi
 
   else
     export _PG_CERTS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
@@ -557,6 +500,12 @@ deployPreEnv () {
     ./cp4ba-create-secrets.sh -c ${_CFG} -s -t 0
     if [[ $? -ne 0 ]]; then
       log_error "${_CLR_RED}[✗] Error, secrets not configured.${_CLR_NC}"
+      exit 1
+    fi
+
+    $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/baw-create-custom-xml-secrets.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      log_error "${_CLR_RED}[✗] Error, custom xml secrets not configured.${_CLR_NC}"
       exit 1
     fi
   fi

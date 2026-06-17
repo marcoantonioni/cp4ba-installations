@@ -2,7 +2,6 @@
 
 #set -euo pipefail
 
-
 _me=$(basename "$0")
 
 _CFG=""
@@ -365,186 +364,6 @@ fi
     log_error "${_CLR_RED}Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_RED}' NOT created (verify 'watsonx api key / proj id / url' for secret) !!!${_CLR_NC}"
   fi
 
-#---------------------------------------------
-# custom DB for applications
-if [[ -z "${CP4BA_INST_DB_CUSTOMDB_SERVER}" ]]; then
-  export CP4BA_INST_DB_CUSTOMDB_SERVER="${CP4BA_INST_DB_1_SERVER_NAME}"
-fi
-if [[ -z "${CP4BA_INST_DB_CUSTOMDB_NAME}" ]]; then
-  export CP4BA_INST_DB_CUSTOMDB_NAME="mydb"
-fi
-if [[ -z "${CP4BA_INST_DB_CUSTOMDB_USER}" ]]; then
-  export CP4BA_INST_DB_CUSTOMDB_USER="myuser"
-fi
-if [[ -z "${CP4BA_INST_DB_CUSTOMDB_PWD}" ]]; then
-  export CP4BA_INST_DB_CUSTOMDB_PWD="dem0s"
-fi
-
-if [[ -z "${CP4BA_INST_DB_CUSTOMDB_MAX_POOL_SIZE}" ]]; then
-  export CP4BA_INST_DB_CUSTOMDB_MAX_POOL_SIZE="30"
-fi
-if [[ -z "${CP4BA_INST_DB_CUSTOMDB_MIN_POOL_SIZE}" ]]; then
-  export CP4BA_INST_DB_CUSTOMDB_MIN_POOL_SIZE="10"
-fi
-
-
-#---------------------------------------------
-_SECRET_FILE_NAME="${_INST_TMP_FOLDER}/secret-baw-runtime-$USER-$RANDOM.xml"
-cat <<EOF > ${_SECRET_FILE_NAME}
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- BAW Runtime Liberty server properties -->
-<properties>
-  <server merge="mergeChildren">
-    <!-- Settings related to the BAW runtime server -->
-
-    <!-- CUSTOM DB EXAMPLE -->
-    <dataSource commitOrRollbackOnCleanup="commit" id="jdbc/${CP4BA_INST_DB_CUSTOMDB_NAME}" isolationLevel="TRANSACTION_READ_COMMITTED" jndiName="jdbc/${CP4BA_INST_DB_CUSTOMDB_NAME}" type="javax.sql.XADataSource">
-      <jdbcDriver libraryRef="PostgreSQLLib"/>
-      <connectionManager maxPoolSize="${CP4BA_INST_DB_CUSTOMDB_MAX_POOL_SIZE}" minPoolSize="${CP4BA_INST_DB_CUSTOMDB_MIN_POOL_SIZE}"/>
-        <properties.postgresql URL="jdbc:postgresql://${CP4BA_INST_DB_CUSTOMDB_SERVER}:${CP4BA_INST_DB_SERVER_PORT}/${CP4BA_INST_DB_CUSTOMDB_NAME}" user="${CP4BA_INST_DB_CUSTOMDB_USER}" password="${CP4BA_INST_DB_CUSTOMDB_PWD}"/>
-    </dataSource>
-
-    <!-- AI Features START -->
-    <authData id="watsonx.ai_auth_alias" user="${CP4BA_INST_GENAI_WX_USERID}" password="${CP4BA_INST_GENAI_WX_APIKEY}" />
-    <!-- AI Features END -->
-  </server>
-</properties>
-EOF
-
-_SECRET_NAME="my-liberty-custom-xml-secret"
-log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
-oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-if [[ $? -gt 0 ]]; then
-  _ERROR=1
-  log_error "${_CLR_RED}Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_RED}' NOT created !!!${_CLR_NC}"
-else
-  if [[ "${CP4BA_INST_DB_CUSTOM}" = "true" ]]; then
-    log_info "${_CLR_GREEN}Custom database jndi name is '${_CLR_YELLOW}jdbc/${CP4BA_INST_DB_CUSTOMDB_NAME}${_CLR_GREEN}'"
-  fi
-fi
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-
-#---------------------------------------------
-_AGENT_FQDN_BASE=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
-_AGENT_FQDN_FULL="https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${_AGENT_FQDN_BASE}"
-
-_SECRET_FILE_NAME="${_INST_TMP_FOLDER}/secret-100Custom-runtime-$USER-$RANDOM.xml"
-cat <<EOF > ${_SECRET_FILE_NAME}
-<properties>
-  <server merge="mergeChildren">
-    <email merge="mergeChildren">
-      <!-- SMTP server that mail should be sent to -->
-      <smtp-server merge="replace">mail.cp4ba-collateral.svc.cluster.local</smtp-server>
-        <mail-template>
-          <process>externalmailprocesslink_{0}.html</process>
-          <no-process>externalmailnoprocess_{0}.html</no-process> 
-        </mail-template> 
-      <valid-from-required merge="replace">true</valid-from-required>
-      <default-from-address merge="replace">system@cp.internal</default-from-address>
-      <send-external-email merge="replace">true</send-external-email>
-      <send-email-notifications-to-list merge="replace">false</send-email-notifications-to-list>
-      <send-email-notifications-async merge="replace">false</send-email-notifications-async>
-      <send-on-reassignment merge="replace">true</send-on-reassignment>
-    </email>
-    <!-- mime type white list which specifies mime types accepted for -->
-    <!-- upload to document list or document attachment -->
-    <document-attachment-accepted-mime-types merge="mergeChildren">
-    <!-- specifies whether to allow a null mime type for upload-->
-        <allow-null-mime-type>false</allow-null-mime-type>
-        <!-- lists the mime types allowed for upload -->
-        <mime-type>text/plain</mime-type>
-        <mime-type>application/xml</mime-type>
-        <mime-type>image/png</mime-type>
-        <mime-type>image/jpg</mime-type>
-        <mime-type>application/pdf</mime-type>
-        <mime-type>application/vnd.ms-excel</mime-type>
-        <mime-type>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</mime-type>
-        <mime-type>application/msword</mime-type>
-        <mime-type>application/vnd.openxmlformats-officedocument.wordprocessingml.document</mime-type>
-        <mime-type>application/vnd.ms-powerpoint</mime-type>
-        <mime-type>application/vnd.openxmlformats-officedocument.presentationml.presentation</mime-type>
-        <mime-type>audio/mpeg</mime-type>
-        <mime-type>video/mp4</mime-type>
-        <mime-type>text/csv</mime-type>
-        <mime-type>text/html</mime-type>
-        <mime-type>application/json</mime-type>
-        <mime-type>text/markdown</mime-type>
-        <mime-type>application/vnd.oasis.opendocument.presentation</mime-type>
-        <mime-type>application/vnd.oasis.opendocument.spreadsheet</mime-type>
-        <mime-type>application/vnd.oasis.opendocument.text</mime-type>
-        <mime-type>audio/wav</mime-type>
-        <mime-type>application/zip</mime-type>
-        <mime-type>message/rfc822</mime-type>
-    </document-attachment-accepted-mime-types>
-    <!-- extension white list which specifies extensions accepted for -->
-    <!-- upload to document list or document attachment -->
-    <document-attachment-accepted-extensions merge="mergeChildren">
-        <!-- specifies whether to allow a document with no extension for upload -->
-        <allow-null-extension>true</allow-null-extension>
-        <!-- lists the extensions allowed for upload -->
-        <extension>txt</extension>
-        <extension>xml</extension>
-        <extension>png</extension>
-        <extension>jpg</extension>
-        <extension>jpeg</extension>
-        <extension>pdf</extension>
-        <extension>xls</extension>
-        <extension>xlsx</extension>
-        <extension>doc</extension>
-        <extension>docx</extension>
-        <extension>ppt</extension>
-        <extension>pptx</extension>
-        <extension>mp3</extension>
-        <extension>mp4</extension>
-        <extension>m4a</extension>
-        <extension>csv</extension>
-        <extension>htm</extension>
-        <extension>html</extension>
-        <extension>json</extension>
-        <extension>md</extension>
-        <extension>odp</extension>
-        <extension>ods</extension>
-        <extension>odt</extension>
-        <extension>wav</extension>
-        <extension>zip</extension>
-        <extension>eml</extension>
-    </document-attachment-accepted-extensions>
-    <document-attachment-max-file-size-upload merge="replace">5000048576</document-attachment-max-file-size-upload>
-    <case-instance-migration-enabled>true</case-instance-migration-enabled>
-    <gen-ai merge="mergeChildren"> 
-      <project-id>project_id</project-id> 
-      <provider-url>${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}</provider-url> 
-      <auth-alias>watsonx.ai_auth_alias</auth-alias> 
-      <read-timeout>120</read-timeout>
-      <default-foundation-model>meta-llama/llama-3-3-70b-instruct</default-foundation-model>
-    </gen-ai>
-    <portal merge="mergeChildren">
-      <agent-enable merge="replace">true</agent-enable>
-      <agent-endpoint merge="replace">${_AGENT_FQDN_FULL}/agent/runtimeChat</agent-endpoint>
-    </portal>
-    <wxo merge="mergeChildren">
-      <token-url>${CP4BA_INST_WXO_TOKEN_URL}</token-url> 
-      <discovery>
-        <service-instance-url>${CP4BA_INST_WXO_SERVICE_INSTANCE_URL}</service-instance-url> 
-      </discovery>
-    </wxo>
-  </server>
-</properties>
-EOF
-
-_SECRET_NAME="my-lombardi-custom-xml-secret"
-log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
-oc create secret generic -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} --from-file=sensitiveCustomConfig=${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-
-if [[ $? -gt 0 ]]; then
-  _ERROR=1
-  log_error "${_CLR_RED}Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_RED}' NOT created !!!${_CLR_NC}"
-fi
-
-rm ${_SECRET_FILE_NAME} 2> /dev/null 1> /dev/null
-
 }
 
 #-------------------------------
@@ -850,6 +669,7 @@ createSecretAdminRegistry () {
 
 }
 
+
 #-------------------------------
 createSecrets () {
   createSecretAdminRegistry
@@ -905,9 +725,7 @@ createSecrets () {
     ((i = i + 1))
   done  
 
-  # if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]]; then
-    createSecretBAS ${CP4BA_INST_DB_BAW_USER} ${CP4BA_INST_DB_BAW_PWD}
-  # fi
+  createSecretBAS ${CP4BA_INST_DB_BAW_USER} ${CP4BA_INST_DB_BAW_PWD}
 
   createSecretAE
 

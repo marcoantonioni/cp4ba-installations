@@ -289,6 +289,7 @@ Clone the following repositories within a parent folder.
 git clone https://github.com/marcoantonioni/cp4ba-installations.git
 git clone https://github.com/marcoantonioni/cp4ba-casemanager-setup.git
 git clone https://github.com/marcoantonioni/cp4ba-idp-ldap.git
+git clone https://github.com/marcoantonioni/cp4ba-config-tune
 git clone https://github.com/marcoantonioni/cp4ba-logger.git
 
 # mandatory only if PFS in configuration

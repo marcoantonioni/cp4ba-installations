@@ -556,10 +556,8 @@ spec:
     ## kubectl create secret generic wfs-custom-xml-secret --from-file=sensitiveCustomConfig=./custom.xml
     ## The liberty_custom_xml property is also used for Workflow Authoring customization. Ensure the configuration value exists either in liberty_custom_xml or custom_xml_secret_name.
     ## Do not set the configuration value in both places
-    custom_xml_secret_name: my-liberty-custom-xml-secret
-
-    #  kubectl create secret generic wfs-lombardi-custom-xml-secret --from-file=sensitiveCustomConfig=./100Custom.xml
-    lombardi_custom_xml_secret_name: my-lombardi-custom-xml-secret
+    custom_xml_secret_name: ${CP4BA_INST_LIBERTY_CUSTOM_XML_SECRET_NAME}
+    lombardi_custom_xml_secret_name: ${CP4BA_INST_LOMBARDI_CUSTOM_XML_SECRET_NAME}
 
   workflow_assistant_configuration:
     run_authoring_agent: ${CP4BA_RUN_AUTHORING_AGENT}

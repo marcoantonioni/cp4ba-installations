@@ -5,6 +5,8 @@
 
 ### Added
 
+Package for Liberty and Lombardi custom xml cnfigurations. 
+
 ### Changed
 
 Optimized configurations for GEN-AI assistant/agent
