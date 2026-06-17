@@ -308,6 +308,8 @@ This is an example of cloned folders
 ├── cp4ba-casemanager-setup
 ├── cp4ba-idp-ldap
 ├── cp4ba-installations
+├── cp4ba-config-tune
+├── cp4ba-logger
 ├── cp4ba-process-federation-server
 ├── cp4ba-utilities
 └── cp4ba-wfps
