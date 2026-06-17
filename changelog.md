@@ -1,6 +1,16 @@
 
 # Change Log
 
+## [1.5.1] - 2026-06-17
+
+### Added
+
+### Changed
+
+Optimized configurations for GEN-AI assistant/agent
+
+### Fixed
+
 ## [1.5.0] - 2026-06-11
 
 ### Added
