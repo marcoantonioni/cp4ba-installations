@@ -503,7 +503,7 @@ deployPreEnv () {
       exit 1
     fi
 
-    $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/baw-create-custom-xml-secrets.sh -c ${_CFG}
+    $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/cp4ba-create-custom-xml-secrets.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
       log_error "${_CLR_RED}[✗] Error, custom xml secrets not configured.${_CLR_NC}"
       exit 1
