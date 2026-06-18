@@ -1,11 +1,11 @@
 
 # Change Log
 
-## [1.5.1] - 2026-06-17
+## [1.5.1] - 2026-06-18
 
 ### Added
 
-Package for Liberty and Lombardi custom xml cnfigurations. 
+Package for Liberty and Lombardi custom xml configurations. 
 
 ### Changed
 
