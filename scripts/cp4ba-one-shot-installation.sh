@@ -153,7 +153,7 @@ if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then
   export CP4BA_LOG_BACKUP_COUNT=5
 fi
 
-if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-config-tune/scripts/baw-create-custom-xml-secrets.sh" ]]; then
+if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-config-tune/scripts/cp4ba-create-custom-xml-secrets.sh" ]]; then
   echo "Error, config-tune package not found !"
   echo "Clone it alongside with other cp4ba-..."
   echo "use the command: git clone https://github.com/marcoantonioni/cp4ba-config-tune"
