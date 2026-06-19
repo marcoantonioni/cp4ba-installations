@@ -417,12 +417,6 @@ spec:
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-studio
   bastudio_configuration:
     admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
-    bastudio_custom_xml: |
-      <properties>
-        <authoring-environment>
-          <authoring-agent-endpoint merge="replace">https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX}/agent</authoring-agent-endpoint>
-        </authoring-environment>
-      </properties>
     database:
       host: ${CP4BA_INST_DB_1_SERVER_NAME}
       name: ${CP4BA_INST_BAS_1_DB_BAW_NAME}

@@ -9,7 +9,7 @@ Package for Liberty and Lombardi custom xml configurations.
 
 ### Changed
 
-Optimized configurations for GEN-AI assistant/agent
+Deprecated GEN-AI configuration (use: cp4ba-config-tune and snippets in secret)
 
 ### Fixed
 

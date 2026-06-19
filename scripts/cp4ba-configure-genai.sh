@@ -473,5 +473,5 @@ log_msg "==============================================================${_CLR_NC
 log_info "${_CLR_GREEN}Configuring GenAI in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 setTemporaryFolder
-configureGenAI ${CP4BA_INST_NAMESPACE}
-
+#configureGenAI ${CP4BA_INST_NAMESPACE}
+log_warning "Deprecated, use cp4ba-config-tune tool."
