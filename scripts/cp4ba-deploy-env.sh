@@ -503,16 +503,6 @@ deployPreEnv () {
       exit 1
     fi
 
-    if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
-      $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/cp4ba-create-custom-xml-secrets.sh -c ${_CFG}
-      if [[ $? -ne 0 ]]; then
-        log_error "${_CLR_RED}[✗] Error, custom xml secrets not configured.${_CLR_NC}"
-        exit 1
-      fi
-    else
-      log_info "Skipping custom xml secrets creation for runtime envs."
-    fi
-
   fi
 
   # NEW sequence, no need to wait EDB Operator
@@ -520,7 +510,15 @@ deployPreEnv () {
 }
 
 deployPostEnv () {
-  return 0
+  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
+    $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/cp4ba-create-custom-xml-secrets.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      log_error "${_CLR_RED}[✗] Error, custom xml secrets not configured.${_CLR_NC}"
+      exit 1
+    fi
+  else
+    log_info "Skipping custom xml secrets creation for runtime envs."
+  fi
 }
 
 #-------------------------------
