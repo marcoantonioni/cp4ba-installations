@@ -1,6 +1,19 @@
 
 # Change Log
 
+## [1.5.2] - 2026-06-20
+
+### Added
+
+### Changed
+
+Deployment automatically adds (cp4ba-config-tune) secrets and patch configurations for BAW authoring and runtime environments (lombardi_custom_xml_secret_name, custom_xml_secret_name).
+
+For WFPS deployments you can add manually the secrets and configuration using tool 'cp4ba-config-tune'. 
+
+
+### Fixed
+
 ## [1.5.1] - 2026-06-18
 
 ### Added
