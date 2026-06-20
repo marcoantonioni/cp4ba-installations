@@ -1038,61 +1038,65 @@ waitDeploymentReadiness () {
   fi
 }
 
+startDeployEnv () {
+  setTemporaryFolder
+  checkPrereqTools
+  checkPrereqVars
+
+  if [[ "${_GENERATE_ONLY}" = "true" ]]; then
+    generateCR
+    ${_SCRIPT_DIR}/cp4ba-create-databases.sh -c ${_CFG} -g
+    if [[ -z "${_LDAP}" ]] && [[ "${CP4BA_INST_TYPE}" = "production" ]]; then
+      log_msg ""
+      log_warning "${_CLR_YELLOW}WARNING${_CLR_GREEN}: no LDAP data has been configured, update manually the generated CR.${_CLR_NC}" 
+    fi
+    log_info "${_CLR_GREEN}If you manually deploy the generated CR, remember to create/configure all the prerequisites (LDAP, DBs, secrets, etc...)${_CLR_NC}"
+    exit 0
+  fi
+
+  # verify logged in OCP
+  oc whoami 2>/dev/null 1>/dev/null
+  if [ $? -gt 0 ]; then
+    log_error "${_CLR_RED}[✗] Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}"
+    exit 1
+  fi
+
+  if [[ "${_FEDERATE_ONLY}" = "true" ]]; then
+    _WAIT_ONLY=true
+  fi
+
+  namespaceExist ${CP4BA_INST_NAMESPACE}
+  if [ $? -eq 1 ]; then
+
+    if [[ -z "${CP4BA_INST_APPVER}" ]]; then
+      log_error "${_CLR_RED}[✗] Error, var '${_CLR_YELLOW}CP4BA_INST_APPVER${_CLR_RED}' not set, cannot continue. ${_CLR_NC}"
+      exit 1
+    fi
+    
+    mkdir -p ${CP4BA_INST_OUTPUT_FOLDER}
+    if [[ "${_WAIT_ONLY}" = "false" ]]; then
+      deployPreEnv
+      deployEnvironment
+      deployPostEnv
+      deployPFS
+    fi
+    waitDeploymentReadiness
+
+    # 20260212
+    postInstallationSteps
+
+    log_info "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
+
+  else
+    log_error "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_RED}' doesn't exists. ${_CLR_NC}"
+    exit 1
+  fi
+
+}
 
 log_msg "=============================================================="
 log_info "Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 log_info "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
 
-setTemporaryFolder
-checkPrereqTools
-checkPrereqVars
-
-if [[ "${_GENERATE_ONLY}" = "true" ]]; then
-  generateCR
-  ${_SCRIPT_DIR}/cp4ba-create-databases.sh -c ${_CFG} -g
-  if [[ -z "${_LDAP}" ]] && [[ "${CP4BA_INST_TYPE}" = "production" ]]; then
-    log_msg ""
-    log_warning "${_CLR_YELLOW}WARNING${_CLR_GREEN}: no LDAP data has been configured, update manually the generated CR.${_CLR_NC}" 
-  fi
-  log_info "${_CLR_GREEN}If you manually deploy the generated CR, remember to create/configure all the prerequisites (LDAP, DBs, secrets, etc...)${_CLR_NC}"
-  exit 0
-fi
-
-# verify logged in OCP
-oc whoami 2>/dev/null 1>/dev/null
-if [ $? -gt 0 ]; then
-  log_error "${_CLR_RED}[✗] Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}"
-  exit 1
-fi
-
-if [[ "${_FEDERATE_ONLY}" = "true" ]]; then
-  _WAIT_ONLY=true
-fi
-
-namespaceExist ${CP4BA_INST_NAMESPACE}
-if [ $? -eq 1 ]; then
-
-  if [[ -z "${CP4BA_INST_APPVER}" ]]; then
-    log_error "${_CLR_RED}[✗] Error, var '${_CLR_YELLOW}CP4BA_INST_APPVER${_CLR_RED}' not set, cannot continue. ${_CLR_NC}"
-    exit 1
-  fi
-  
-  mkdir -p ${CP4BA_INST_OUTPUT_FOLDER}
-  if [[ "${_WAIT_ONLY}" = "false" ]]; then
-    deployPreEnv
-    deployEnvironment
-    deployPostEnv
-    deployPFS
-  fi
-  waitDeploymentReadiness
-
-  # 20260212
-  postInstallationSteps
-
-  log_info "${_CLR_GREEN}CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}' is \x1b[5mREADY\x1b[25m${_CLR_NC}"
-  exit 0
-
-else
-  log_error "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_RED}' doesn't exists. ${_CLR_NC}"
-  exit 1
-fi
+startDeployEnv
+exit 0
