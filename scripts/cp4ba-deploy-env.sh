@@ -510,7 +510,11 @@ deployPreEnv () {
 }
 
 deployPostEnv () {
+  log_msg "==============================================================${_CLR_NC}"
+  log_info "${_CLR_GREEN}Creating custom xml secrets for environment/servers${_CLR_GREEN}'${_CLR_NC}"
+  
   if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
+    log_info "{_CLR_GREEN}Configuring authoring server for custom xml secrets"
     $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/cp4ba-create-custom-xml-secrets.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
       log_error "${_CLR_RED}[✗] Error, custom xml secrets not configured.${_CLR_NC}"
@@ -527,13 +531,13 @@ deployPostEnv () {
       _INST="${!__BAW_INST}"
       _NAME="${!__BAW_NAME}"
 
-      if [[ "${_INST}" = "true" ]]; then
+      if [[ "${_INST}" = "true" && ! -z "${_NAME}" ]]; then
+        log_info "${_CLR_GREEN}Configuring server '${_CLR_YELLOW}${_NAME}${_CLR_GREEN}' for custom xml secrets"
         $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/cp4ba-create-custom-xml-secrets.sh -c ${_CFG} -p -t baw -s ${_NAME}
         if [[ $? -ne 0 ]]; then
           log_error "${_CLR_RED}[✗] Error, custom xml secrets not configured for '${_NAME}'.${_CLR_NC}"
           exit 1
         fi
-        break
       fi
       ((i=i+1))
     done

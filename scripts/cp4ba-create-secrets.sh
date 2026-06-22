@@ -135,11 +135,14 @@ createSecretLDAP () {
 
 #-------------------------------
 createSecretFNCM () {
+  log_warning "${_CLR_GREEN}For demo purposes the secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_GREEN}' is populated with same credentials for multi-BAW deployments. Set CP4BA_INST_SECRET_FNCM = 'false' to skip automatic creation and create/set manually your own secret values."
+
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
+  
   _ERR=0  
   if [[ ! -z "${CP4BA_INST_DB_BAWDOCS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWDOS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWTOS_USER}" ]]; then
     log_debug "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM+BAW objectstores users)${_CLR_NC}'"    
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
+    #oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
     oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
       --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBUsername="${CP4BA_INST_DB_GCD_USER}" \
       --from-literal="${CP4BA_INST_DB_GCD_LBL}"DBPassword="${CP4BA_INST_DB_GCD_PWD}" \
@@ -171,7 +174,7 @@ createSecretFNCM () {
   else
     if [[ ! -z "${CP4BA_INST_DB_OS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_GCD_USER}" ]]; then
       log_debug "Secret '${_CLR_YELLOW}ibm-fncm-secret (FNCM objectstores users)${_CLR_NC}'"
-      oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
+      #oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
       oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
         --from-literal="${CP4BA_INST_DB_OS_LBL}"DBUsername="${CP4BA_INST_DB_OS_USER}" \
         --from-literal="${CP4BA_INST_DB_OS_LBL}"DBPassword="${CP4BA_INST_DB_OS_PWD}" \
@@ -184,7 +187,7 @@ createSecretFNCM () {
       _ERR=$?
     else
       log_debug "Secret '${_CLR_YELLOW}ibm-fncm-secret (APP only)${_CLR_NC}'"
-      oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
+      #oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null
       oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-fncm-secret \
         --from-literal=appLoginUsername="${CP4BA_INST_PAKBA_ADMIN_USER}" \
         --from-literal=appLoginPassword="${CP4BA_INST_PAKBA_ADMIN_PWD}" \
@@ -683,7 +686,11 @@ createSecrets () {
     createSecretFNCMBpmOnly
   else
     if [[ -z "${CP4BA_INST_BAW_BPM_ONLY}" ]] || [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "false" ]]; then
-      createSecretFNCM
+      if [[ -z "${CP4BA_INST_SECRET_FNCM}" || "${CP4BA_INST_SECRET_FNCM}" = "true" ]]; then
+        createSecretFNCM
+      else
+        log_warning "${_CLR_GREEN}Skipping creatong of secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_GREEN}', found CP4BA_INST_SECRET_FNCM = 'false'. Remember to create/set manually your own 'ibm-fncm-secret' secret values."
+      fi
     else
       createSecretFNCMBpmOnly
     fi

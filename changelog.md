@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.5.3] - 2026-06-22
+
+### Added
+
+Configuration files for multiple BAW Runtimes
+
+### Changed
+
+### Fixed
+
+
 ## [1.5.2] - 2026-06-20
 
 ### Added
@@ -11,8 +22,8 @@ Deployment automatically adds (cp4ba-config-tune) secrets and patch configuratio
 
 For WFPS deployments you can add manually the secrets and configuration using tool 'cp4ba-config-tune'. 
 
-
 ### Fixed
+
 
 ## [1.5.1] - 2026-06-18
 

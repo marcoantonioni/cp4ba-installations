@@ -165,6 +165,21 @@ CONFIG_FILE=${_PTC}/env1-runtime-baw-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+```bash
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.1
+_KK=25.0.1-IF001
+CONFIG_FILE=${_PTC}/env1-runtime-baw-double.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+```
+
+```bash
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.1
+_KK=25.0.1-IF001
+CONFIG_FILE=${_PTC}/env1-runtime-baw-no-case-content.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+```
 
 ---
 ```bash
