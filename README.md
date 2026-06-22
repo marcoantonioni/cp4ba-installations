@@ -620,6 +620,9 @@ If you don't use internal OpenLDAP nor Postgres then to avoid add 'add-scc-to-us
 export CP4BA_INST_ANYUID="false"
 ```
 
+#### FNCM secret (ibm-fncm-secret)
+Use export CP4BA_INST_SECRET_FNCM="false" to skip automatic creation and create/set manually your own secret values.
+
 ## Installing a CP4BA environment with an external database
 
 An external database is defined as:
