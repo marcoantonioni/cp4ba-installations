@@ -31,7 +31,11 @@ No resources found
 
 [33m[NOTES] The CP4BA deployment supports the separation of operators and operands. This script can deploy the CP4BA operators and their capabilities in different projects.(B[m
 [1mWould you like to deploy CP4BA with the separation of operators and operands? (Yes/No, default: No): No(B[m
-[1mProject "cp4ba-baw-prod-double" already exists! Continue...(B[m
+
+[33;5m[INFO] [0mFound the existing Cloud Pak for Business Automation Operator (Pod, CSV, Subscription) in different project "cp4ba-baw-auth-bai cp4ba-baw-bai-production cp4ba-wfps-authoring-prod cp4ba-wfps-production"!
+
+[1mDo you want to deploy another CP4BA Operator in new project "cp4ba-baw-prod-double"? (Yes/No, default: No) Yes
+(B[m[1mProject "cp4ba-baw-prod-double" already exists! Continue...(B[m
 
 [33;5m[INFO] [0mCreating project "ibm-licensing" for IBM Licensing operator catalog.
 [1mProject "ibm-licensing" already exists! Continue...(B[m
@@ -90,10 +94,10 @@ openshift-storage.noobaa.io                  openshift-storage.noobaa.io/obc    
 [33;5m[INFO] [0mStarting the installation of IBM Cert Manager and IBM Licensing Operator ...
 
 [32m[✔] ibm-cert-manager-catalog pod is ready![0m
-All arguments passed into the setup_singleton.sh: --enable-licensing --license-accept --enable-private-catalog --yq /tmp/cp4ba-pkmgr-inst-marco-5634/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq -c v4.2
+All arguments passed into the setup_singleton.sh: --enable-licensing --license-accept --enable-private-catalog --yq /tmp/cp4ba-pkmgr-inst-marco-12673/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq -c v4.2
 
 [32m[✔] oc command available[0m
-[32m[✔] /tmp/cp4ba-pkmgr-inst-marco-5634/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq command available[0m
+[32m[✔] /tmp/cp4ba-pkmgr-inst-marco-12673/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq command available[0m
 [32m[✔] oc command logged in as kube:admin[0m
 [32m[✔] Channel v4.2 is valid[0m
 [INFO] Major version is greater than 3, skipping delegation check
@@ -138,7 +142,7 @@ spec:
     name: test-issuer
   secretName: test-certificate-secret
 
-W0622 11:38:40.164103   53182 warnings.go:70] spec.privateKey.rotationPolicy: In cert-manager >= v1.18.0, the default value changed from `Never` to `Always`.
+W0623 06:24:13.954919   19834 warnings.go:70] spec.privateKey.rotationPolicy: In cert-manager >= v1.18.0, the default value changed from `Never` to `Always`.
 certificate.cert-manager.io/test-certificate created
 [INFO] Waiting for Issuer test-issuer in namespace ibm-cert-manager to be Ready
 [INFO] Waiting for Certificate test-certificate in namespace ibm-cert-manager to be Ready
@@ -148,7 +152,7 @@ issuer.cert-manager.io "test-issuer" deleted
 [INFO] Deleting test-certificate Certificate ...
 certificate.cert-manager.io "test-certificate" deleted
 
-[INFO] Deleting 52924secret_name Secret ...
+[INFO] Deleting 19335secret_name Secret ...
 secret "test-certificate-secret" deleted
 
 [INFO] Upgrading ibm-cert-manager-operator to channel: v4.2
@@ -240,7 +244,7 @@ IBM Operator Catalog source updated!
 [33;5m[INFO] [0mWaiting for CP4BA Operator Catalog pod initialization
 
 [33;5m[INFO] [0mCP4BA Operator Catalog is running...
-ibm-cp4a-operator-catalog-rx6cb                                   1/1   Running     0     21m
+ibm-cp4a-operator-catalog-r5l6r                                   1/1   Running           0     20m
 Found operator group
 NAME                              AGE
 ibm-cp4a-operator-catalog-group   17m
@@ -251,8 +255,8 @@ CP4BA Operator Subscription Created!
 [33;5m[INFO] [0mWaiting for CP4BA operator pod initialization
 ............................................................Timeout waiting for CP4BA operator to start
 [1mCheck the status of Pod by issue cmd:(B[m
-oc describe pod ibm-cp4a-operator-c4c467db5-9rt9r
-ibm-cp4a-operator-catalog-rx6cb -n cp4ba-baw-prod-double
+oc describe pod ibm-cp4a-operator-c4c467db5-g4qxd
+ibm-cp4a-operator-catalog-r5l6r -n cp4ba-baw-prod-double
 
 [1mCheck the status of ReplicaSet by issue cmd:(B[m
 oc describe rs ibm-cp4a-operator-c4c467db5 -n cp4ba-baw-prod-double

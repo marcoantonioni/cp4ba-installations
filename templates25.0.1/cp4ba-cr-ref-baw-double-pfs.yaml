@@ -23,6 +23,9 @@
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=scp-shared-configuration
 ## Multiple instances
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=cbawrws-optional-configuring-multiple-instances-business-automation-workflow-workstream-services
+##
+## PFS
+## https://www.ibm.com/docs/en/baw/25.0.x?topic=ic-installing-process-federation-server-business-automation-workflow-containers
 
 ## BAW: 2 servers (baw1 and baw2 full configuration)
 ## BAW 1 - content: yes
@@ -553,6 +556,14 @@ spec:
         repository: cp.icr.io/cp/cp4a/baw/workflow-server-dbhandling
         pull_policy: IfNotPresent
         trace_specification: ""
+
+      # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
+      process_federation_server:
+        # set by script cp4ba-deploy-env.sh
+        hostname: ""
+        # port: 
+        # set by script cp4ba-deploy-env.sh
+        context_root_prefix: ""
 
       ## The configurations for content integration for attachment in process
       content_integration:
