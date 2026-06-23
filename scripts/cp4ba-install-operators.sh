@@ -200,6 +200,7 @@ executeClusterAdminSetup () {
   cd ${_SCRIPTS}
   export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
 
+  _done=0
   _counter=0
   while [ $_counter -lt $CP4BA_INST_CLUSTERADMIN_RETRIES ]; do
 
@@ -207,59 +208,31 @@ executeClusterAdminSetup () {
     /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
     if [ $? -ne 0 ]; then
       log_warning "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try again [$_counter/$CP4BA_INST_CLUSTERADMIN_RETRIES]...'"
+      sleep 1
+    else
+      _done=1
     fi
 
-    sleep 1
-    if [[ $_counter -ge $CP4BA_INST_CLUSTERADMIN_RETRIES ]]; then
-
-      if [[ -f "./_clusteradmin.out" ]]; then
-        cp ./_clusteradmin.out "${_ACT_DIR}/${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
-      fi
-      log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
-      log_error "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
-      log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
-
-      log_error "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
-      log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
-
-      break
-    fi
   done
+
+  if [[ -f "./_clusteradmin.out" ]]; then
+    cp ./_clusteradmin.out "${_ACT_DIR}/${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
+  fi
+  if [[ $_done -eq 0 ]]; then
+
+    log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+    log_error "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
+    log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+
+    log_error "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
+    log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+
+  fi
 
   # change folder back to original location
   cd ${_ACT_DIR}
 
-        #log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
-        #_ACT_DIR=$(pwd)
-#
-        ## change folder (do not use $_SCRIPT_DIR until: cd ${_ACT_DIR})
-        #cd ${_SCRIPTS}
-        #export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
-#
-        #/bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
-        #if [ $? -ne 0 ]; then
-        #  # retry once, since v25, timeouts have been noted during operator setup...
-        #  log_warning "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try one more time...'"
-        #  /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
-        #fi
-        #if [ $? -eq 0 ]; then
-        #  rm ./_clusteradmin.out
-        #  log_info "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
-        #  _OK=true
-        #else
-        #  if [[ -f "./_clusteradmin.out" ]]; then
-        #    cp ./_clusteradmin.out "${_ACT_DIR}/${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
-        #  fi
-        #  log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
-        #  log_error "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
-        #  log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
-        #  # cat ./_clusteradmin.out
-        #  log_error "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
-        #  log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
-        #fi
-        ## change folder back to original location
-        #cd ${_ACT_DIR}
-
+  return $_done
 }
 
 installOperators () {
@@ -301,11 +274,14 @@ EOF
     ${_SCRIPT_DIR}/cp4ba-create-networkpolicies.sh -c ${_CFG} 
   fi
 
-  _OK=false
+  _OK="false"
   if [[ ! -z "${_SCRIPTS}" ]]; then
     if [[ -d "${_SCRIPTS}" ]]; then
       if [[ -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
         executeClusterAdminSetup
+        if [ $? -eq 1 ]; then
+          _OK="true"
+        fi
       fi
     fi
   fi
