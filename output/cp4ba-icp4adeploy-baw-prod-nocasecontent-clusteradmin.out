@@ -31,7 +31,11 @@ No resources found
 
 [33m[NOTES] The CP4BA deployment supports the separation of operators and operands. This script can deploy the CP4BA operators and their capabilities in different projects.(B[m
 [1mWould you like to deploy CP4BA with the separation of operators and operands? (Yes/No, default: No): No(B[m
-[1mProject "cp4ba-baw-prod-nocasecontent" already exists! Continue...(B[m
+
+[33;5m[INFO] [0mFound the existing Cloud Pak for Business Automation Operator (Pod, CSV, Subscription) in different project "cp4ba-baw-auth-bai cp4ba-baw-bai-production cp4ba-baw-prod-double cp4ba-wfps-authoring-prod cp4ba-wfps-production"!
+
+[1mDo you want to deploy another CP4BA Operator in new project "cp4ba-baw-prod-nocasecontent"? (Yes/No, default: No) Yes
+(B[m[1mProject "cp4ba-baw-prod-nocasecontent" already exists! Continue...(B[m
 
 [33;5m[INFO] [0mCreating project "ibm-licensing" for IBM Licensing operator catalog.
 [1mProject "ibm-licensing" already exists! Continue...(B[m
@@ -90,10 +94,10 @@ openshift-storage.noobaa.io                  openshift-storage.noobaa.io/obc    
 [33;5m[INFO] [0mStarting the installation of IBM Cert Manager and IBM Licensing Operator ...
 
 [32m[✔] ibm-cert-manager-catalog pod is ready![0m
-All arguments passed into the setup_singleton.sh: --enable-licensing --license-accept --enable-private-catalog --yq /tmp/cp4ba-pkmgr-inst-marco-24184/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq -c v4.2
+All arguments passed into the setup_singleton.sh: --enable-licensing --license-accept --enable-private-catalog --yq /tmp/cp4ba-pkmgr-inst-marco-16357/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq -c v4.2
 
 [32m[✔] oc command available[0m
-[32m[✔] /tmp/cp4ba-pkmgr-inst-marco-24184/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq command available[0m
+[32m[✔] /tmp/cp4ba-pkmgr-inst-marco-16357/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq command available[0m
 [32m[✔] oc command logged in as kube:admin[0m
 [32m[✔] Channel v4.2 is valid[0m
 [INFO] Major version is greater than 3, skipping delegation check
@@ -138,7 +142,7 @@ spec:
     name: test-issuer
   secretName: test-certificate-secret
 
-W0622 15:00:12.056718  151419 warnings.go:70] spec.privateKey.rotationPolicy: In cert-manager >= v1.18.0, the default value changed from `Never` to `Always`.
+W0623 06:30:33.209633   24066 warnings.go:70] spec.privateKey.rotationPolicy: In cert-manager >= v1.18.0, the default value changed from `Never` to `Always`.
 certificate.cert-manager.io/test-certificate created
 [INFO] Waiting for Issuer test-issuer in namespace ibm-cert-manager to be Ready
 [INFO] Waiting for Certificate test-certificate in namespace ibm-cert-manager to be Ready
@@ -148,7 +152,7 @@ issuer.cert-manager.io "test-issuer" deleted
 [INFO] Deleting test-certificate Certificate ...
 certificate.cert-manager.io "test-certificate" deleted
 
-[INFO] Deleting 151168secret_name Secret ...
+[INFO] Deleting 23487secret_name Secret ...
 secret "test-certificate-secret" deleted
 
 [INFO] Upgrading ibm-cert-manager-operator to channel: v4.2
@@ -223,7 +227,7 @@ subscription.operators.coreos.com/ibm-licensing-operator-app configured
 
 [1mWaiting for the Cloud Pak for Business Automation operator to be ready. This may take a few minutes... (B[m
 
-ibm-cp4a-operator-catalog         ibm-cp4a-operator                       grpc   IBM         22m
+ibm-cp4a-operator-catalog         ibm-cp4a-operator                       grpc   IBM         21m
 Found existing ibm operator catalog source, updating it
 catalogsource.operators.coreos.com/ibm-cp4a-operator-catalog unchanged
 catalogsource.operators.coreos.com/ibm-opencontent-flink unchanged
@@ -240,7 +244,7 @@ IBM Operator Catalog source updated!
 [33;5m[INFO] [0mWaiting for CP4BA Operator Catalog pod initialization
 
 [33;5m[INFO] [0mCP4BA Operator Catalog is running...
-ibm-cp4a-operator-catalog-vzcs8                                   1/1   Running     0     21m
+ibm-cp4a-operator-catalog-w2sdq                                   1/1   Running     0     20m
 Found operator group
 NAME                              AGE
 ibm-cp4a-operator-catalog-group   17m
@@ -251,8 +255,8 @@ CP4BA Operator Subscription Created!
 [33;5m[INFO] [0mWaiting for CP4BA operator pod initialization
 ............................................................Timeout waiting for CP4BA operator to start
 [1mCheck the status of Pod by issue cmd:(B[m
-oc describe pod ibm-cp4a-operator-66d999d4dc-ckgd5
-ibm-cp4a-operator-catalog-vzcs8 -n cp4ba-baw-prod-nocasecontent
+oc describe pod ibm-cp4a-operator-66d999d4dc-v2xf5
+ibm-cp4a-operator-catalog-w2sdq -n cp4ba-baw-prod-nocasecontent
 
 [1mCheck the status of ReplicaSet by issue cmd:(B[m
 oc describe rs ibm-cp4a-operator-66d999d4dc -n cp4ba-baw-prod-nocasecontent
