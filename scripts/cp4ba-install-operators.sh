@@ -227,6 +227,10 @@ executeClusterAdminSetup () {
     log_error "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
     log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
 
+    log_warning "If you want retry more times the operator setup task set the following variable with numeric value then rerun the installation"
+    log_warning "export CP4BA_INST_CLUSTERADMIN_RETRIES=3"
+    log_warning "./cp4ba-install-operators.sh -c \$CONFIG_FILE"
+
   fi
 
   # change folder back to original location
