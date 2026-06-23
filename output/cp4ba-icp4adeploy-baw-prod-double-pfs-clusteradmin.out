@@ -1,0 +1,262 @@
+creating temp folder
+[H[2J[3J
+[33;5m[INFO] [0mChecking cert-manager installation status...
+
+[33;5m[INFO] [0mChecking to see if any cert-manager is installed
+
+No resources found
+
+[33m[✗] There is a cert-manager-webhook pod Running, so most likely another cert-manager is already installed
+[0m
+
+[33;5m[INFO] [0mContinue to check further
+
+
+[33;5m[INFO] [0mIBM cert-manager is already installed in the correct namespace: ibm-cert-manager
+
+[33;5m[INFO] [0mPre-existing cert-manager found on the cluster.
+
+[33;5m[INFO] [0mSetting up the cluster for IBM Cloud Pak for Business Automation
+
+[1mDo you wish to setup the cluster for an airgap/offline based CP4BA deployment :(B[m No
+
+[1mWhat type of cloud platform is selected?(B[m OCP
+
+[1mWhat type of deployment is performed?(B[m production
+
+[33m[NOTES] If you plan to enable FIPS for the CP4BA deployment, this script can verify whether FIPS is enabled on the compute nodes of the OCP cluster.(B[m
+[1mWould you like to proceed with this check? (Yes/No, default: No): No(B[m
+[33m[NOTES] You can install the CP4BA deployment as either a private catalog (namespace scope) or the global catalog namespace (GCN). The private option uses the same target namespace of the CP4BA deployment, while the GCN uses the openshift-marketplace namespace.(B[m
+[1mWould you like to deploy CP4BA using the private catalog (recommended)? (Yes/No, default: Yes): Yes(B[m
+
+[33m[NOTES] The CP4BA deployment supports the separation of operators and operands. This script can deploy the CP4BA operators and their capabilities in different projects.(B[m
+[1mWould you like to deploy CP4BA with the separation of operators and operands? (Yes/No, default: No): No(B[m
+
+[33;5m[INFO] [0mFound the existing Cloud Pak for Business Automation Operator (Pod, CSV, Subscription) in different project "cp4ba-baw-auth-bai cp4ba-baw-bai-production cp4ba-baw-prod-double cp4ba-wfps-authoring-prod cp4ba-wfps-production"!
+
+[1mDo you want to deploy another CP4BA Operator in new project "cp4ba-baw-prod-double-pfs"? (Yes/No, default: No) Yes
+(B[m[1mProject "cp4ba-baw-prod-double-pfs" already exists! Continue...(B[m
+
+[33;5m[INFO] [0mCreating project "ibm-licensing" for IBM Licensing operator catalog.
+[1mProject "ibm-licensing" already exists! Continue...(B[m
+
+[32m[✔] Created project "ibm-licensing" for IBM Licensing operator catalog.[0m
+
+
+[32m[✔] Removed ibm-cert-manager-catalog from the catalog source.[0m
+
+
+[33;5m[INFO] [0mCreating ibm-cp4ba-common-config configMap for this CP4BA deployment in the project "cp4ba-baw-prod-double-pfs"
+
+[32m[✔] Created ibm-cp4ba-common-config configMap for this CP4BA deployment in the project "cp4ba-baw-prod-double-pfs".[0m
+===========================================================================
+[1mStarting silent installation for Cloud Pak for Business Automation Operator(B[m
+===========================================================================
+[1mThis script prepares the OLM for deploying certain Cloud Pak for Business Automation capabilities (B[m
+
+[H[2J[3J[1m[INFO] No user found in cluster.
+(B[m
+[33mATTENTION: (B[m[1mWhen you run cp4a-deployment.sh script, Use cluster admin user.
+(B[m
+
+
+[33;5m[INFO] [0mCreating cp4ba-fips-status configMap in the project "cp4ba-baw-prod-double-pfs"
+
+[32m[✔] The cp4ba-fips-status ConfigMap has been created in the project. "cp4ba-baw-prod-double-pfs".[0m
+
+
+[1m[31mFollow the instructions on how to get your Entitlement Key: 
+(B[m[1m[31mFrom https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1 navigate to Installing --> Installing Production Deployment --> Installing CP4BA multi-pattern production deployment --> Getting access to images from the public IBM Entitled Registry(B[m
+
+[1mDo you have a Cloud Pak for Business Automation Entitlement Registry key? (Yes/No, default: Yes):(B[m Yes
+[1mEnter your Entitlement Registry key: (B[m
+[1mVerifying the Entitlement Registry key...
+(B[mLogin Succeeded!
+Entitlement Registry key is valid.
+
+[1mThe existing storage classes in the cluster: (B[m
+NAME                                         PROVISIONER                             RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+ocs-external-storagecluster-ceph-rbd         openshift-storage.rbd.csi.ceph.com      Delete          Immediate           true                   24d
+ocs-external-storagecluster-cephfs           openshift-storage.cephfs.csi.ceph.com   Delete          Immediate           true                   24d
+ocs-storagecluster-ceph-rbd (default)        openshift-storage.rbd.csi.ceph.com      Delete          Immediate           true                   24d
+ocs-storagecluster-ceph-rbd-virtualization   openshift-storage.rbd.csi.ceph.com      Delete          Immediate           true                   24d
+ocs-storagecluster-cephfs                    openshift-storage.cephfs.csi.ceph.com   Delete          Immediate           true                   24d
+openshift-storage.noobaa.io                  openshift-storage.noobaa.io/obc         Delete          Immediate           false                  24d
+[1mCreating docker-registry secret for Entitlement Registry key in the project cp4ba-baw-prod-double-pfs...
+(B[msecret/ibm-entitlement-key created
+[1mDone(B[m
+
+[33;5m[INFO] [0mApplying the latest IBM CP4BA Operator catalog source...
+
+[32m[✔] The IBM CP4BA Operator catalog source has been updated![0m
+
+
+[33;5m[INFO] [0mStarting the installation of IBM Cert Manager and IBM Licensing Operator ...
+
+[32m[✔] ibm-cert-manager-catalog pod is ready![0m
+All arguments passed into the setup_singleton.sh: --enable-licensing --license-accept --enable-private-catalog --yq /tmp/cp4ba-pkmgr-inst-marco-25056/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq -c v4.2
+
+[32m[✔] oc command available[0m
+[32m[✔] /tmp/cp4ba-pkmgr-inst-marco-25056/ibm-cp-automation-25.1.1/ibm-cp-automation/inventory/cp4aOperatorSdk/files/deploy/crs/cert-kubernetes/scripts/cpfs/yq/amd64/yq command available[0m
+[32m[✔] oc command logged in as kube:admin[0m
+[32m[✔] Channel v4.2 is valid[0m
+[INFO] Major version is greater than 3, skipping delegation check
+[33m[✗] Flag --enable-private-catalog is enabled, please make sure the CatalogSource is deployed in the same namespace as operator[0m
+
+[34m# Check migrating LTSR ibm-licensing-operator[0m
+Wait for licensing instance deployment to be ready...
+[INFO] Found licensing instance
+[INFO] There is no LTSR ibm-licensing-operator to migrate, skipping
+[34m# Check migrating and deactivating LTSR ibm-cert-manager-operator[0m
+[INFO] LTSR ibm-cert-manager-operator already deactivated, skipping
+[34m# Installing cert-manager
+[0m
+[33m[✗] There is a cert-manager Subscription already
+[0m
+[33m[✗] There is a cert-manager-webhook pod running; another cert-manager is likely installed[0m
+[INFO] Continue to upgrade check
+Found ibm-cert-manager-operator owned cert-manager-webhook in namespace: ibm-cert-manager
+[34m#  Smoke test for Cert Manager existence...[0m
+[INFO] Creating following issuer:
+
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: test-issuer
+  namespace: ibm-cert-manager
+spec:
+  selfSigned: {}
+
+issuer.cert-manager.io/test-issuer created
+[INFO] Creating following certificate:
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-certificate
+  namespace: ibm-cert-manager
+spec:
+  commonName: test-certificate
+  issuerRef:
+    kind: Issuer
+    name: test-issuer
+  secretName: test-certificate-secret
+
+W0623 07:02:41.356164   60187 warnings.go:70] spec.privateKey.rotationPolicy: In cert-manager >= v1.18.0, the default value changed from `Never` to `Always`.
+certificate.cert-manager.io/test-certificate created
+[INFO] Waiting for Issuer test-issuer in namespace ibm-cert-manager to be Ready
+[INFO] Waiting for Certificate test-certificate in namespace ibm-cert-manager to be Ready
+[INFO] Deleting test-issuer Issuer ...
+issuer.cert-manager.io "test-issuer" deleted
+
+[INFO] Deleting test-certificate Certificate ...
+certificate.cert-manager.io "test-certificate" deleted
+
+[INFO] Deleting 58851secret_name Secret ...
+secret "test-certificate-secret" deleted
+
+[INFO] Upgrading ibm-cert-manager-operator to channel: v4.2
+[34m# Validate CatalogSource for operator ibm-cert-manager-operator in ibm-cert-manager namespace[0m
+[32m[✔] CatalogSource ibm-cert-manager-catalog from ibm-cert-manager CatalogSourceNamespace is available for ibm-cert-manager-operator in ibm-cert-manager namespace[0m
+[34m# Checking whether Namespace ibm-cert-manager exist...[0m
+[32m[✔] Namespace ibm-cert-manager already exists. Skip creating
+[0m
+[34m# Checking whether OperatorGroup in ibm-cert-manager exist...[0m
+[32m[✔] OperatorGroup already exists in ibm-cert-manager. Skip creating
+[0m
+[34m# Updating ibm-cert-manager-operator in namesapce ibm-cert-manager...[0m
+[INFO] v4.2 is equal to v4.2
+[INFO] catalogsource ibm-cert-manager-catalog is the same as ibm-cert-manager-catalog
+[INFO] ibm-cert-manager-operator has already updated channel v4.2 and catalogsource ibm-cert-manager-catalog in the subscription.
+subscription.operators.coreos.com/ibm-cert-manager-operator configured
+[32m[✔] Successfully patched subscription ibm-cert-manager-operator in ibm-cert-manager[0m
+[INFO] Waiting for operator ibm-cert-manager-operator to be upgraded
+[32m[✔] Operator ibm-cert-manager-operator is upgraded to latest version in channel v4.2
+[0m
+[INFO] Waiting for operator ibm-cert-manager-operator CSV in namespace ibm-cert-manager to be bound to Subscription
+[32m[✔] Operator ibm-cert-manager-operator CSV in namespace ibm-cert-manager is bound to Subscription
+[0m
+[INFO] Waiting for operator ibm-cert-manager-operator in namespace ibm-cert-manager to become available
+[32m[✔] Operator ibm-cert-manager-operator in namespace ibm-cert-manager is available
+[0m
+[34m# Accepting license for certmanagerconfig.operator.ibm.com default in namespace ...[0m
+[32m[✔] License accepted for certmanagerconfig.operator.ibm.com default
+[0m
+[34m# Validate CatalogSource for operator ibm-licensing-operator-app in ibm-licensing namespace[0m
+[32m[✔] CatalogSource ibm-licensing-catalog from ibm-licensing CatalogSourceNamespace is available for ibm-licensing-operator-app in ibm-licensing namespace[0m
+[34m# Installing licensing
+[0m
+[33m[✗] There is an ibm-licensing-operator-app Subscription already, so will upgrade it
+[0m
+[34m# Checking whether Namespace ibm-licensing exist...[0m
+[32m[✔] Namespace ibm-licensing already exists. Skip creating
+[0m
+[34m# Checking whether OperatorGroup in ibm-licensing exist...[0m
+[32m[✔] OperatorGroup already exists in ibm-licensing. Skip creating
+[0m
+[34m# Updating ibm-licensing-operator-app in namesapce ibm-licensing...[0m
+[INFO] v4.2 is equal to v4.2
+[INFO] catalogsource ibm-licensing-catalog is the same as ibm-licensing-catalog
+[INFO] ibm-licensing-operator-app has already updated channel v4.2 and catalogsource ibm-licensing-catalog in the subscription.
+subscription.operators.coreos.com/ibm-licensing-operator-app configured
+[32m[✔] Successfully patched subscription ibm-licensing-operator-app in ibm-licensing[0m
+[INFO] Waiting for operator ibm-licensing-operator-app to be upgraded
+[32m[✔] Operator ibm-licensing-operator-app is upgraded to latest version in channel v4.2
+[0m
+[INFO] Waiting for operator ibm-licensing-operator-app CSV in namespace ibm-licensing to be bound to Subscription
+[32m[✔] Operator ibm-licensing-operator-app CSV in namespace ibm-licensing is bound to Subscription
+[0m
+[INFO] Waiting for operator ibm-licensing-operator in namespace ibm-licensing to become available
+[32m[✔] Operator ibm-licensing-operator in namespace ibm-licensing is available
+[0m
+[INFO] Waiting for ibmlicensing instance to be present.
+[32m[✔] ibmlicensing instance present
+[0m
+[34m# Accepting license for ibmlicensing instance in namespace ...[0m
+[32m[✔] License accepted for ibmlicensing instance
+[0m
+[INFO] Checking cert manager readiness.
+[INFO] Waiting for pod cert-manager-webhook to be running ...
+[32m[✔] Pod cert-manager-webhook is running.
+[0m
+[32m[✔] Cert manager is ready.[0m
+
+[33;5m[INFO] [0mSETUP_SINGLETON_STATUS : 0
+
+[33;5m[INFO] [0mThe setup_singleton.sh script was executed successfully, indicating that cert-manager is now present on the cluster.
+
+[1mWaiting for the Cloud Pak for Business Automation operator to be ready. This may take a few minutes... (B[m
+
+ibm-cp4a-operator-catalog         ibm-cp4a-operator                       grpc   IBM         20m
+Found existing ibm operator catalog source, updating it
+catalogsource.operators.coreos.com/ibm-cp4a-operator-catalog unchanged
+catalogsource.operators.coreos.com/ibm-opencontent-flink unchanged
+catalogsource.operators.coreos.com/ibm-opensearch-operator-catalog unchanged
+catalogsource.operators.coreos.com/ibm-licensing-catalog unchanged
+catalogsource.operators.coreos.com/ibm-cs-install-catalog-v4-18-0 unchanged
+catalogsource.operators.coreos.com/ibm-bts-operator-catalog-v3-35 unchanged
+catalogsource.operators.coreos.com/ibm-iam-operator-catalog-4-17-0 unchanged
+catalogsource.operators.coreos.com/ibm-zen-operator-catalog-6-4-0 unchanged
+catalogsource.operators.coreos.com/ibm-events-operator-catalog unchanged
+catalogsource.operators.coreos.com/ibm-fncm-operator-catalog unchanged
+IBM Operator Catalog source updated!
+
+[33;5m[INFO] [0mWaiting for CP4BA Operator Catalog pod initialization
+
+[33;5m[INFO] [0mCP4BA Operator Catalog is running...
+ibm-cp4a-operator-catalog-6kkcr                                   1/1   Running     0     20m
+Found operator group
+NAME                              AGE
+ibm-cp4a-operator-catalog-group   17m
+subscription.operators.coreos.com/ibm-cp4a-operator-catalog-subscription unchanged
+CP4BA Operator Subscription Created!
+
+
+[33;5m[INFO] [0mWaiting for CP4BA operator pod initialization
+............................................................Timeout waiting for CP4BA operator to start
+[1mCheck the status of Pod by issue cmd:(B[m
+oc describe pod ibm-cp4a-operator-7986d6c9d5-ltbft
+ibm-cp4a-operator-catalog-6kkcr -n cp4ba-baw-prod-double-pfs
+
+[1mCheck the status of ReplicaSet by issue cmd:(B[m
+oc describe rs ibm-cp4a-operator-7986d6c9d5 -n cp4ba-baw-prod-double-pfs
