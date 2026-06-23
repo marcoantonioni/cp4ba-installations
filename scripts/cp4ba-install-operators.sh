@@ -172,23 +172,110 @@ checkPrereqVars () {
 
 }
 
+executeClusterAdminSetup () {
+  if [[ -z "${CP4BA_INST_CLUSTERADMIN_RETRIES}" ]]; then
+    export CP4BA_INST_CLUSTERADMIN_RETRIES=2
+  else
+    _error=1
+    if [[ $CP4BA_INST_CLUSTERADMIN_RETRIES =~ ^[+-]?[0-9]+\.$ ]]; then
+      _error=1
 
-log_msg "=============================================================="
-log_info "Install CP4BA Operators in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
+    elif [[ $CP4BA_INST_CLUSTERADMIN_RETRIES =~ ^[+-]?[0-9]+$ ]]; then
+      _error=0
 
-_INSTOP_START_SECONDS=$SECONDS
+    elif [[ $CP4BA_INST_CLUSTERADMIN_RETRIES =~ ^[+-]?[0-9]+\.?[0-9]*$ ]]; then
+      _error=1
+    fi
+    if [[ $_error -eq 1 ]]; then
+      log_error "Value of 'CP4BA_INST_CLUSTERADMIN_RETRIES' is not a number -> '$CP4BA_INST_CLUSTERADMIN_RETRIES'" 
+      exit 1 
+    fi  
+  fi
+  log_info "${_CLR_GREEN}Running cluster admin setup with '${_CLR_YELLOW}${CP4BA_INST_CLUSTERADMIN_RETRIES}${_CLR_GREEN}' retries"
 
-checkPrereqTools
-checkPrereqVars
+  log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
+  _ACT_DIR=$(pwd)
 
-# verify logged in OCP
-oc whoami 2>/dev/null 1>/dev/null
-if [ $? -gt 0 ]; then
-  log_error "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
-  exit 1
-fi
+  # change folder (do not use $_SCRIPT_DIR until: cd ${_ACT_DIR})
+  cd ${_SCRIPTS}
+  export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
 
-oc new-project ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
+  _counter=0
+  while [ $_counter -lt $CP4BA_INST_CLUSTERADMIN_RETRIES ]; do
+
+    _counter=$((_counter + 1))
+    /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
+    if [ $? -ne 0 ]; then
+      log_warning "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try again [$_counter/$CP4BA_INST_CLUSTERADMIN_RETRIES]...'"
+    fi
+
+    sleep 1
+    if [[ $_counter -ge $CP4BA_INST_CLUSTERADMIN_RETRIES ]]; then
+
+      if [[ -f "./_clusteradmin.out" ]]; then
+        cp ./_clusteradmin.out "${_ACT_DIR}/${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
+      fi
+      log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+      log_error "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
+      log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+
+      log_error "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
+      log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+
+      break
+    fi
+  done
+
+  # change folder back to original location
+  cd ${_ACT_DIR}
+
+        #log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
+        #_ACT_DIR=$(pwd)
+#
+        ## change folder (do not use $_SCRIPT_DIR until: cd ${_ACT_DIR})
+        #cd ${_SCRIPTS}
+        #export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
+#
+        #/bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
+        #if [ $? -ne 0 ]; then
+        #  # retry once, since v25, timeouts have been noted during operator setup...
+        #  log_warning "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try one more time...'"
+        #  /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
+        #fi
+        #if [ $? -eq 0 ]; then
+        #  rm ./_clusteradmin.out
+        #  log_info "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
+        #  _OK=true
+        #else
+        #  if [[ -f "./_clusteradmin.out" ]]; then
+        #    cp ./_clusteradmin.out "${_ACT_DIR}/${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
+        #  fi
+        #  log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+        #  log_error "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
+        #  log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+        #  # cat ./_clusteradmin.out
+        #  log_error "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
+        #  log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
+        #fi
+        ## change folder back to original location
+        #cd ${_ACT_DIR}
+
+}
+
+installOperators () {
+  _INSTOP_START_SECONDS=$SECONDS
+
+  checkPrereqTools
+  checkPrereqVars
+
+  # verify logged in OCP
+  oc whoami 2>/dev/null 1>/dev/null
+  if [ $? -gt 0 ]; then
+    log_error "${_CLR_RED}Not logged in to OCP cluster. Please login to an OCP cluster and rerun this command. ${_CLR_NC}" 
+    exit 1
+  fi
+
+  oc new-project ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
 
 cat << EOF | oc create -n ${CP4BA_INST_NAMESPACE} -f - 2>/dev/null 1>/dev/null
 apiVersion: v1
@@ -199,68 +286,47 @@ imagePullSecrets:
 - name: 'ibm-entitlement-key'
 EOF
 
-if [[ -z "${CP4BA_INST_ANYUID}" || "${CP4BA_INST_ANYUID}" = "true" ]]; then 
-  oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
-  log_info "${_CLR_GREEN}Install ${_CLR_YELLOW}with${_CLR_GREEN} SCC anyuid${_CLR_NC}"
-else
-  log_info "${_CLR_GREEN}Install ${_CLR_YELLOW}without${_CLR_GREEN} SCC anyuid${_CLR_NC}"
-fi
+  if [[ -z "${CP4BA_INST_ANYUID}" || "${CP4BA_INST_ANYUID}" = "true" ]]; then 
+    oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_NAMESPACE} 2>/dev/null 1>/dev/null
+    log_info "${_CLR_GREEN}Install ${_CLR_YELLOW}with${_CLR_GREEN} SCC anyuid${_CLR_NC}"
+  else
+    log_info "${_CLR_GREEN}Install ${_CLR_YELLOW}without${_CLR_GREEN} SCC anyuid${_CLR_NC}"
+  fi
 
-# 20260519 Networkpolicies
-if [[ -z "${CP4BA_INST_NP_DEPLOY}" ]]; then
-  export CP4BA_INST_NP_DEPLOY="false"
-fi
-if [[ "${CP4BA_INST_NP_DEPLOY}" = "true" ]]; then
-  ${_SCRIPT_DIR}/cp4ba-create-networkpolicies.sh -c ${_CFG} 
-fi
+  # 20260519 Networkpolicies
+  if [[ -z "${CP4BA_INST_NP_DEPLOY}" ]]; then
+    export CP4BA_INST_NP_DEPLOY="false"
+  fi
+  if [[ "${CP4BA_INST_NP_DEPLOY}" = "true" ]]; then
+    ${_SCRIPT_DIR}/cp4ba-create-networkpolicies.sh -c ${_CFG} 
+  fi
 
-_OK=false
-if [[ ! -z "${_SCRIPTS}" ]]; then
-  if [[ -d "${_SCRIPTS}" ]]; then
-    if [[ -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
-      log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
-      _ACT_DIR=$(pwd)
-
-      # change folder (do not use $_SCRIPT_DIR until: cd ${_ACT_DIR})
-      cd ${_SCRIPTS}
-      export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
-      /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
-      if [ $? -ne 0 ]; then
-        # retry once, since v25, timeouts have been noted during operator setup...
-        log_warning "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try one more time...'"
-        /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
+  _OK=false
+  if [[ ! -z "${_SCRIPTS}" ]]; then
+    if [[ -d "${_SCRIPTS}" ]]; then
+      if [[ -f "${_SCRIPTS}/cp4a-clusteradmin-setup.sh" ]]; then
+        executeClusterAdminSetup
       fi
-      if [ $? -eq 0 ]; then
-        rm ./_clusteradmin.out
-        log_info "Ready to deploy CR in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
-        _OK=true
-      else
-        if [[ -f "./_clusteradmin.out" ]]; then
-          cp ./_clusteradmin.out "${_ACT_DIR}/${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out"
-        fi
-        log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
-        log_error "ERROR, output from '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}'"
-        log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
-        # cat ./_clusteradmin.out
-        log_error "See: '${_CLR_RED}${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-clusteradmin.out${_CLR_RED}'${_CLR_NC}"
-        log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
-      fi
-      # change folder back to original location
-      cd ${_ACT_DIR}
     fi
   fi
-fi
 
-if [[ "${_OK}" = "false" ]]; then
-  log_error ">>> ${_CLR_RED}\x1b[5m[✗] ERROR\x1b[25m${_CLR_NC} <<< ${_CLR_RED}CP4BA Operators not installed.${_CLR_NC}"
-  exit 1
-fi
+  if [[ "${_OK}" = "false" ]]; then
+    log_error ">>> ${_CLR_RED}\x1b[5m[✗] ERROR\x1b[25m${_CLR_NC} <<< ${_CLR_RED}CP4BA Operators not installed.${_CLR_NC}"
+    exit 1
+  fi
 
-STOP_SECONDS=$SECONDS
-ELAPSED_SECONDS=$(( STOP_SECONDS - _INSTOP_START_SECONDS ))
-TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
-TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
-_MSG="CP4BA Operators installed at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
-log_info "${_MSG}" 
+  STOP_SECONDS=$SECONDS
+  ELAPSED_SECONDS=$(( STOP_SECONDS - _INSTOP_START_SECONDS ))
+  TOT_MINUTES=$(($ELAPSED_SECONDS / 60))
+  TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+  _MSG="CP4BA Operators installed at ${_CLR_GREEN}"$(date)"${_CLR_NC}, total installation time "${TOT_MINUTES}" minutes and "${TOT_SECONDS}" seconds."
+  log_info "${_MSG}" 
+
+}
+
+log_msg "=============================================================="
+log_info "Install CP4BA Operators in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
+
+installOperators
 
 exit 0

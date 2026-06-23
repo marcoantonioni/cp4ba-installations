@@ -546,6 +546,13 @@ _SCRIPTS=/tmp/mycmgr/ibm-cp-automation-5.1.0/...../crs/cert-kubernetes/scripts
 ```
 This is not the best solution but it still works without users onboarding in IAM (must be done manually via web console or using script 'onboard-users.sh' in repo 'cp4ba-idp-ldap').
 
+If you need more retries because timeouts installing the operators you may set and export the variable CP4BA_INST_CLUSTERADMIN_RETRIES with a numeric value (works for ./cp4ba-one-shot-installation.sh and cp4ba-install-operators.sh)
+```
+export CP4BA_INST_CLUSTERADMIN_RETRIES=5
+./cp4ba-install-operators.sh -c ${_CFG} -s ${_SCRIPTS}
+```
+
+
 ### 6. For IBMers, Business Partners and others who may have needs
 
 If you need to present a hands-on workshop on CP4BA and want to make a dedicated environment available for each guest, you can configure multiple environments with the same configuration file in this way (adapt the variables based on your environment).
