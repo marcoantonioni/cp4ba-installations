@@ -21,13 +21,15 @@
 ##
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-runtime-workstream-services
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=scp-shared-configuration
+## Multiple instances
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=cbawrws-optional-configuring-multiple-instances-business-automation-workflow-workstream-services
 
 ## BAW: 2 servers (baw1 and baw2 full configuration)
 ## BAW 1 - content: yes
 ## BAW 1 - case: yes
 ## BAW 1 - navigator: yes
 ## BAW 2 - content: yes
-## BAW 2 - case: yes
+## BAW 2 - case: no
 ## BAW 2 - navigator: yes
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
@@ -322,6 +324,9 @@ spec:
             - "${CP4BA_INST_PAKBA_ADMIN_USER}"
             - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
 
+          oc_cpe_obj_store_asa_name: "asa_${CP4BA_INST_BAW_1_NAME}"
+          oc_cpe_obj_store_asa_root_dir_path: "/opt/ibm/asa/storagearea_${CP4BA_INST_BAW_1_NAME}"
+
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
           oc_cpe_obj_store_conn:
@@ -366,6 +371,9 @@ spec:
           oc_cpe_obj_store_admin_user_groups:
             - "${CP4BA_INST_PAKBA_ADMIN_USER}"
             - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+
+          oc_cpe_obj_store_asa_name: "asa_${CP4BA_INST_BAW_2_NAME}"
+          oc_cpe_obj_store_asa_root_dir_path: "/opt/ibm/asa/storagearea_${CP4BA_INST_BAW_2_NAME}"
 
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS2DOS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS2DOS}"
@@ -465,9 +473,11 @@ spec:
   # IBM Business Automation Workflow configuration
   baw_configuration:
 
+    # BAW1
     - name: ${CP4BA_INST_BAW_1_NAME} 
       capabilities: "workflow"
       host_federated_portal: false
+      service_type: "Route"
       admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
       database:
         enable_ssl: false
@@ -573,15 +583,12 @@ spec:
         custom_extension_names: ""
         cpe_metadata_cache_time_to_live: ""
 
-      # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
-      #process_federation_server:
-      #  hostname:
-      #  port:
-      #  context_root_prefix:
-
+    # BAW2
     - name: ${CP4BA_INST_BAW_2_NAME} 
       capabilities: "workflow"
+      service_type: "Route"
       host_federated_portal: false
+
       admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
       database:
         enable_ssl: false
@@ -664,25 +671,7 @@ spec:
         object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS2DOCS}"
         cpe_admin_secret: ""
 
-      case:
-        init_job_image:
-          repository: cp.icr.io/cp/cp4a/baw/workflow-server-case-initialization
-          pull_policy: IfNotPresent
-      
-        domain_name: "P8DOMAIN"
-        object_store_name_dos: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS2DOS}"
-        
-        tos_list:
-        - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS2TOS}"
-          connection_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS2TOS_PE_CONN_POINT_NAME}"
-          desktop_id: "baw2"
-          target_environment_name: "target_env"          
-          is_default: true
-
-        network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
-        custom_package_names: ""
-        custom_extension_names: ""
-        cpe_metadata_cache_time_to_live: ""
+      # case: !!! CASE SECTION MUST BE PRESENT ONLY ON FIRST BAW INSTANCE
 
       # Set PFS information if you have PFS installed and want to federate Workflow Server to it.
       #process_federation_server:

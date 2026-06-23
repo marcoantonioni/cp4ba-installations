@@ -179,30 +179,7 @@ spec:
       dc_hadr_retry_interval_for_client_reroute: 15
       dc_hadr_max_retries_for_client_reroute: 3
 
-    #dc_cpe_datasources:
-    #- database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_chos"
-    #  database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-    #  database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-    #  dc_common_conn_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1_CONN_NAME}"
-    #  dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
-    #  dc_common_cpe_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}XA"
-    #  dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-    #  dc_os_label: ${CP4BA_INST_DB_CHOS_LBL}
-#
     dc_os_datasources:
-      #- dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #  dc_os_label: "${CP4BA_INST_DB_OS_LBL}"
-      #  dc_common_os_datasource_name: "FNOS1DS"
-      #  dc_common_os_xa_datasource_name: "FNOS1DSXA"
-      #  database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-      #  database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_os1"
-      #  database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #  database_ssl_secret_name: ""
-      #  dc_hadr_validation_timeout: 15
-      #  dc_hadr_standby_servername: ""
-      #  dc_hadr_standby_port: ""
-      #  dc_hadr_retry_interval_for_client_reroute: 15
-      #  dc_hadr_max_retries_for_client_reroute: 3
 
       - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWDOCS_LBL}"
@@ -275,20 +252,6 @@ spec:
         dc_hadr_retry_interval_for_client_reroute: 15
         dc_hadr_max_retries_for_client_reroute: 3
 
-      # - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #   dc_os_label: "${CP4BA_INST_DB_AE_LBL}"
-      #   dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-      #   dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
-      #   database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-      #   database_name: "${CP4BA_INST_AE_DB_NAME}"
-      #   database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #   database_ssl_secret_name: ""
-      #   dc_hadr_validation_timeout: 15
-      #   dc_hadr_standby_servername: ""
-      #   dc_hadr_standby_port: ""
-      #   dc_hadr_retry_interval_for_client_reroute: 15
-      #   dc_hadr_max_retries_for_client_reroute: 3
-
   # IBM FileNet Content Manager initialize configuration
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-initialization
   initialize_configuration:
@@ -303,16 +266,6 @@ spec:
     ic_obj_store_creation:
 
       object_stores:
-
-        # - oc_cpe_obj_store_display_name: "OS01"
-        #   oc_cpe_obj_store_symb_name: "OS01"
-        #   oc_cpe_obj_store_conn:
-        #     name: "objectstore1_connection"
-        #     dc_os_datasource_name: "FNOS1DS"
-        #     dc_os_xa_datasource_name: "FNOS1DSXA"
-        #   oc_cpe_obj_store_admin_user_groups:
-        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
 
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
@@ -530,6 +483,17 @@ spec:
         repository: cp.icr.io/cp/cp4a/baw/workflow-server-dbhandling
         pull_policy: IfNotPresent
         trace_specification: ""
+
+      ## The configurations for content integration for attachment in process
+      content_integration:
+        init_job_image:
+          repository: cp.icr.io/cp/cp4a/baw/iaws-ps-content-integration
+          pull_policy: IfNotPresent
+        domain_name: "P8DOMAIN"
+        object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
+        cpe_admin_secret: ""
+
+      # case: !!! CASE SECTION MUST BE ABSENT FOR NO-CASE CONFIGURATION (BPM Standard like)
 
   workflow_assistant_configuration:
     run_authoring_agent: ${CP4BA_RUN_AUTHORING_AGENT}
