@@ -200,9 +200,13 @@ executeClusterAdminSetup () {
   cd ${_SCRIPTS}
   export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
 
+  if [[ $CP4BA_INST_CLUSTERADMIN_RETRIES -lt 1 ]]; then
+    export CP4BA_INST_CLUSTERADMIN_RETRIES=2
+  fi
+  
   _done=0
-  _counter=0
-  while [ $_counter -lt $CP4BA_INST_CLUSTERADMIN_RETRIES ]; do
+  _counter=1
+  while [ $_counter -le $CP4BA_INST_CLUSTERADMIN_RETRIES ]; do
 
     _counter=$((_counter + 1))
     /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
