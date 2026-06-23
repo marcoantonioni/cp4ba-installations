@@ -191,6 +191,10 @@ executeClusterAdminSetup () {
       exit 1 
     fi  
   fi
+  if [[ $CP4BA_INST_CLUSTERADMIN_RETRIES -lt 1 ]]; then
+    export CP4BA_INST_CLUSTERADMIN_RETRIES=2
+  fi
+
   log_info "${_CLR_GREEN}Running cluster admin setup with '${_CLR_YELLOW}${CP4BA_INST_CLUSTERADMIN_RETRIES}${_CLR_GREEN}' retries"
 
   log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
@@ -199,10 +203,6 @@ executeClusterAdminSetup () {
   # change folder (do not use $_SCRIPT_DIR until: cd ${_ACT_DIR})
   cd ${_SCRIPTS}
   export CP4BA_AUTO_NAMESPACE="${CP4BA_INST_NAMESPACE}"
-
-  if [[ $CP4BA_INST_CLUSTERADMIN_RETRIES -lt 1 ]]; then
-    export CP4BA_INST_CLUSTERADMIN_RETRIES=2
-  fi
   
   _done=0
   _counter=1
