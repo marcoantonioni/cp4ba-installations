@@ -480,7 +480,7 @@ oneShotInstallation () {
       _RESULT_OPERATORS=$?
     else
       log_info "Skip install operators"
-      _FOUND_OP=$(oc get csv -n cp4ba-baw-auth-bai-onedb-1000 | grep "ibm-cp4a-operator" | wc -l)
+      _FOUND_OP=$(oc get csv -n ${CP4BA_INST_NAMESPACE} | grep "ibm-cp4a-operator" | wc -l)
       if [[ $_FOUND_OP -eq 1 ]]; then
         _OP_NAME=$(oc get csv -n ${CP4BA_INST_NAMESPACE} | grep "ibm-cp4a-operator" | awk '{print $1}')
         log_info "Found already installed operator '${_CLR_YELLOW}${_OP_NAME}${_CLR_GREEN}'"
