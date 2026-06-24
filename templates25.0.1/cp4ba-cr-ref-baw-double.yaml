@@ -54,8 +54,8 @@ spec:
   ibm_license: accept
 
   shared_configuration:
-    sc_deployment_fncm_license: "${CP4BA_INST_LICENSE_TYPE}"
-    sc_deployment_baw_license: "${CP4BA_INST_LICENSE_TYPE}"
+    sc_deployment_fncm_license: "${CP4BA_INST_FNCM_LICENSE_TYPE}"
+    sc_deployment_baw_license: "${CP4BA_INST_BAW_LICENSE_TYPE}"
     sc_deployment_license: "${CP4BA_INST_LICENSE_TYPE}"
     sc_deployment_context: "CP4A"
     sc_image_repository: cp.icr.io

@@ -510,11 +510,8 @@ deployPreEnv () {
 }
 
 deployPostEnv () {
-  log_msg "==============================================================${_CLR_NC}"
-  log_info "${_CLR_GREEN}Creating custom xml secrets for environment/servers${_CLR_GREEN}'${_CLR_NC}"
   
   if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
-    log_info "{_CLR_GREEN}Configuring authoring server for custom xml secrets"
     $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/cp4ba-create-custom-xml-secrets.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
       log_error "${_CLR_RED}[✗] Error, custom xml secrets not configured.${_CLR_NC}"
@@ -532,7 +529,6 @@ deployPostEnv () {
       _NAME="${!__BAW_NAME}"
 
       if [[ "${_INST}" = "true" && ! -z "${_NAME}" ]]; then
-        log_info "${_CLR_GREEN}Configuring server '${_CLR_YELLOW}${_NAME}${_CLR_GREEN}' for custom xml secrets"
         $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/cp4ba-create-custom-xml-secrets.sh -c ${_CFG} -p -t baw -s ${_NAME}
         if [[ $? -ne 0 ]]; then
           log_error "${_CLR_RED}[✗] Error, custom xml secrets not configured for '${_NAME}'.${_CLR_NC}"
@@ -601,6 +597,16 @@ postInstallationSteps () {
 
 #-------------------------------
 generateCR () {
+
+  if [[ -z "${CP4BA_INST_FNCM_LICENSE_TYPE}" ]]; then
+    export CP4BA_INST_FNCM_LICENSE_TYPE="production"
+    log_warning "Value for CP4BA_INST_FNCM_LICENSE_TYPE is not set, default to 'production' value"
+  fi
+  if [[ -z "${CP4BA_INST_BAW_LICENSE_TYPE}" ]]; then
+    export CP4BA_INST_BAW_LICENSE_TYPE="production"
+    log_warning "Value for CP4BA_INST_BAW_LICENSE_TYPE is not set, default to 'production' value"
+  fi
+
   _INST_ENV_FULL_PATH="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   envsubst < ../${CP4BA_INST_CR_TEMPLATE} > ${_INST_ENV_FULL_PATH}
   if [[ $? -ne 0 ]]; then
@@ -708,9 +714,9 @@ loopWaitForPfsReady () {
       log_debug "[DEBUG] PFS readiness: _pfsDeployment[${_CLR_YELLOW}${_pfsDeployment}${_CLR_GREEN}] _pfsService[${_CLR_YELLOW}${_pfsService}${_CLR_GREEN}] _pfsZenIntegration[${_CLR_YELLOW}${_pfsZenIntegration}${_CLR_GREEN}]"
 
       if [[ "${_pfsDeployment}" = "Ready" ]] && [[ "${_pfsService}" = "Ready" ]] && [[ "${_pfsZenIntegration}" = "Ready" ]]; then
-          return 1
+        return 1
       else
-          sleep $3
+        sleep $3
       fi
     done
     return 0
@@ -827,7 +833,8 @@ waitForBawStatefulSetReady () {
       break
     fi
   done
-  log_info "${_CLR_YELLOW}READY${_CLR_GREEN}${_CLR_NC}"
+  echo -e "${_CLR_GREEN} now is ready.${_CLR_GREEN}${_CLR_NC}"
+
 }
 
 federateBawsInDeployment () {
@@ -846,18 +853,23 @@ federateBawsInDeployment () {
     _NAME="${!__BAW_NAME}"
     _HFP="${!__BAW_HOST_FED_PORTAL}"
     if [[ "${_INST}" = "true" ]] && [[ "${_FEDERATE}" = "true" ]]; then
+      if [[ ! -z "${_NAME}" ]]; then
+        log_info "${_CLR_GREEN}PFS - Federating BAW '${_CLR_YELLOW}"${__BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+      fi 
       waitForBawStatefulSetReady "${_NAME}" "baw-server"
       federateBaw "${_NAME}" "${_HFP}"
       _NAME=""
     else
       if [[ ! -z "${_NAME}" ]]; then
-        log_info "${_CLR_GREEN}PFS - skipping BAW: '${_CLR_YELLOW}"${__BAW_NAME}"${_CLR_GREEN}'${_CLR_NC}"
+        log_info "${_CLR_GREEN}PFS - Skipping BAW '${_CLR_YELLOW}"${_NAME}"${_CLR_GREEN}'${_CLR_NC}"
       fi 
     fi
     ((i=i+1))
   done
   
-  log_info "${_CLR_GREEN}INFO: ${_CLR_YELLOW}The CR defining BAW servers has been modified for federation with PFS, operators will follow their periodic tasks and complete the necessary configurations; the whole operation can take minutes; the installation procedure continues without waiting.${_CLR_GREEN}${_CLR_NC}"
+  log_info "${_CLR_GREEN}INFO: ${_CLR_YELLOW}The CR defining BAW servers has been modified for federation with PFS.${_CLR_NC}"
+  log_info "${_CLR_GREEN}INFO: ${_CLR_YELLOW}Operators will follow their periodic tasks and complete the necessary configurations.${_CLR_NC}"
+  log_info "${_CLR_GREEN}INFO: ${_CLR_YELLOW}Operations can take minutes; the installation procedure continues without waiting.${_CLR_NC}"
 
 }
 
@@ -1033,12 +1045,14 @@ waitDeploymentReadiness () {
     sleep 1
   done
 
-  if [[ "${CP4BA_INST_ZS_CONFIGURE}" = "true" ]]; then
-    updateZenServiceCertificate
+  if [[ "${_FEDERATE_ONLY}" = "false" ]]; then
+    if [[ "${CP4BA_INST_ZS_CONFIGURE}" = "true" ]]; then
+      updateZenServiceCertificate
 
-    # 20250407 If Zen cert in trusted list, restart staefulset
-    zenCertInTrustedList ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_ZS_TARGET_SECRET}
+      # 20250407 If Zen cert in trusted list, restart staefulset
+      zenCertInTrustedList ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_ZS_TARGET_SECRET}
 
+    fi
   fi
 }
 
