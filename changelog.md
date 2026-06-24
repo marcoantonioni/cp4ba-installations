@@ -1,6 +1,18 @@
 
 # Change Log
 
+## [1.5.4] - 2026-06-24
+
+### Added
+
+Configuration files for Opensearch only environment
+
+### Changed
+
+### Fixed
+
+Minor logs in cp4ba-deploy-env.sh
+
 ## [1.5.3] - 2026-06-22
 
 ### Added
