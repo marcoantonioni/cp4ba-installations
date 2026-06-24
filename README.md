@@ -4,6 +4,10 @@ Utilities for IBM Cloud Pak® for Business Automation
 
 <i>Last update: 2026-06-24</i> (see changelog.md for details)
 
+As of June 26 2026, the 'main' branch contains artifacts compatible with v26.
+
+To work on a previous version/branch, use a specific branch. (See the 'Clone commands' section.)
+
 ## Description of the contents of this repository
 
 In this repository a series of procedures are available for the fully automated 'silent' installation of IBM Cloud Pak for Business Automation environments in Openshift clusters.
@@ -282,6 +286,7 @@ For the autonomous completion of all installation tasks you need other supportin
 To ease your first run use pre-existing configurations. 
 Clone the following repositories within a parent folder.
 
+### Clone commands
 ```
 # --> cd <your-parent-folder>
 
@@ -300,6 +305,11 @@ git clone https://github.com/marcoantonioni/cp4ba-wfps.git
 
 # Useful for application deployment and other utilities
 git clone https://github.com/marcoantonioni/cp4ba-utilities.git
+```
+
+To clone a specific branch/version use
+```
+git clone -b <branch> <url>
 ```
 
 This is an example of cloned folders
