@@ -206,11 +206,13 @@ executeClusterAdminSetup () {
   
   _done=0
   _counter=1
+  _error=0
   while [ $_counter -le $CP4BA_INST_CLUSTERADMIN_RETRIES ]; do
 
-    _counter=$((_counter + 1))
     /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
-    if [ $? -ne 0 ]; then
+    _error=$?
+    _counter=$((_counter + 1))
+    if [ $_error -ne 0 ]; then
       log_warning "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try again [$_counter/$CP4BA_INST_CLUSTERADMIN_RETRIES]...'"
       sleep 1
     else
