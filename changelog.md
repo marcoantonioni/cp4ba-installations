@@ -1,6 +1,19 @@
 
 # Change Log
 
+## [1.6.0] - 2026-06-27
+
+### Added
+
+New environment variable 
+
+export CP4BA_AUTO_ACCEPT_LICENSE="Yes"
+
+### Changed
+
+### Fixed
+
+
 ## [1.5.4] - 2026-06-24
 
 ### Added

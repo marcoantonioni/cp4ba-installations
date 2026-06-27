@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-06-24</i> (see changelog.md for details)
+<i>Last update: 2026-06-27</i> (see changelog.md for details)
 
 As of June 26 2026, the 'main' branch contains artifacts compatible with v26.
 
@@ -764,6 +764,8 @@ https://myibm.ibm.com/products-services/containerlibrary
 
 ## Environment variables for silent mode installation
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=reference-environment-variables-silent-mode-installation
+https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=reference-environment-variables-silent-mode-installation
+
 
 ## Production Deployments
 https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/23.0.2?topic=deployment-capability-patterns-production-deployments
