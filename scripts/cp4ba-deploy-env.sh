@@ -447,7 +447,17 @@ verifyCreateSecretsForExternalDb () {
 
   log_info "Creating secret '${_CLR_YELLOW}${_PG_SECRET}${_CLR_GREEN}'"
   oc delete secret -n ${_PG_TARGET_NS} ${_PG_SECRET} 2>/dev/null 1>/dev/null
-  oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRET} --from-file=${_PG_CERTS_FOLDER}/ 2>/dev/null 1>/dev/null
+
+  # 20260702
+  # oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRET} --from-file=${_PG_CERTS_FOLDER}/ 2>/dev/null 1>/dev/null
+  oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRET} \
+    --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
+    --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
+    --from-file=tls.key="${_PG_CERTS_FOLDER}/client.key"  \
+    --from-file=tls.pk8="${_PG_CERTS_FOLDER}/tls_key.pk8" \
+    --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
+  oc label secret -n ${_PG_TARGET_NS} ${_PG_SECRET} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
+
 
   _SEC_NAME="im-datastore-edb-secret"
   log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
@@ -1167,6 +1177,7 @@ startDeployEnv () {
 log_msg "=============================================================="
 log_info "Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 log_info "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
+
 
 startDeployEnv
 exit 0
