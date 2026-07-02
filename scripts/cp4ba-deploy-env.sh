@@ -501,6 +501,8 @@ verifyCreateSecretsForExternalDb () {
   oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
   oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME} \
     --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
+    --from-file=server.cert="${_PG_CERTS_FOLDER}/server.cert"  \
+    --from-file=server.key="${_PG_CERTS_FOLDER}/server.key"  \
     --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
     --from-file=tls.key="${_PG_CERTS_FOLDER}/client.key"  \
     --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
