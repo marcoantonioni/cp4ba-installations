@@ -305,6 +305,7 @@ git clone https://github.com/marcoantonioni/cp4ba-wfps.git
 
 # Useful for application deployment and other utilities
 git clone https://github.com/marcoantonioni/cp4ba-utilities.git
+git clone https://github.com/marcoantonioni/cp4ba-opensearch-dashboard.git
 ```
 
 To clone a specific branch/version use
