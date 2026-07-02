@@ -313,6 +313,12 @@ To clone a specific branch/version use
 git clone -b <branch> <url>
 ```
 
+example for v25
+```
+git clone -b v25-20260624 https://github.com/marcoantonioni/cp4ba-installations.git
+```
+
+
 This is an example of cloned folders
 
 ```
