@@ -274,6 +274,7 @@ setupCertificatesAndSecrets () {
   # 20260702
   # oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRET} --from-file=${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ 2>/dev/null 1>/dev/null
   oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRET} \
+    --from-file=ca.cert="${_PG_CERTS_FOLDER}/ca.cert"  \
     --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
     --from-file=server.cert="${_PG_CERTS_FOLDER}/server.cert"  \
     --from-file=server.key="${_PG_CERTS_FOLDER}/server.key"  \
