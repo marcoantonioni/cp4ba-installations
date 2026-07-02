@@ -115,6 +115,55 @@ resourceExist () {
 #--------------------------------
 # Postgres instance with SSL enabled (ZEN,BTS,IM external databases)
 
+createCertsExtDbV25 () {
+  log_debug "createCertsExtDbV25: $1"
+    
+  # $1 = certificate folder
+  # $2 = server name
+  _CERT_FOLDER=$1
+
+  # CA
+  openssl genrsa -out ${_CERT_FOLDER}/ca.key 2048 2>/dev/null 1>/dev/null
+  openssl req -x509 -new -key ${_CERT_FOLDER}/ca.key -sha256 -days 36500 -out ${_CERT_FOLDER}/ca.cert -extensions 'v3_ca' -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
+
+  # SERVER
+  openssl genrsa -out ${_CERT_FOLDER}/server.key 2048 2>/dev/null 1>/dev/null
+  openssl req -new -sha256 -key ${_CERT_FOLDER}/server.key -out ${_CERT_FOLDER}/server-req.pem -subj "/CN=${CP4BA_INST_DB_1_CR_NAME_SSL}" -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
+  openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/server-req.pem -out ${_CERT_FOLDER}/server.cert -extfile ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
+
+  # CLIENT
+  openssl genrsa -out ${_CERT_FOLDER}/client.key 2048 2>/dev/null 1>/dev/null
+  openssl req -new -sha256 -key ${_CERT_FOLDER}/client.key -out ${_CERT_FOLDER}/client-req.pem -subj "/CN=postgres-client" -config ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
+  openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/client-req.pem -out ${_CERT_FOLDER}/client.cert -extfile ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
+}
+
+createCertsExtDbV26 () {
+  log_debug "createCertsExtDbV26: $1"
+    
+  # $1 = certificate folder
+  # $2 = server name
+  _CERT_FOLDER=$1
+
+  # root.crt
+  openssl x509 -in ${_CERT_FOLDER}/root.crt -noout -subject -issuer -startdate -enddate >/dev/null 2>&1
+
+  # client.crt
+  openssl x509 -in ${_CERT_FOLDER}/client.crt -noout -subject -issuer -startdate -enddate >/dev/null 2>&1
+
+  # client.key
+  openssl rsa -in ${_CERT_FOLDER}/client.key -outform PEM -out ${_CERT_FOLDER}/client_key.pem >/dev/null 2>&1
+
+  # client.crt
+  openssl x509 -in ${_CERT_FOLDER}/client.crt -outform PEM -out ${_CERT_FOLDER}/client.pem >/dev/null 2>&1
+
+  # root.pem
+  openssl x509 -in ${_CERT_FOLDER}/root.crt -outform PEM -out ${_CERT_FOLDER}/root.pem >/dev/null 2>&1
+
+  # tls_key.pk8
+  openssl pkcs8 -topk8 -inform PEM -in ${_CERT_FOLDER}/client_key.pem -outform DER -nocrypt -out ${_CERT_FOLDER}/tls_key.pk8
+
+}
+
 _createDBCertificates () {
 
 log_debug "_createDBCertificates: $1"
@@ -190,21 +239,15 @@ extendedKeyUsage = clientAuth
 
 EOF
 
-# CA
-openssl genrsa -out ${_CERT_FOLDER}/ca.key 2048 2>/dev/null 1>/dev/null
-openssl req -x509 -new -key ${_CERT_FOLDER}/ca.key -sha256 -days 36500 -out ${_CERT_FOLDER}/ca.cert -extensions 'v3_ca' -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
-
-# SERVER
-openssl genrsa -out ${_CERT_FOLDER}/server.key 2048 2>/dev/null 1>/dev/null
-openssl req -new -sha256 -key ${_CERT_FOLDER}/server.key -out ${_CERT_FOLDER}/server-req.pem -subj "/CN=${CP4BA_INST_DB_1_CR_NAME_SSL}" -config ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
-openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/server-req.pem -out ${_CERT_FOLDER}/server.cert -extfile ${_CERT_FOLDER}/req.conf 2>/dev/null 1>/dev/null
-
-# CLIENT
-openssl genrsa -out ${_CERT_FOLDER}/client.key 2048 2>/dev/null 1>/dev/null
-openssl req -new -sha256 -key ${_CERT_FOLDER}/client.key -out ${_CERT_FOLDER}/client-req.pem -subj "/CN=postgres-client" -config ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
-openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/client-req.pem -out ${_CERT_FOLDER}/client.cert -extfile ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
-
+  # check CP4BA version
+  case "${CP4BA_INST_APPVER}" in
+      26*)
+        createCertsExtDbV26 "${_CERT_FOLDER}";;
+      *)
+        createCertsExtDbV25 "${_CERT_FOLDER}";;
+  esac
 }
+
 
 setupCertificatesAndSecrets () {
   log_debug "setupCertificatesAndSecrets"

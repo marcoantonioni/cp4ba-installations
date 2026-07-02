@@ -373,7 +373,45 @@ openssl genrsa -out ${_CERT_FOLDER}/client.key 2048 2>/dev/null 1>/dev/null
 openssl req -new -sha256 -key ${_CERT_FOLDER}/client.key -out ${_CERT_FOLDER}/client-req.pem -subj "/CN=postgres-client" -config ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
 openssl x509 -req -days 36500 -sha256 -extensions v3_req -CA ${_CERT_FOLDER}/ca.cert -CAkey ${_CERT_FOLDER}/ca.key -CAcreateserial -in ${_CERT_FOLDER}/client-req.pem -out ${_CERT_FOLDER}/client.cert -extfile ${_CERT_FOLDER}/req-client.conf 2>/dev/null 1>/dev/null
 
+# PK8
+openssl pkcs8 -topk8 -inform PEM -in ${_CERT_FOLDER}/client.key -outform DER -nocrypt -out ${_CERT_FOLDER}/tls_key.pk8
+
 }
+
+_createSecretBtsV25 () {
+  _PG_CERTS_FOLDER="$1"
+  _SEC_NAME="$2"
+
+  log_debug "_createSecretBtsV25 '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+
+  openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
+    -in ${_PG_CERTS_FOLDER}/client.key \
+    -out ${_PG_CERTS_FOLDER}/tls_key.pk8 2>/dev/null 1>/dev/null
+
+  oc delete secret -n ${_PG_TARGET_NS} ${_SEC_NAME} 2>/dev/null 1>/dev/null
+  oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME}  \
+    --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
+    --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
+    --from-file=tls.key="${_PG_CERTS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
+  oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
+
+}
+
+_createSecretBtsV26 () {
+  _PG_CERTS_FOLDER="$1"
+  _SEC_NAME="$2"
+
+  log_debug "_createSecretBtsV26 '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
+
+  oc delete secret -n ${_PG_TARGET_NS} ${_SEC_NAME} 2>/dev/null 1>/dev/null
+  oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME}  \
+    --from-file=ca.crt="${_CERT_FOLDER}/ca.cert" \
+    --from-file=tls.crt="${_CERT_FOLDER}/client.cert" \
+    --from-file=tls.pk8="${_CERT_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
+  oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
+
+}
+
 
 verifyCreateSecretsForExternalDb () {
   log_msg "=============================================================="
@@ -433,15 +471,29 @@ verifyCreateSecretsForExternalDb () {
 
   _SEC_NAME="bts-datastore-edb-secret"
   log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
-  openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
-    -in ${_PG_CERTS_FOLDER}/client.key \
-    -out ${_PG_CERTS_FOLDER}/tls_key.pk8 2>/dev/null 1>/dev/null
 
-  oc delete secret -n ${_PG_TARGET_NS} ${_SEC_NAME} 2>/dev/null 1>/dev/null
-  oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME}  \
+  # check CP4BA version
+  case "${CP4BA_INST_APPVER}" in
+      26*)
+        _createSecretBtsV26 "${_PG_CERTS_FOLDER}" "${_SEC_NAME}";;
+      *)
+        _createSecretBtsV25 "${_PG_CERTS_FOLDER}" "${_SEC_NAME}";;
+  esac
+
+  # compat. with older config files
+  if [[ -z "${CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME}" ]]; then
+    export CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME="my-db-tls-secret"
+    export CP4BA_INST_DB_1_TLS_ENABLED="${CP4BA_INST_DB_ONLY_SSL}"
+  fi
+
+  _SEC_NAME="${CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME}"
+  log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
+  oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
+  oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME} \
     --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
     --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
-    --from-file=tls.key="${_PG_CERTS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
+    --from-file=tls.key="${_PG_CERTS_FOLDER}/client.key"  \
+    --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
   oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
 
 }

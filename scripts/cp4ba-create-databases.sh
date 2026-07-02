@@ -137,6 +137,7 @@ _generateSQL () {
     | sed 's/§§dbICNowner§§/'"${CP4BA_INST_DB_ICN_USER}"'/g' | sed 's/§§dbICNowner_password§§/'"${CP4BA_INST_DB_ICN_PWD}"'/g' \
     | sed 's/§§dbGCDowner§§/'"${CP4BA_INST_DB_GCD_USER}"'/g' | sed 's/§§dbGCDowner_password§§/'"${CP4BA_INST_DB_GCD_PWD}"'/g' \
     | sed 's/§§dbAEowner§§/'"${CP4BA_INST_DB_AE_USER}"'/g' | sed 's/§§dbAEowner_password§§/'"${CP4BA_INST_DB_AE_PWD}"'/g' \
+    | sed 's/§§dbAPPowner§§/'"${CP4BA_INST_DB_APP_USER}"'/g' | sed 's/§§dbAPPowner_password§§/'"${CP4BA_INST_DB_APP_PWD}"'/g' \
     | sed 's/§§dbODMowner§§/'"${CP4BA_INST_DB_ODM_USER}"'/g' | sed 's/§§dbODMowner_password§§/'"${CP4BA_INST_DB_ODM_PWD}"'/g' \
     | sed 's/§§dbADSRTowner§§/'"${CP4BA_INST_DB_ADSRT_USER}"'/g' | sed 's/§§dbADSRTowner_password§§/'"${CP4BA_INST_DB_ADSRT_PWD}"'/g' \
     | sed 's/§§dbADSDESowner§§/'"${CP4BA_INST_DB_ADSDES_USER}"'/g' | sed 's/§§dbADSDESowner_password§§/'"${CP4BA_INST_DB_ADSDES_PWD}"'/g' \

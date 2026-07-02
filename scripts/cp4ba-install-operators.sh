@@ -175,8 +175,9 @@ checkPrereqVars () {
 }
 
 executeClusterAdminSetup () {
+  _MAX_RETRIES=3
   if [[ -z "${CP4BA_INST_CLUSTERADMIN_RETRIES}" ]]; then
-    export CP4BA_INST_CLUSTERADMIN_RETRIES=2
+    export CP4BA_INST_CLUSTERADMIN_RETRIES=$_MAX_RETRIES
   else
     _error=1
     if [[ $CP4BA_INST_CLUSTERADMIN_RETRIES =~ ^[+-]?[0-9]+\.$ ]]; then
@@ -194,12 +195,13 @@ executeClusterAdminSetup () {
     fi  
   fi
   if [[ $CP4BA_INST_CLUSTERADMIN_RETRIES -lt 1 ]]; then
-    export CP4BA_INST_CLUSTERADMIN_RETRIES=2
+    export CP4BA_INST_CLUSTERADMIN_RETRIES=$_MAX_RETRIES
   fi
 
   log_info "${_CLR_GREEN}Running cluster admin setup with '${_CLR_YELLOW}${CP4BA_INST_CLUSTERADMIN_RETRIES}${_CLR_GREEN}' retries"
 
-  log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' (this operation can take 10 minutes or more)"
+  log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
+  log_info "  cp4a-clusteradmin-setup.sh may take minutes to install Operator Catalogs and Operators"
   _ACT_DIR=$(pwd)
 
   # change folder (do not use $_SCRIPT_DIR until: cd ${_ACT_DIR})
@@ -215,7 +217,7 @@ executeClusterAdminSetup () {
     _error=$?
     _counter=$((_counter + 1))
     if [ $_error -ne 0 ]; then
-      log_warning "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}, try again [$_counter/$CP4BA_INST_CLUSTERADMIN_RETRIES]...'"
+      log_warning "${_CLR_GREEN}Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}'${_CLR_GREEN}, try again [$_counter/$CP4BA_INST_CLUSTERADMIN_RETRIES]..."
       sleep 1
     else
       _done=1

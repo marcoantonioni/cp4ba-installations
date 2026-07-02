@@ -1,6 +1,30 @@
 
 # Change Log
 
+## [1.6.1] - 2026-07-02
+
+### Added
+
+
+### Changed
+
+- External BTS secret and certificate management
+
+see:
+cp4ba-create-secrets.sh
+  _createConfigMapBts (customPropertyValue1...)
+  v26 comments
+cp4ba-create-external-db-certificates.sh
+  version based data 
+cp4ba-deploy-env.sh
+  verifyCreateSecretsForExternalDb
+
+- .yaml Templates
+- .sql Templates
+
+### Fixed
+
+
 ## [1.6.0] - 2026-06-27
 
 ### Added
