@@ -655,21 +655,13 @@ generateCR () {
   fi
 
   if [[ -f "${_INST_ENV_FULL_PATH}" ]]; then
-    #MISSED_TRANSFORMATIONS=$(cat ${_INST_ENV_FULL_PATH} | grep "\${" | wc -l)
-    #if [[ $MISSED_TRANSFORMATIONS -gt 0 ]]; then
-    #  log_error "${_CLR_RED}[✗] Error, env var missed in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
-    #  echo "++++++++++++++++++++++++++++++++++++++++"
-    #  cat ${_INST_ENV_FULL_PATH} | grep "\${"
-    #  echo "++++++++++++++++++++++++++++++++++++++++"
-    #  exit 1
-    #fi
 
     _MISSED_PLACEHOLDERS=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\${" | wc -l)
     _MISSED_OPTIONALS=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\"<Optional>\"" | wc -l)
     _MISSED_REQUIRED=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\"<Required>\"" | wc -l)
 
     if [ $_MISSED_PLACEHOLDERS -gt 0 ]; then
-      log_error "${_CLR_RED}[✗] Error, $_MISSED_PLACEHOLDERS missed placeholders '\${...}' in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, $_MISSED_PLACEHOLDERS missed placeholder '\${...}' in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
     fi
     if [ $_MISSED_OPTIONALS -gt 0 ]; then
       log_error "${_CLR_RED}[✗] Error, $_MISSED_OPTIONALS missed '<Optional>' value in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
