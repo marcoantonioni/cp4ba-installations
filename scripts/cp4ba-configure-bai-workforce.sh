@@ -277,8 +277,13 @@ _createBAIWorkforceSecret () {
     #  _errorBuild=1
     #fi
     _maxAttempts=60
+    _interval=10
     counter=0
-    while [ $counter -lt $_maxAttempts ]; do
+
+    _maxDelay=$((_maxAttempts * _interval))
+    log_info "Configure BAI Workforce (wait max $_maxDelay seconds)"
+    
+    while [[ $counter -lt $_maxAttempts ]]; do
 
       _curlResult=$(curl -sk -w "%{http_code}" -X GET "$_WFS_URL" -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}")
 
@@ -298,17 +303,13 @@ _createBAIWorkforceSecret () {
         fi
         break
       else
-        echo -n "${http_code} "
-        sleep 10
+        echo -n "."
+        sleep "$_interval"
       fi
       counter=$((counter + 1))
 
     done
     echo ""
-
-
-
-
 
     _adminSecret="bas-admin-secret"
     _DEV_ENV=$(oc get secret --no-headers -n ${_NS} | grep "${CP4BA_INST_CR_NAME}-bas" | wc -l)

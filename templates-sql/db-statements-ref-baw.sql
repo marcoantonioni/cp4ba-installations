@@ -105,6 +105,20 @@ CREATE DATABASE §§dbPrefix§§_awsdb WITH OWNER §§dbAWSowner§§ ENCODING 'U
 CREATE SCHEMA IF NOT EXISTS §§dbAWSowner§§ AUTHORIZATION §§dbAWSowner§§;
 GRANT ALL ON SCHEMA §§dbAWSowner§§ TO §§dbAWSowner§§;
 
+/*
+Db AWSDOCS
+*/
+CREATE TABLESPACE §§dbPrefix§§_awsdocs_tbs OWNER §§dbAWSowner§§ LOCATION '/§§dbBasePath§§/tbs/awsdocs';
+GRANT CREATE ON TABLESPACE §§dbPrefix§§_awsdocs_tbs TO §§dbAWSowner§§;  
+CREATE DATABASE §§dbPrefix§§_awsdocs OWNER §§dbAWSowner§§ TABLESPACE §§dbPrefix§§_awsdocs_tbs template template0 encoding UTF8 ;
+\c §§dbPrefix§§_awsdocs;
+CREATE SCHEMA IF NOT EXISTS §§dbAWSowner§§ AUTHORIZATION §§dbAWSowner§§;
+GRANT ALL ON SCHEMA §§dbAWSowner§§ TO §§dbAWSowner§§;
+SET ROLE §§dbAWSowner§§;
+ALTER DATABASE §§dbPrefix§§_awsdocs SET search_path TO §§dbAWSowner§§;
+SET ROLE postgres;
+/* revoke connect ON DATABASE §§dbPrefix§§_awsdocs from public;
+*/
 
 
 /* 
@@ -124,22 +138,6 @@ GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentindex_ts TO §§dbBAWCNTowner
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentblob_ts TO §§dbBAWCNTowner§§; 
 
 /* +++++++++++++++++++++ */
-
-/*
-Db AWSDOCS
-*/
-CREATE TABLESPACE §§dbPrefix§§_awsdocs_tbs OWNER §§dbAWSowner§§ LOCATION '/§§dbBasePath§§/tbs/awsdocs';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_awsdocs_tbs TO §§dbAWSowner§§;  
-CREATE DATABASE §§dbPrefix§§_awsdocs OWNER §§dbAWSowner§§ TABLESPACE §§dbPrefix§§_awsdocs_tbs template template0 encoding UTF8 ;
-\c §§dbPrefix§§_awsdocs;
-CREATE SCHEMA IF NOT EXISTS §§dbAWSowner§§ AUTHORIZATION §§dbAWSowner§§;
-GRANT ALL ON SCHEMA §§dbAWSowner§§ TO §§dbAWSowner§§;
-SET ROLE §§dbAWSowner§§;
-ALTER DATABASE §§dbPrefix§§_awsdocs SET search_path TO §§dbAWSowner§§;
-SET ROLE postgres;
-/* revoke connect ON DATABASE §§dbPrefix§§_awsdocs from public;
-*/
-
 
 /*
 Db AEOS
@@ -224,4 +222,68 @@ ALTER DATABASE bts OWNER TO bts_user;
 GRANT ALL PRIVILEGES ON DATABASE im TO bts_user;
 ALTER DATABASE bts SET timezone TO 'Etc/UTC';
 
+/* ---------------------------------- */
+/* DECISIONS */
+/* ---------------------------------- */
+
+/*
+Db ODM
+*/
+CREATE ROLE §§dbODMowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbODMowner_password§§';
+CREATE DATABASE §§dbPrefix§§_odmdb WITH OWNER §§dbODMowner§§ ENCODING 'UTF8';
+/* # REVOKE CONNECT ON DATABASE §§dbPrefix§§_odmdb FROM PUBLIC;
+*/
+\c §§dbPrefix§§_odmdb;
+CREATE SCHEMA IF NOT EXISTS §§dbODMowner§§ AUTHORIZATION §§dbODMowner§§;
+GRANT ALL ON SCHEMA §§dbODMowner§§ TO §§dbODMowner§§;
+
+/*
+Db ADS Runtime
+*/
+CREATE ROLE §§dbADSRTowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbADSRTowner_password§§';
+CREATE TABLESPACE §§dbPrefix§§_adsruntimedb_tbs OWNER §§dbADSRTowner§§ LOCATION '/§§dbBasePath§§/tbs/adsruntimedb';
+GRANT CREATE ON TABLESPACE §§dbPrefix§§_adsruntimedb_tbs TO §§dbADSRTowner§§;
+CREATE DATABASE §§dbPrefix§§_adsruntimedb OWNER §§dbADSRTowner§§ TABLESPACE §§dbPrefix§§_adsruntimedb_tbs template template0 encoding UTF8 ;
+\c §§dbPrefix§§_adsruntimedb;
+CREATE SCHEMA IF NOT EXISTS ads AUTHORIZATION §§dbADSRTowner§§;
+GRANT ALL ON SCHEMA ads TO §§dbADSRTowner§§;
+SET ROLE §§dbADSRTowner§§;
+ALTER DATABASE §§dbPrefix§§_adsruntimedb SET search_path TO §§dbADSRTowner§§;
+SET ROLE postgres;
+/* # revoke connect ON DATABASE §§dbPrefix§§_adsruntimedb from public;
+*/
+
+/*
+Db ADS Designer
+*/
+CREATE ROLE §§dbADSDESowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbADSDESowner_password§§';
+create tablespace §§dbPrefix§§_adsdesignerdb_tbs owner §§dbADSDESowner§§ location '/§§dbBasePath§§/tbs/adsdesignerdb';
+grant create on tablespace §§dbPrefix§§_adsdesignerdb_tbs to §§dbADSDESowner§§;
+create database §§dbPrefix§§_adsdesignerdb owner §§dbADSDESowner§§ tablespace §§dbPrefix§§_adsdesignerdb_tbs template template0 encoding UTF8 ;
+\c §§dbPrefix§§_adsdesignerdb;
+CREATE SCHEMA IF NOT EXISTS ads AUTHORIZATION §§dbADSDESowner§§;
+GRANT ALL ON schema ads to §§dbADSDESowner§§;
+SET ROLE §§dbADSDESowner§§;
+ALTER DATABASE §§dbPrefix§§_adsdesignerdb SET search_path TO §§dbADSDESowner§§;
+SET ROLE postgres;
+/* # revoke connect on database §§dbPrefix§§_adsdesignerdb from public;
+*/
+
+/*
+Db APP (database for runtime application engine)
+*/
+CREATE USER §§dbAEowner§§ WITH PASSWORD '§§dbAEowner_password§§';
+CREATE DATABASE §§dbPrefix§§_aaedb OWNER §§dbAEowner§§;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_aaedb TO §§dbAEowner§§;
+CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
+GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
+
+/*
+Db App Playback (playback_server:)
+*/
+CREATE USER §§dbAPPowner§§ WITH PASSWORD '§§dbAPPowner_password§§';
+CREATE DATABASE §§dbPrefix§§_appdb OWNER §§dbAPPowner§§;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_appdb TO §§dbAPPowner§§;
+CREATE SCHEMA IF NOT EXISTS §§dbAPPowner§§ AUTHORIZATION §§dbAPPowner§§;
+GRANT ALL ON SCHEMA §§dbAPPowner§§ TO §§dbAPPowner§§;
 

@@ -105,6 +105,21 @@ CREATE DATABASE §§dbPrefix§§_awsdb WITH OWNER §§dbAWSowner§§ ENCODING 'U
 CREATE SCHEMA IF NOT EXISTS §§dbAWSowner§§ AUTHORIZATION §§dbAWSowner§§;
 GRANT ALL ON SCHEMA §§dbAWSowner§§ TO §§dbAWSowner§§;
 
+/*
+Db AWSDOCS
+*/
+CREATE TABLESPACE §§dbPrefix§§_awsdocs_tbs OWNER §§dbAWSowner§§ LOCATION '/§§dbBasePath§§/tbs/awsdocs';
+GRANT CREATE ON TABLESPACE §§dbPrefix§§_awsdocs_tbs TO §§dbAWSowner§§;  
+CREATE DATABASE §§dbPrefix§§_awsdocs OWNER §§dbAWSowner§§ TABLESPACE §§dbPrefix§§_awsdocs_tbs template template0 encoding UTF8 ;
+\c §§dbPrefix§§_awsdocs;
+CREATE SCHEMA IF NOT EXISTS §§dbAWSowner§§ AUTHORIZATION §§dbAWSowner§§;
+GRANT ALL ON SCHEMA §§dbAWSowner§§ TO §§dbAWSowner§§;
+SET ROLE §§dbAWSowner§§;
+ALTER DATABASE §§dbPrefix§§_awsdocs SET search_path TO §§dbAWSowner§§;
+SET ROLE postgres;
+/* revoke connect ON DATABASE §§dbPrefix§§_awsdocs from public;
+*/
+
 
 /* 
 Db CONTENT 
@@ -123,21 +138,6 @@ GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentindex_ts TO §§dbBAWCNTowner
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentblob_ts TO §§dbBAWCNTowner§§; 
 
 /* +++++++++++++++++++++ */
-
-/*
-Db AWSDOCS
-*/
-CREATE TABLESPACE §§dbPrefix§§_awsdocs_tbs OWNER §§dbAWSowner§§ LOCATION '/§§dbBasePath§§/tbs/awsdocs';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_awsdocs_tbs TO §§dbAWSowner§§;  
-CREATE DATABASE §§dbPrefix§§_awsdocs OWNER §§dbAWSowner§§ TABLESPACE §§dbPrefix§§_awsdocs_tbs template template0 encoding UTF8 ;
-\c §§dbPrefix§§_awsdocs;
-CREATE SCHEMA IF NOT EXISTS §§dbAWSowner§§ AUTHORIZATION §§dbAWSowner§§;
-GRANT ALL ON SCHEMA §§dbAWSowner§§ TO §§dbAWSowner§§;
-SET ROLE §§dbAWSowner§§;
-ALTER DATABASE §§dbPrefix§§_awsdocs SET search_path TO §§dbAWSowner§§;
-SET ROLE postgres;
-/* revoke connect ON DATABASE §§dbPrefix§§_awsdocs from public;
-*/
 
 /*
 Db AEOS
@@ -272,18 +272,22 @@ SET ROLE postgres;
 */
 
 /*
-Db App Playback (playback_server:)
-*/
-CREATE USER §§dbPBKowner§§ WITH PASSWORD '§§dbPBKowner_password§§';
-CREATE DATABASE §§dbPrefix§§_appdb OWNER §§dbPBKowner§§;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_appdb TO §§dbPBKowner§§;
-
-/*
 Db APP (database for runtime application engine)
 */
+CREATE USER §§dbAEowner§§ WITH PASSWORD '§§dbAEowner_password§§';
+CREATE DATABASE §§dbPrefix§§_aaedb OWNER §§dbAEowner§§;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_aaedb TO §§dbAEowner§§;
+CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
+GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
+
+/*
+Db App Playback (playback_server:)
+*/
 CREATE USER §§dbAPPowner§§ WITH PASSWORD '§§dbAPPowner_password§§';
-CREATE DATABASE §§dbPrefix§§_aaedb OWNER §§dbAPPowner§§;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_aaedb TO §§dbAPPowner§§;
+CREATE DATABASE §§dbPrefix§§_appdb OWNER §§dbAPPowner§§;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_appdb TO §§dbAPPowner§§;
+CREATE SCHEMA IF NOT EXISTS §§dbAPPowner§§ AUTHORIZATION §§dbAPPowner§§;
+GRANT ALL ON SCHEMA §§dbAPPowner§§ TO §§dbAPPowner§§;
 
 /* 
 TO BE REMOVED

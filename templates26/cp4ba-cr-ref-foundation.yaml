@@ -75,17 +75,16 @@ spec:
     images:
       keytool_job_container:
         repository: cp.icr.io/cp/cp4a/baw/dba-keytool-jobcontainer
-        
+        tag: "26.0.0"
       dbcompatibility_init_container:
         repository: cp.icr.io/cp/cp4a/baw/dba-dbcompatibility-initcontainer
-        
+        tag: "26.0.0"
       keytool_init_container:
         repository: cp.icr.io/cp/cp4a/baw/dba-keytool-initcontainer
-        
+        tag: "26.0.0"
       umsregistration_initjob:
         repository: cp.icr.io/cp/cp4a/baw/dba-umsregistration-initjob
-        
-      ## All CP4A components should use this pull_policy as the default, but it can override by each component
+        tag: "26.0.0"
       pull_policy: IfNotPresent
 
     sc_drivers_url:

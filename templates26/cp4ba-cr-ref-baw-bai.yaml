@@ -81,18 +81,16 @@ spec:
     images:
       keytool_job_container:
         repository: cp.icr.io/cp/cp4a/baw/dba-keytool-jobcontainer
-        
+        tag: "26.0.0"
       dbcompatibility_init_container:
         repository: cp.icr.io/cp/cp4a/baw/dba-dbcompatibility-initcontainer
-        
+        tag: "26.0.0"
       keytool_init_container:
         repository: cp.icr.io/cp/cp4a/baw/dba-keytool-initcontainer
-        
+        tag: "26.0.0"
       umsregistration_initjob:
         repository: cp.icr.io/cp/cp4a/baw/dba-umsregistration-initjob
-        
-
-      ## All CP4A components should use this pull_policy as the default, but it can override by each component
+        tag: "26.0.0"
       pull_policy: IfNotPresent
 
     sc_drivers_url:
@@ -156,6 +154,7 @@ spec:
 
   datasource_configuration:
     dc_ssl_enabled: false
+    database_precheck: false
 
     dc_icn_datasource:
       dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
@@ -416,6 +415,7 @@ spec:
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_conn:
             name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS_CONN_NAME}"
+            site_name: InitialSite
             dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
             dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}XA"
           oc_cpe_obj_store_admin_user_groups:
@@ -496,36 +496,6 @@ spec:
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
 
-        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-          oc_cpe_obj_store_conn:
-            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE_CONN_NAME}"
-            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
-          oc_cpe_obj_store_admin_user_groups:
-            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-
-        # CONTENT
-        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-          oc_cpe_obj_store_conn:
-            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_CONN_NAME}"
-            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}XA"
-          oc_cpe_obj_store_admin_user_groups:
-            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
-          oc_cpe_obj_store_enable_workflow: false
-          oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_CONTENT_SCHEMA_DATA}"
-          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_CONTENT_SCHEMA_INDEX}"
-          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_CONTENT_SCHEMA_BLOB}"          
-          oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_PE_CONN_POINT_NAME}"
-          oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_REGION_NAME}"
-
           # v26
           # oc_cpe_obj_store_schema_name: ???
           ## An array of users with access to the object store
@@ -545,6 +515,18 @@ spec:
           - "{CE460ADD-0000-0000-0000-00000000000B}"
           - "{CE460ADD-0000-0000-0000-00000000000D}"
           - "{CE511ADD-0000-0000-0000-00000000000F}"
+
+
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE_CONN_NAME}"
+            site_name: InitialSite
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
 
         # CONTENT
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
@@ -1021,7 +1003,7 @@ spec:
       # v26
       arch:
         amd64: "3 - Most preferred"
-      replica_count: 2
+      replica_count: 1
       rolling_update:
         max_unavailable: 99%
         max_surge: 1
@@ -1113,7 +1095,7 @@ spec:
     cmis:
       arch:
         amd64: "3 - Most preferred"
-      replica_count: 2
+      replica_count: 1
       image:
         repository: cp.icr.io/cp/cp4a/fncm/cmis
         tag: "26.0.0"
@@ -1233,7 +1215,7 @@ spec:
 
       ## The number of replicas or pods to be deployed.  The default is 1 replica and for high availability in a production env,
       ## it is recommended to have 2 or more.
-      replica_count: 2
+      replica_count: 1
 
       ## This is the image repository and tag that correspond to image registry, which is where the image will be pulled.
       image:
