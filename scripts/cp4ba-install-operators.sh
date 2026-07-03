@@ -198,8 +198,9 @@ executeClusterAdminSetup () {
     export CP4BA_INST_CLUSTERADMIN_RETRIES=$_MAX_RETRIES
   fi
 
-  log_info "Run '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' max retries '${_CLR_YELLOW}${CP4BA_INST_CLUSTERADMIN_RETRIES}${_CLR_GREEN}'"
-  log_info "  cp4a-clusteradmin-setup.sh may take minutes to install Operator Catalogs and Operators"
+  log_info "Run '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' max retries '${_CLR_YELLOW}${CP4BA_INST_CLUSTERADMIN_RETRIES}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}NOTE: 'cp4a-clusteradmin-setup.sh' can last tens of minutes to install Operator Catalogs and Operators.${_CLR_NC}"
+
   _ACT_DIR=$(pwd)
 
   # change folder (do not use $_SCRIPT_DIR until: cd ${_ACT_DIR})
