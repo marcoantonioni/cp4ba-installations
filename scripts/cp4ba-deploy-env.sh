@@ -663,6 +663,25 @@ generateCR () {
     #  echo "++++++++++++++++++++++++++++++++++++++++"
     #  exit 1
     #fi
+
+    _MISSED_PLACEHOLDERS=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\${" | wc -l)
+    _MISSED_OPTIONALS=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\"<Optional>\"" | wc -l)
+    _MISSED_REQUIRED=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\"<Required>\"" | wc -l)
+
+    if [ $_MISSED_PLACEHOLDERS -gt 0 ]; then
+      log_error "${_CLR_RED}[✗] Error, $_MISSED_PLACEHOLDERS missed placeholders '\${...}' in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+    fi
+    if [ $_MISSED_OPTIONALS -gt 0 ]; then
+      log_error "${_CLR_RED}[✗] Error, $_MISSED_OPTIONALS missed '<Optional>' value in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+    fi
+    if [ $_MISSED_REQUIRED -gt 0 ]; then
+      log_error "${_CLR_RED}[✗] Error, $_MISSED_REQUIRED missed '<Required>' value in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+    fi
+
+    if [[ $_MISSED_PLACEHOLDERS -gt 0 || $_MISSED_OPTIONALS -gt 0 || $_MISSED_REQUIRED -gt 0 ]]; then
+      exit 1
+    fi
+
     yq ${_INST_ENV_FULL_PATH} 2>/dev/null 1>/dev/null
     YAML_ERROR=$?
     if [ $YAML_ERROR -gt 0 ]; then

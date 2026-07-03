@@ -135,7 +135,7 @@ createSecretLDAP () {
 
 #-------------------------------
 createSecretFNCM () {
-  log_warning "For demo purposes the secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_GREEN}' is populated with same credentials for multi-BAW deployments.${_CLR_NC}"
+  log_warning "For demo purposes the secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_YELLOW}' is populated with same credentials for multi-BAW deployments.${_CLR_NC}"
   log_warning "Set CP4BA_INST_SECRET_FNCM='false' to skip automatic creation and manually create your own secret values.${_CLR_NC}"
 
   # v26
