@@ -261,18 +261,54 @@ _createBAIWorkforceSecret () {
 # inserire loop di attesa su 404
     #bpmSystemID=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}" | jq -r .data.systems[].systemID)
     bpmSystemID=""
-    _curlResult=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}")
-    if [[ ! -z "${_curlResult}" ]]; then
-      bpmSystemID=$(echo ${_curlResult} | jq -r .data.systems[].systemID 2>/dev/null)
-      if [[ -z "${bpmSystemID}" ]]; then
-        log_error "BPM System ID is empty !"
-        log_error "${_curlResult}"
-        _errorBuild=1
+
+
+
+    #_curlResult=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}")
+    #if [[ ! -z "${_curlResult}" ]]; then
+    #  bpmSystemID=$(echo ${_curlResult} | jq -r .data.systems[].systemID 2>/dev/null)
+    #  if [[ -z "${bpmSystemID}" ]]; then
+    #    log_error "BPM System ID is empty !"
+    #    log_error "${_curlResult}"
+    #    _errorBuild=1
+    #  fi
+    #else
+    #  log_error "Cannot get BPM System ID !"
+    #  _errorBuild=1
+    #fi
+    _maxAttempts=60
+    counter=0
+    while [ $counter -lt $_maxAttempts ]; do
+
+      _curlResult=$(curl -sk -w "%{http_code}" -X GET "$_WFS_URL" -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}")
+
+      http_code=$(tail -n1 <<< "$_curlResult")
+
+      if [[ "${http_code}" = "200" ]]; then
+        if [[ ! -z "${_curlResult}" ]]; then
+          bpmSystemID=$(echo ${_curlResult} | jq -r .data.systems[].systemID 2>/dev/null)
+          if [[ -z "${bpmSystemID}" ]]; then
+            log_error "BPM System ID is empty !"
+            log_error "${_curlResult}"
+            _errorBuild=1
+          fi
+        else
+          log_error "Cannot get BPM System ID !"
+          _errorBuild=1
+        fi
+        break
+      else
+        echo -n "${http_code} "
+        sleep 10
       fi
-    else
-      log_error "Cannot get BPM System ID !"
-      _errorBuild=1
-    fi
+      counter=$((counter + 1))
+
+    done
+    echo ""
+
+
+
+
 
     _adminSecret="bas-admin-secret"
     _DEV_ENV=$(oc get secret --no-headers -n ${_NS} | grep "${CP4BA_INST_CR_NAME}-bas" | wc -l)
