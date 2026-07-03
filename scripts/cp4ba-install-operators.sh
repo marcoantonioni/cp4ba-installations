@@ -198,9 +198,7 @@ executeClusterAdminSetup () {
     export CP4BA_INST_CLUSTERADMIN_RETRIES=$_MAX_RETRIES
   fi
 
-  log_info "${_CLR_GREEN}Running cluster admin setup with '${_CLR_YELLOW}${CP4BA_INST_CLUSTERADMIN_RETRIES}${_CLR_GREEN}' retries"
-
-  log_info "Executing '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' script for namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}'"
+  log_info "Run '${_CLR_YELLOW}cp4a-clusteradmin-setup.sh${_CLR_NC}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_NC}' max retries '${_CLR_YELLOW}${CP4BA_INST_CLUSTERADMIN_RETRIES}${_CLR_GREEN}'"
   log_info "  cp4a-clusteradmin-setup.sh may take minutes to install Operator Catalogs and Operators"
   _ACT_DIR=$(pwd)
 
@@ -215,13 +213,14 @@ executeClusterAdminSetup () {
 
     /bin/bash ./cp4a-clusteradmin-setup.sh &> ./_clusteradmin.out
     _error=$?
-    _counter=$((_counter + 1))
     if [ $_error -ne 0 ]; then
       log_warning "${_CLR_GREEN}Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}'${_CLR_GREEN}, try again [$_counter/$CP4BA_INST_CLUSTERADMIN_RETRIES]..."
       sleep 1
     else
       _done=1
+      break
     fi
+    _counter=$((_counter + 1))
 
   done
 
@@ -238,7 +237,7 @@ executeClusterAdminSetup () {
     log_error "${_CLR_RED}*****************************************************************${_CLR_NC}"
 
     log_warning "If you want retry more times the operator setup task set the following variable with numeric value then rerun the installation"
-    log_warning "export CP4BA_INST_CLUSTERADMIN_RETRIES=3"
+    log_warning "export CP4BA_INST_CLUSTERADMIN_RETRIES=10"
     log_warning "./cp4ba-install-operators.sh -c \$CONFIG_FILE"
 
   fi

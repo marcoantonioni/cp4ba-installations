@@ -378,53 +378,17 @@ openssl pkcs8 -topk8 -inform PEM -in ${_CERT_FOLDER}/client.key -outform DER -no
 
 }
 
-_createSecretBtsV25 () {
-  #_PG_CERTS_FOLDER="$1"
-  #_SEC_NAME="$2"
-#
-  #log_debug "_createSecretBtsV25 '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
-#
-  #openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
-  #  -in ${_PG_CERTS_FOLDER}/client.key \
-  #  -out ${_PG_CERTS_FOLDER}/tls_key.pk8 2>/dev/null 1>/dev/null
-#
-  #oc delete secret -n ${_PG_TARGET_NS} ${_SEC_NAME} 2>/dev/null 1>/dev/null
-  #oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME}  \
-  #  --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
-  #  --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
-  #  --from-file=tls.key="${_PG_CERTS_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
-  #oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
-  return 0
-}
-
-_createSecretBtsV26 () {
-  #_PG_CERTS_FOLDER="$1"
-  #_SEC_NAME="$2"
-#
-  #log_debug "_createSecretBtsV26 '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
-#
-  #oc delete secret -n ${_PG_TARGET_NS} ${_SEC_NAME} 2>/dev/null 1>/dev/null
-  #oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME}  \
-  #  --from-file=ca.crt="${_CERT_FOLDER}/ca.cert" \
-  #  --from-file=tls.crt="${_CERT_FOLDER}/client.cert" \
-  #  --from-file=tls.pk8="${_CERT_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
-  #oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
-  return 0
-
-}
-
 _createSecretBts () {
-  _PG_CERTS_FOLDER="$1"
-  _SEC_NAME="$2"
+  _SEC_NAME="$1"
 
   log_debug "_createSecretBts '${_CLR_YELLOW}${_SEC_NAME}${_CLR_NC}'"
 
   oc delete secret -n ${_PG_TARGET_NS} ${_SEC_NAME} 2>/dev/null 1>/dev/null
   oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME}  \
-    --from-file=ca.crt="${_CERT_FOLDER}/ca.cert" \
-    --from-file=tls.crt="${_CERT_FOLDER}/client.cert" \
-    --from-file=tls.key="${_CERT_FOLDER}/tls_key.pk8" \
-    --from-file=tls.pk8="${_CERT_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
+    --from-file=ca.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ca.cert" \
+    --from-file=tls.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.cert" \
+    --from-file=tls.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/tls_key.pk8" \
+    --from-file=tls.pk8="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/tls_key.pk8" 2>/dev/null 1>/dev/null
   oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
 
 }
@@ -444,8 +408,9 @@ verifyCreateSecretsForExternalDb () {
         exit 1
       else
         if [[ -d "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" ]]; then
-          export _PG_CERTS_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}"
           log_info "${_CLR_GREEN}Reusing certificates in folder '${_CLR_YELLOW}${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}${_CLR_GREEN}'"
+
+          # ??? TBD enforce with certificate files check
         else  
           log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' doesn't exists.${_CLR_GREEN}"
           exit 1
@@ -455,70 +420,51 @@ verifyCreateSecretsForExternalDb () {
     fi
 
   else
-    export _PG_CERTS_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
-    export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="${_PG_CERTS_FOLDER}"
-    log_info "Creating self signed temporary certificates in folder '${_CLR_YELLOW}${_PG_CERTS_FOLDER}${_CLR_GREEN}'"
-    _createDBCertificates ${_PG_CERTS_FOLDER} ${CP4BA_INST_DB_1_SERVER_NAME_SSL}
+    export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="${_INST_TMP_FOLDER}/cp4ba-pg-secrets-folder-$USER-$RANDOM"
+    log_info "Creating self signed temporary certificates in folder '${_CLR_YELLOW}${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}${_CLR_GREEN}'"
+    _createDBCertificates ${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER} ${CP4BA_INST_DB_1_SERVER_NAME_SSL}
     _DELETE_TEMP_CERTS=1
   fi
 
-  log_info "Creating secret '${_CLR_YELLOW}${_PG_SECRET}${_CLR_GREEN}'"
+  log_debug "Creating secret '${_CLR_YELLOW}${_PG_SECRET}${_CLR_GREEN}'"
   oc delete secret -n ${_PG_TARGET_NS} ${_PG_SECRET} 2>/dev/null 1>/dev/null
 
-  # 20260702
-  # oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRET} --from-file=${_PG_CERTS_FOLDER}/ 2>/dev/null 1>/dev/null
-  #oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRET} \
-  #  --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
-  #  --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
-  #  --from-file=tls.key="${_PG_CERTS_FOLDER}/client.key"  \
-  #  --from-file=tls.pk8="${_PG_CERTS_FOLDER}/tls_key.pk8" \
-  #  --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
-  #oc label secret -n ${_PG_TARGET_NS} ${_PG_SECRET} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
-
   oc create secret generic -n ${_PG_TARGET_NS} ${_PG_SECRET} \
-    --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
-    --from-file=ca.cert="${_PG_CERTS_FOLDER}/ca.cert"  \
-    --from-file=server.cert="${_PG_CERTS_FOLDER}/server.cert"  \
-    --from-file=server.key="${_PG_CERTS_FOLDER}/server.key"  \
-    --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
-    --from-file=tls.key="${_PG_CERTS_FOLDER}/client.key"  \
-    --from-file=tls.pk8="${_PG_CERTS_FOLDER}/tls_key.pk8" \
+    --from-file=ca.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ca.cert"  \
+    --from-file=ca.cert="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ca.cert"  \
+    --from-file=server.cert="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/server.cert"  \
+    --from-file=server.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/server.key"  \
+    --from-file=tls.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.cert"  \
+    --from-file=tls.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.key"  \
+    --from-file=tls.pk8="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/tls_key.pk8" \
     --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
   oc label secret -n ${_PG_TARGET_NS} ${_PG_SECRET} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
 
 
   _SEC_NAME="im-datastore-edb-secret"
-  log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
+  log_debug "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
   oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} >/dev/null 2>&1
   oc create secret generic ${_SEC_NAME} -n ${_PG_TARGET_NS} \
-    --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert" \
-    --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert" \
-    --from-file=tls.key="${_PG_CERTS_FOLDER}/client.key" \
+    --from-file=ca.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ca.cert" \
+    --from-file=tls.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.cert" \
+    --from-file=tls.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.key" \
     --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
   oc label secret ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
 
   _SEC_NAME="ibm-zen-metastore-edb-secret"
-  log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
+  log_debug "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
   oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
   oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME} \
-    --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
-    --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
-    --from-file=tls.key="${_PG_CERTS_FOLDER}/client.key"  \
+    --from-file=ca.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ca.cert"  \
+    --from-file=tls.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.cert"  \
+    --from-file=tls.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.key"  \
     --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
   oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
 
   _SEC_NAME="bts-datastore-edb-secret"
-  log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
+  log_debug "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
 
-  # check CP4BA version
-  # case "${CP4BA_INST_APPVER}" in
-  #     26*)
-  #       _createSecretBtsV26 "${_PG_CERTS_FOLDER}" "${_SEC_NAME}";;
-  #     *)
-  #       _createSecretBtsV25 "${_PG_CERTS_FOLDER}" "${_SEC_NAME}";;
-  # esac
-
-  _createSecretBts "${_PG_CERTS_FOLDER}" "${_SEC_NAME}"
+  _createSecretBts "${_SEC_NAME}"
 
   # compat. with older config files
   if [[ -z "${CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME}" ]]; then
@@ -527,14 +473,14 @@ verifyCreateSecretsForExternalDb () {
   fi
 
   _SEC_NAME="${CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME}"
-  log_info "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
+  log_debug "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
   oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
   oc create secret generic -n ${_PG_TARGET_NS} ${_SEC_NAME} \
-    --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
-    --from-file=server.cert="${_PG_CERTS_FOLDER}/server.cert"  \
-    --from-file=server.key="${_PG_CERTS_FOLDER}/server.key"  \
-    --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
-    --from-file=tls.key="${_PG_CERTS_FOLDER}/client.key"  \
+    --from-file=ca.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ca.cert"  \
+    --from-file=server.cert="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/server.cert"  \
+    --from-file=server.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/server.key"  \
+    --from-file=tls.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.cert"  \
+    --from-file=tls.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.key"  \
     --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
   oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
 
@@ -560,7 +506,7 @@ installAndCreateDb () {
 
   if [[ ${_DELETE_TEMP_CERTS} -eq 1 ]]; then
     log_info "Removing self signed temporary certificates"
-    rm -fr ${_PG_CERTS_FOLDER} 2>/dev/null 1>/dev/null
+    rm -fr ${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER} 2>/dev/null 1>/dev/null
   fi
 
   if [[ "${CP4BA_INST_DB}" = "true" ]]; then

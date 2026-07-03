@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.6.2] - 2026-07-03
+
+### Added
+
+### Changed
+
+### Fixed
+
+Configurations, templates
+
+
 ## [1.6.1] - 2026-07-02
 
 ### Added

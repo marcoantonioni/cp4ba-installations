@@ -271,19 +271,16 @@ setupCertificatesAndSecrets () {
   log_info "Create secret '${_CLR_YELLOW}${_PG_SECRET}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'"
   oc delete secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRET} 2>/dev/null 1>/dev/null
 
-  # 20260702
-  # oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRET} --from-file=${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ 2>/dev/null 1>/dev/null
   oc create secret generic -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRET} \
-    --from-file=ca.cert="${_PG_CERTS_FOLDER}/ca.cert"  \
-    --from-file=ca.crt="${_PG_CERTS_FOLDER}/ca.cert"  \
-    --from-file=server.cert="${_PG_CERTS_FOLDER}/server.cert"  \
-    --from-file=server.key="${_PG_CERTS_FOLDER}/server.key"  \
-    --from-file=tls.crt="${_PG_CERTS_FOLDER}/client.cert"  \
-    --from-file=tls.key="${_PG_CERTS_FOLDER}/client.key"  \
-    --from-file=tls.pk8="${_PG_CERTS_FOLDER}/tls_key.pk8" \
+    --from-file=ca.cert="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ca.cert"  \
+    --from-file=ca.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/ca.cert"  \
+    --from-file=server.cert="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/server.cert"  \
+    --from-file=server.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/server.key"  \
+    --from-file=tls.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.cert"  \
+    --from-file=tls.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.key"  \
+    --from-file=tls.pk8="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/tls_key.pk8" \
     --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
   oc label secret -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${_PG_SECRET} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
-
 
 }
 

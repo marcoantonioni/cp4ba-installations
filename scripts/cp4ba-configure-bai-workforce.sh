@@ -257,6 +257,8 @@ _createBAIWorkforceSecret () {
       _IS_SLASH="/"
     fi
 
+# ???
+# inserire loop di attesa su 404
     #bpmSystemID=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}" | jq -r .data.systems[].systemID)
     bpmSystemID=""
     _curlResult=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}")

@@ -224,26 +224,6 @@ GRANT ALL PRIVILEGES ON DATABASE im TO bts_user;
 ALTER DATABASE bts SET timezone TO 'Etc/UTC';
 
 
-/* 
-Db AE1
-*/
-CREATE ROLE §§dbAEowner§§ PASSWORD '§§dbAEowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_ae1 OWNER §§dbAEowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_ae1 TO §§dbAEowner§§;
-\c §§dbPrefix§§_ae1;
-CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
-GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
-
-/* 
-Db APP1
-*/
-CREATE ROLE §§dbAPPowner§§ PASSWORD '§§dbAPPowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_app1 OWNER §§dbAPPowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_app1 TO §§dbAPPowner§§;
-\c §§dbPrefix§§_app1;
-CREATE SCHEMA IF NOT EXISTS §§dbAPPowner§§ AUTHORIZATION §§dbAPPowner§§;
-GRANT ALL ON SCHEMA §§dbAPPowner§§ TO §§dbAPPowner§§;
-
 /* ---------------------------------- */
 /* DECISIONS */
 /* ---------------------------------- */
@@ -292,15 +272,36 @@ SET ROLE postgres;
 */
 
 /*
-Db AEPlayback
+Db App Playback (playback_server:)
 */
 CREATE USER §§dbPBKowner§§ WITH PASSWORD '§§dbPBKowner_password§§';
 CREATE DATABASE §§dbPrefix§§_appdb OWNER §§dbPBKowner§§;
 GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_appdb TO §§dbPBKowner§§;
 
 /*
-Db APP
+Db APP (database for runtime application engine)
 */
 CREATE USER §§dbAPPowner§§ WITH PASSWORD '§§dbAPPowner_password§§';
 CREATE DATABASE §§dbPrefix§§_aaedb OWNER §§dbAPPowner§§;
 GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_aaedb TO §§dbAPPowner§§;
+
+/* 
+TO BE REMOVED
+
+-- Db AE1
+CREATE ROLE §§dbAEowner§§ PASSWORD '§§dbAEowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
+CREATE DATABASE §§dbPrefix§§_ae1 OWNER §§dbAEowner§§ ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_ae1 TO §§dbAEowner§§;
+\c §§dbPrefix§§_ae1;
+CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
+GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
+
+-- Db APP1
+CREATE ROLE §§dbAPPowner§§ PASSWORD '§§dbAPPowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
+CREATE DATABASE §§dbPrefix§§_app1 OWNER §§dbAPPowner§§ ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_app1 TO §§dbAPPowner§§;
+\c §§dbPrefix§§_app1;
+CREATE SCHEMA IF NOT EXISTS §§dbAPPowner§§ AUTHORIZATION §§dbAPPowner§§;
+GRANT ALL ON SCHEMA §§dbAPPowner§§ TO §§dbAPPowner§§;
+*/
+

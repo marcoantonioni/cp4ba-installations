@@ -157,27 +157,6 @@ SET ROLE postgres;
 /* # revoke connect ON DATABASE §§dbPrefix§§_aeos from public;
 */
 
-/* 
-Db AE1
-*/
-CREATE ROLE §§dbAEowner§§ PASSWORD '§§dbAEowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_ae1 OWNER §§dbAEowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_ae1 TO §§dbAEowner§§;
-\c §§dbPrefix§§_ae1;
-CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
-GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
-
-/* 
-Db APP1
-*/
-CREATE ROLE §§dbAPPowner§§ PASSWORD '§§dbAPPowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_app1 OWNER §§dbAPPowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_app1 TO §§dbAPPowner§§;
-\c §§dbPrefix§§_app1;
-CREATE SCHEMA IF NOT EXISTS §§dbAPPowner§§ AUTHORIZATION §§dbAPPowner§§;
-GRANT ALL ON SCHEMA §§dbAPPowner§§ TO §§dbAPPowner§§;
-
-
 /* ---------------------------------- */
 /* OBJECT STORAGE custom */
 /* ---------------------------------- */
