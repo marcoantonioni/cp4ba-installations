@@ -137,25 +137,6 @@ GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentdata_ts TO §§dbBAWCNTowner�
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentindex_ts TO §§dbBAWCNTowner§§; 
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentblob_ts TO §§dbBAWCNTowner§§; 
 
-/* +++++++++++++++++++++ */
-
-/*
-Db AEOS
-*/
-CREATE ROLE §§dbAEowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbAEowner_password§§';
-CREATE TABLESPACE §§dbPrefix§§_aeos_tbs OWNER §§dbAEowner§§ LOCATION '/§§dbBasePath§§/tbs/aeos';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_aeos_tbs TO §§dbAEowner§§;  
-CREATE DATABASE §§dbPrefix§§_aeos OWNER §§dbAEowner§§ TABLESPACE §§dbPrefix§§_aeos_tbs template template0 encoding UTF8 ;
-\c §§dbPrefix§§_aeos;
-CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
-GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
-SET ROLE §§dbAEowner§§;
-ALTER DATABASE §§dbPrefix§§_aeos SET search_path TO §§dbAEowner§§;
-SET ROLE postgres;
-/* # revoke connect ON DATABASE §§dbPrefix§§_aeos from public;
-*/
-
-
 /* ---------------------------------- */
 /* OBJECT STORAGE custom */
 /* ---------------------------------- */
@@ -223,7 +204,6 @@ ALTER DATABASE bts OWNER TO bts_user;
 GRANT ALL PRIVILEGES ON DATABASE im TO bts_user;
 ALTER DATABASE bts SET timezone TO 'Etc/UTC';
 
-
 /* ---------------------------------- */
 /* DECISIONS */
 /* ---------------------------------- */
@@ -272,13 +252,29 @@ SET ROLE postgres;
 */
 
 /*
-Db APP (database for runtime application engine)
+Db AE (database for runtime application engine)
 */
 CREATE USER §§dbAEowner§§ WITH PASSWORD '§§dbAEowner_password§§';
 CREATE DATABASE §§dbPrefix§§_aaedb OWNER §§dbAEowner§§;
 GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_aaedb TO §§dbAEowner§§;
 CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
 GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
+
+/*
+Db AEOS AE Data Persistent
+*/
+CREATE ROLE §§dbAEowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbAEowner_password§§';
+CREATE TABLESPACE §§dbPrefix§§_aeos_tbs OWNER §§dbAEowner§§ LOCATION '/§§dbBasePath§§/tbs/aeos';
+GRANT CREATE ON TABLESPACE §§dbPrefix§§_aeos_tbs TO §§dbAEowner§§;  
+CREATE DATABASE §§dbPrefix§§_aeos OWNER §§dbAEowner§§ TABLESPACE §§dbPrefix§§_aeos_tbs template template0 encoding UTF8 ;
+\c §§dbPrefix§§_aeos;
+CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
+GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
+SET ROLE §§dbAEowner§§;
+ALTER DATABASE §§dbPrefix§§_aeos SET search_path TO §§dbAEowner§§;
+SET ROLE postgres;
+/* # revoke connect ON DATABASE §§dbPrefix§§_aeos from public;
+*/
 
 /*
 Db App Playback (playback_server:)
@@ -288,24 +284,4 @@ CREATE DATABASE §§dbPrefix§§_appdb OWNER §§dbAPPowner§§;
 GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_appdb TO §§dbAPPowner§§;
 CREATE SCHEMA IF NOT EXISTS §§dbAPPowner§§ AUTHORIZATION §§dbAPPowner§§;
 GRANT ALL ON SCHEMA §§dbAPPowner§§ TO §§dbAPPowner§§;
-
-/* 
-TO BE REMOVED
-
--- Db AE1
-CREATE ROLE §§dbAEowner§§ PASSWORD '§§dbAEowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_ae1 OWNER §§dbAEowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_ae1 TO §§dbAEowner§§;
-\c §§dbPrefix§§_ae1;
-CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
-GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
-
--- Db APP1
-CREATE ROLE §§dbAPPowner§§ PASSWORD '§§dbAPPowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_app1 OWNER §§dbAPPowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_app1 TO §§dbAPPowner§§;
-\c §§dbPrefix§§_app1;
-CREATE SCHEMA IF NOT EXISTS §§dbAPPowner§§ AUTHORIZATION §§dbAPPowner§§;
-GRANT ALL ON SCHEMA §§dbAPPowner§§ TO §§dbAPPowner§§;
-*/
 

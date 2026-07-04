@@ -392,7 +392,7 @@ spec:
       ic_ldap_admins_groups_name:
         - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
       ## Name of the LDAP directory
-      ic_ldap_name: "ldap_name"
+      ic_ldap_name: "my-ldap"
 
     ic_domain_creation:
       domain_name: "P8DOMAIN"
@@ -1126,7 +1126,7 @@ spec:
 
       ## This flag enable or disable Pod Disruption Budget (PDB) creation for cmis component.  This flag will override the shared_configuration.sc_enable_pdb flag.  Default is true
       ## A PDB for cmis will be created with a `minAvailable: 1` only if the cmis replica count is greater than 1.  Otherwise, the PDB will have `minAvailable: 0` if the replica is 1.
-      enable_pdb: true
+      enable_pdb: false
       
       ## Below are the default CMIS Production settings.  Make the necessary changes as you see fit.  Refer to Knowledge Center documentation for details.
       cmis_production_setting:
@@ -1263,7 +1263,7 @@ spec:
 
       ## This flag enable or disable Pod Disruption Budget (PDB) creation for GraphQL component.  This flag will override the shared_configuration.sc_enable_pdb flag.  Default is true
       ## A PDB for graphql will be created with a `minAvailable: 1` only if the GraphQL replica count is greater than 1.  Otherwise, the PDB will have `minAvailable: 0` if the replica is 1.
-      enable_pdb: true
+      enable_pdb: false
 
       ## Below are the default CMIS Production settings.  Make the necessary changes as you see fit.  Refer to Knowledge Center documentation for details.
       graphql_production_setting:

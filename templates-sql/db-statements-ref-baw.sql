@@ -137,24 +137,6 @@ GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentdata_ts TO §§dbBAWCNTowner�
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentindex_ts TO §§dbBAWCNTowner§§; 
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_contentblob_ts TO §§dbBAWCNTowner§§; 
 
-/* +++++++++++++++++++++ */
-
-/*
-Db AEOS
-*/
-CREATE ROLE §§dbAEowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbAEowner_password§§';
-CREATE TABLESPACE §§dbPrefix§§_aeos_tbs OWNER §§dbAEowner§§ LOCATION '/§§dbBasePath§§/tbs/aeos';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_aeos_tbs TO §§dbAEowner§§;  
-CREATE DATABASE §§dbPrefix§§_aeos OWNER §§dbAEowner§§ TABLESPACE §§dbPrefix§§_aeos_tbs template template0 encoding UTF8 ;
-\c §§dbPrefix§§_aeos;
-CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
-GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
-SET ROLE §§dbAEowner§§;
-ALTER DATABASE §§dbPrefix§§_aeos SET search_path TO §§dbAEowner§§;
-SET ROLE postgres;
-/* # revoke connect ON DATABASE §§dbPrefix§§_aeos from public;
-*/
-
 /* ---------------------------------- */
 /* OBJECT STORAGE custom */
 /* ---------------------------------- */
@@ -270,13 +252,29 @@ SET ROLE postgres;
 */
 
 /*
-Db APP (database for runtime application engine)
+Db AE (database for runtime application engine)
 */
 CREATE USER §§dbAEowner§§ WITH PASSWORD '§§dbAEowner_password§§';
 CREATE DATABASE §§dbPrefix§§_aaedb OWNER §§dbAEowner§§;
 GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_aaedb TO §§dbAEowner§§;
 CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
 GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
+
+/*
+Db AEOS
+*/
+CREATE ROLE §§dbAEowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbAEowner_password§§';
+CREATE TABLESPACE §§dbPrefix§§_aeos_tbs OWNER §§dbAEowner§§ LOCATION '/§§dbBasePath§§/tbs/aeos';
+GRANT CREATE ON TABLESPACE §§dbPrefix§§_aeos_tbs TO §§dbAEowner§§;  
+CREATE DATABASE §§dbPrefix§§_aeos OWNER §§dbAEowner§§ TABLESPACE §§dbPrefix§§_aeos_tbs template template0 encoding UTF8 ;
+\c §§dbPrefix§§_aeos;
+CREATE SCHEMA IF NOT EXISTS §§dbAEowner§§ AUTHORIZATION §§dbAEowner§§;
+GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
+SET ROLE §§dbAEowner§§;
+ALTER DATABASE §§dbPrefix§§_aeos SET search_path TO §§dbAEowner§§;
+SET ROLE postgres;
+/* # revoke connect ON DATABASE §§dbPrefix§§_aeos from public;
+*/
 
 /*
 Db App Playback (playback_server:)
