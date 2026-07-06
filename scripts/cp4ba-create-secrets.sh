@@ -173,7 +173,7 @@ createSecretFNCM () {
     export CP4BA_INST_DB_AEOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
     log_warning "Set default credentials/label for 'CP4BA_INST_DB_AEOS_(*)'${_CLR_NC}"
   fi
-  if [[ -z "${CP4BA_INST_DB_PBK_LBL}" || -z "${CP4BA_INST_DB_APP_USER}" || -z "${}" ]]; then
+  if [[ -z "${CP4BA_INST_DB_PBK_LBL}" || -z "${CP4BA_INST_DB_APP_USER}" || -z "${CP4BA_INST_DB_APP_PWD}" ]]; then
     export CP4BA_INST_DB_PBK_LBL="pbk"
     export CP4BA_INST_DB_APP_USER="app"
     export CP4BA_INST_DB_APP_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
