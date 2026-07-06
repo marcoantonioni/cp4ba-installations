@@ -1,6 +1,20 @@
 
 # Change Log
 
+## [1.6.4] - 2026-07-06
+
+Tested ok
+
+- configs26/env1-authoring-baw-bai.properties
+- configs26/env1-runtime-baw-bai.properties
+
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## [1.6.3] - 2026-07-04
 
 Alpha test for authoring and runtime envs.

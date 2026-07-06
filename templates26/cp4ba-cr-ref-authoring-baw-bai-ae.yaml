@@ -32,6 +32,7 @@ metadata:
     app.kubernetes.io/name: ibm-dba
     release: "${CP4BA_BASE_VER}"
     cp4ba.ibm.com/backup-type: mandatory
+
   annotations:
     kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
 spec:
@@ -145,13 +146,12 @@ spec:
   datasource_configuration:
     dc_ssl_enabled: false
 
-    dc_gcd_datasource:
-      database_name: "${CP4BA_INST_GCD_DB_NAME}"
+    dc_icn_datasource:
       dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      dc_common_gcd_datasource_name: "FNGCDDS"
-      dc_common_gcd_xa_datasource_name: "FNGCDDSXA"
+      dc_common_icn_datasource_name: "ECMClientDS"
       database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
       database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_icn"
       database_ssl_secret_name: ""
       dc_hadr_validation_timeout: 15
       dc_hadr_standby_servername: ""
@@ -159,11 +159,12 @@ spec:
       dc_hadr_retry_interval_for_client_reroute: 15
       dc_hadr_max_retries_for_client_reroute: 3
 
-    dc_icn_datasource:
-      database_name: "${CP4BA_INST_ICN_DB_NAME}"
+    dc_gcd_datasource:
       dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      dc_common_icn_datasource_name: "ECMClientDS"
+      dc_common_gcd_datasource_name: "FNGCDDS"
+      dc_common_gcd_xa_datasource_name: "FNGCDDSXA"
       database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_gcd"
       database_port: "${CP4BA_INST_DB_SERVER_PORT}"
       database_ssl_secret_name: ""
       dc_hadr_validation_timeout: 15
@@ -173,25 +174,23 @@ spec:
       dc_hadr_max_retries_for_client_reroute: 3
 
     dc_cpe_datasources:
-
-      - database_name: "${CP4BA_INST_CHOS_DB_NAME}"
-        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-        database_ssl_secret_name: ""
-        dc_common_conn_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1_CONN_NAME}"
-        dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
-        dc_common_cpe_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}XA"
-        dc_os_label: ${CP4BA_INST_DB_CHOS_LBL}
+    - database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_chos"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      dc_common_conn_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1_CONN_NAME}"
+      dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
+      dc_common_cpe_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}XA"
+      dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      dc_os_label: ${CP4BA_INST_DB_CHOS_LBL}
 
     dc_os_datasources:
 
-      - database_name: "${CP4BA_INST_DOCS_DB_NAME}"
-        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWDOCS_LBL}"
         dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
         dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}XA"
         database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+        database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_bawdocs"
         database_port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_ssl_secret_name: ""
         dc_hadr_validation_timeout: 15
@@ -200,12 +199,12 @@ spec:
         dc_hadr_retry_interval_for_client_reroute: 15
         dc_hadr_max_retries_for_client_reroute: 3
 
-      - database_name: "${CP4BA_INST_DOS_DB_NAME}"
-        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWDOS_LBL}"
         dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
         dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}XA"
-        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+        database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_bawdos"
         database_port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_ssl_secret_name: ""
         dc_oracle_os_jdbc_url: ""
@@ -215,11 +214,57 @@ spec:
         dc_hadr_retry_interval_for_client_reroute: 15
         dc_hadr_max_retries_for_client_reroute: 3
 
-      - database_name: "${CP4BA_INST_TOS_DB_NAME}"
-        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWTOS_LBL}"
         dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
         dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}XA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+        database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_bawtos"
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+      - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_os_label: "${CP4BA_INST_DB_CONTENT_LBL}"
+        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}XA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+        database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_content"
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+      - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_os_label: "${CP4BA_INST_DB_OS_LBL}"
+        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
+        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}XA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+        database_name: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_os1"
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+
+      #---------------------- 
+
+      # d.s. AE (application engine)
+      - database_name: "${CP4BA_INST_AE_DB_NAME}"
+        dc_os_label: "${CP4BA_INST_DB_AE_LBL}"
+        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
         database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
         database_port: "${CP4BA_INST_DB_SERVER_PORT}"
         database_ssl_secret_name: ""
@@ -229,108 +274,65 @@ spec:
         dc_hadr_retry_interval_for_client_reroute: 15
         dc_hadr_max_retries_for_client_reroute: 3
 
-      # - database_name: "${CP4BA_INST_CONTENT_DB_NAME}"
-      #   dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #   dc_os_label: "${CP4BA_INST_DB_CONTENT_LBL}"
-      #   dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-      #   dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}XA"
-      #   database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
-      #   database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #   database_ssl_secret_name: ""
-      #   dc_hadr_validation_timeout: 15
-      #   dc_hadr_standby_servername: ""
-      #   dc_hadr_standby_port: ""
-      #   dc_hadr_retry_interval_for_client_reroute: 15
-      #   dc_hadr_max_retries_for_client_reroute: 3
-# 
-      # - database_name: "${CP4BA_INST_OS1_DB_NAME}"
-      #   dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #   dc_os_label: "${CP4BA_INST_DB_OS_LBL}"
-      #   dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
-      #   dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}XA"
-      #   database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
-      #   database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #   database_ssl_secret_name: ""
-      #   dc_hadr_validation_timeout: 15
-      #   dc_hadr_standby_servername: ""
-      #   dc_hadr_standby_port: ""
-      #   dc_hadr_retry_interval_for_client_reroute: 15
-      #   dc_hadr_max_retries_for_client_reroute: 3
-# 
-      # # d.s. AE (application engine)
-      # - database_name: "${CP4BA_INST_AE_DB_NAME}"
-      #   dc_os_label: "${CP4BA_INST_DB_AE_LBL}"
-      #   dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #   dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-      #   dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
-      #   database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
-      #   database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #   database_ssl_secret_name: ""
-      #   dc_hadr_validation_timeout: 15
-      #   dc_hadr_standby_servername: ""
-      #   dc_hadr_standby_port: ""
-      #   dc_hadr_retry_interval_for_client_reroute: 15
-      #   dc_hadr_max_retries_for_client_reroute: 3
-# 
-      # # d.s. AEOS (application engine data persistence)
-      # - database_name: "${CP4BA_INST_AEOS_DB_NAME}"
-      #   dc_os_label: "${CP4BA_INST_DB_AEOS_LBL}"
-      #   dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #   dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
-      #   dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}XA"
-      #   database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
-      #   database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #   database_ssl_secret_name: ""
-      #   dc_hadr_validation_timeout: 15
-      #   dc_hadr_standby_servername: ""
-      #   dc_hadr_standby_port: ""
-      #   dc_hadr_retry_interval_for_client_reroute: 15
-      #   dc_hadr_max_retries_for_client_reroute: 3
-# 
-      # # d.s. APP (playback server)
-      # - database_name: "${CP4BA_INST_APP_DB_NAME}"
-      #   dc_os_label: "${CP4BA_INST_DB_APP_LBL}"
-      #   dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #   dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
-      #   dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}XA"
-      #   database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
-      #   database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #   database_ssl_secret_name: ""
-      #   dc_hadr_validation_timeout: 15
-      #   dc_hadr_standby_servername: ""
-      #   dc_hadr_standby_port: ""
-      #   dc_hadr_retry_interval_for_client_reroute: 15
-      #   dc_hadr_max_retries_for_client_reroute: 3
-# 
-      # # d.s. AWSDB 
-      # - database_name: "${CP4BA_INST_AWSDB_DB_NAME}"
-      #   dc_os_label: "${CP4BA_INST_DB_AWS_LBL}"
-      #   dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #   dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
-      #   dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}XA"
-      #   database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
-      #   database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #   database_ssl_secret_name: ""
-      #   dc_hadr_validation_timeout: 15
-      #   dc_hadr_standby_servername: ""
-      #   dc_hadr_standby_port: ""
-      #   dc_hadr_retry_interval_for_client_reroute: 15
-      #   dc_hadr_max_retries_for_client_reroute: 3
-# 
-      # # d.s. AWSDOCS 
-      # - database_name: "${CP4BA_INST_AWSDOCS_DB_NAME}"
-      #   dc_os_label: "${CP4BA_INST_DB_AWS_LBL}"
-      #   dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      #   dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}"
-      #   dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}XA"
-      #   database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
-      #   database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #   database_ssl_secret_name: ""
-      #   dc_hadr_validation_timeout: 15
-      #   dc_hadr_standby_servername: ""
-      #   dc_hadr_standby_port: ""
-      #   dc_hadr_retry_interval_for_client_reroute: 15
-      #   dc_hadr_max_retries_for_client_reroute: 3
+      # d.s. AEOS (application engine data persistence)
+      - database_name: "${CP4BA_INST_AEOS_DB_NAME}"
+        dc_os_label: "${CP4BA_INST_DB_AEOS_LBL}"
+        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}XA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+      # d.s. APP (playback server)
+      - database_name: "${CP4BA_INST_APP_DB_NAME}"
+        dc_os_label: "${CP4BA_INST_DB_APP_LBL}"
+        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
+        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}XA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+      # d.s. AWSDB 
+      - database_name: "${CP4BA_INST_AWSDB_DB_NAME}"
+        dc_os_label: "${CP4BA_INST_DB_AWS_LBL}"
+        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
+        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}XA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
+
+      # d.s. AWSDOCS 
+      - database_name: "${CP4BA_INST_AWSDOCS_DB_NAME}"
+        dc_os_label: "${CP4BA_INST_DB_AWS_LBL}"
+        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}"
+        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}XA"
+        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
+        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+        database_ssl_secret_name: ""
+        dc_hadr_validation_timeout: 15
+        dc_hadr_standby_servername: ""
+        dc_hadr_standby_port: ""
+        dc_hadr_retry_interval_for_client_reroute: 15
+        dc_hadr_max_retries_for_client_reroute: 3
 
 
   # IBM FileNet Content Manager initialize configuration
@@ -347,6 +349,16 @@ spec:
     ic_obj_store_creation:
 
       object_stores:
+
+        # - oc_cpe_obj_store_display_name: "OS01"
+        #   oc_cpe_obj_store_symb_name: "OS01"
+        #   oc_cpe_obj_store_conn:
+        #     name: "objectstore1_connection"
+        #     dc_os_datasource_name: "FNOS1DS"
+        #     dc_os_xa_datasource_name: "FNOS1DSXA"
+        #   oc_cpe_obj_store_admin_user_groups:
+        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
 
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
@@ -385,133 +397,139 @@ spec:
           oc_cpe_obj_store_workflow_region_number: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}
           oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NAME}"
           oc_cpe_obj_store_workflow_date_time_mask: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_DT_MASK}"
-          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
-          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
-          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"          
+          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
+          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
+          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"          
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
 
-        # # CONTENT
-        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-        #   oc_cpe_obj_store_conn:
-        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_CONN_NAME}"
-        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}XA"
-        #   oc_cpe_obj_store_admin_user_groups:
-        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-        #   oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
-        #   oc_cpe_obj_store_enable_workflow: false
-        #   oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-        #   oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-        #   oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_DB_CONTENT_SCHEMA_DATA}"
-        #   oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_DB_CONTENT_SCHEMA_INDEX}"
-        #   oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_DB_CONTENT_SCHEMA_BLOB}"          
-        #   oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_PE_CONN_POINT_NAME}"
-        #   oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_REGION_NAME}"
-        #   oc_cpe_obj_store_addons_list:
-        #   - '{CE460ADD-0000-0000-0000-000000000004}'
-        #   - '{CE460ADD-0000-0000-0000-000000000001}'
-        #   - '{CE460ADD-0000-0000-0000-000000000003}'
-        #   - '{CE511ADD-0000-0000-0000-000000000006}'
-        #   - '{CE460ADD-0000-0000-0000-000000000008}'
-        #   - '{CE460ADD-0000-0000-0000-000000000007}'
-        #   - '{CE460ADD-0000-0000-0000-000000000009}'
-        #   - '{CE460ADD-0000-0000-0000-00000000000A}'
-        #   - '{CE460ADD-0000-0000-0000-00000000000B}'
-        #   - '{CE460ADD-0000-0000-0000-00000000000D}'
-        #   - '{CE511ADD-0000-0000-0000-00000000000F}'
-        #   - '{CE511ADD-0000-0000-0000-000000000010}'
-        #   - '{CE511ADD-0000-0000-0000-000000000015}'
-        #   - '{CE521ADD-0000-0000-0000-000000000016}'
-        #   - '{CE552ADD-0000-0000-0000-00000000001C}'
-        #   - '{CE551ADD-0000-0000-0000-000000000011}'
-        #   - '{CE554ADD-0000-0000-0000-000000000021}'
-# 
-        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
-        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
-        #   oc_cpe_obj_store_conn:
-        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1_CONN_NAME}"
-        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
-        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}XA"
-        #   oc_cpe_obj_store_admin_user_groups:
-        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-# 
-        # # o.s. AEOS (application engine)
-        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-        #   oc_cpe_obj_store_conn:
-        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE_CONN_NAME}"
-        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
-        #   oc_cpe_obj_store_admin_user_groups:
-        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-# 
-        # # o.s. AEOS (application engine storage)
-        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
-        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
-        #   oc_cpe_obj_store_conn:
-        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS_CONN_NAME}"
-        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
-        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}XA"
-        #   oc_cpe_obj_store_admin_user_groups:
-        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-# 
-        # # o.s. APP (playback server)
-        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
-        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
-        #   oc_cpe_obj_store_conn:
-        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP_CONN_NAME}"
-        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
-        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}XA"
-        #   oc_cpe_obj_store_admin_user_groups:
-        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-# 
-        # # o.s. AWSDB 
-        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
-        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
-        #   oc_cpe_obj_store_conn:
-        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS_CONN_NAME}"
-        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
-        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}XA"
-        #   oc_cpe_obj_store_admin_user_groups:
-        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-# 
-        # # o.s. AWSDOCS 
-        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}"
-        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}"
-        #   oc_cpe_obj_store_conn:
-        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS_CONN_NAME}"
-        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}"
-        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}XA"
-        #   oc_cpe_obj_store_admin_user_groups:
-        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+        # CONTENT
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_CONN_NAME}"
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+          oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
+          oc_cpe_obj_store_enable_workflow: false
+          oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+          oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_CONTENT_SCHEMA_DATA}"
+          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_CONTENT_SCHEMA_INDEX}"
+          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_CONTENT_SCHEMA_BLOB}"          
+          oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_PE_CONN_POINT_NAME}"
+          oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_REGION_NAME}"
+          oc_cpe_obj_store_addons_list:
+          - '{CE460ADD-0000-0000-0000-000000000004}'
+          - '{CE460ADD-0000-0000-0000-000000000001}'
+          - '{CE460ADD-0000-0000-0000-000000000003}'
+          - '{CE511ADD-0000-0000-0000-000000000006}'
+          - '{CE460ADD-0000-0000-0000-000000000008}'
+          - '{CE460ADD-0000-0000-0000-000000000007}'
+          - '{CE460ADD-0000-0000-0000-000000000009}'
+          - '{CE460ADD-0000-0000-0000-00000000000A}'
+          - '{CE460ADD-0000-0000-0000-00000000000B}'
+          - '{CE460ADD-0000-0000-0000-00000000000D}'
+          - '{CE511ADD-0000-0000-0000-00000000000F}'
+          - '{CE511ADD-0000-0000-0000-000000000010}'
+          - '{CE511ADD-0000-0000-0000-000000000015}'
+          - '{CE521ADD-0000-0000-0000-000000000016}'
+          - '{CE552ADD-0000-0000-0000-00000000001C}'
+          - '{CE551ADD-0000-0000-0000-000000000011}'
+          - '{CE554ADD-0000-0000-0000-000000000021}'
+
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1_CONN_NAME}"
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE_CONN_NAME}"
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+
+        #---------------------------------------
+
+        # o.s. AEOS (application engine)
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS_CONN_NAME}"
+            site_name: InitialSite
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+
+        # o.s. APP (playback server)
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP_CONN_NAME}"
+            site_name: InitialSite
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+
+        # o.s. AWSDB 
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS_CONN_NAME}"
+            site_name: InitialSite
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+
+        # o.s. AWSDOCS 
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS_CONN_NAME}"
+            site_name: InitialSite
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWSDOCS}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+
 
     ic_icn_init_info:
       icn_repos:
-        # - add_repo_id: "my_demo_repo1"
-        #   add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
-        #   add_repo_os_sym_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
-        #   add_repo_os_dis_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
-        #   add_repo_workflow_enable: false
-        #   add_repo_work_conn_pnt: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1_CONN_NAME}:${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}"
-        #   add_repo_protocol: "FileNetP8WSI"
-# 
-        # - add_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-        #   add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
-        #   add_repo_os_sym_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-        #   add_repo_os_dis_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-        #   add_repo_workflow_enable: false
-        #   add_repo_work_conn_pnt: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_CONN_NAME}:${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_REGION_NUM}"
-        #   add_repo_protocol: "FileNetP8WSI"
+        - add_repo_id: "my_demo_repo1"
+          add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
+          add_repo_os_sym_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
+          add_repo_os_dis_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
+          add_repo_workflow_enable: false
+          add_repo_work_conn_pnt: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1_CONN_NAME}:${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}"
+          add_repo_protocol: "FileNetP8WSI"
+
+        - add_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+          add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
+          add_repo_os_sym_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+          add_repo_os_dis_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+          add_repo_workflow_enable: false
+          add_repo_work_conn_pnt: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_CONN_NAME}:${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_REGION_NUM}"
+          add_repo_protocol: "FileNetP8WSI"
 
       icn_desktop:
         - add_desktop_id: "my_demo"
@@ -521,10 +539,10 @@ spec:
           add_desktop_repo_id: "my_demo_repo1"
           add_desktop_repo_workflow_enable: false
 
-        # - add_desktop_description: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-        #   add_desktop_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-        #   add_desktop_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-        #   add_desktop_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+        - add_desktop_description: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+          add_desktop_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+          add_desktop_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+          add_desktop_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
 
   ## BAI
   bai_configuration:
@@ -801,6 +819,16 @@ spec:
     disable_fips: false
     disable_basic_auth: true
 
+    ## Below are the default ICN Production settings.  Make the necessary changes as you see fit.  Refer to Knowledge Center documentation for details.
+    icn_production_setting:
+      timezone: Etc/UTC
+      icn_jndids_name: ECMClientDS
+      icn_schema: "${CP4BA_INST_DB_ICN_USER}"
+      icn_table_space: "${CP4BA_INST_DB_ICN_USER}_icndb_tbs"
+      allow_remote_plugins_via_http: false
+    monitor_enabled: false
+    logging_enabled: false
+
     datavolume:
       existing_pvc_for_icn_cfgstore: 
         name: "icn-cfgstore"
@@ -821,55 +849,70 @@ spec:
         name: "icn-asperastore" 
         size: 1Gi
 
+    probe:
+      startup:
+        initial_delay_seconds: 120
+        period_seconds: 10
+        timeout_seconds: 10
+        failure_threshold: 6
+      readiness:
+        period_seconds: 10
+        timeout_seconds: 10
+        failure_threshold: 6
+      liveness:
+        period_seconds: 10
+        timeout_seconds: 5
+        failure_threshold: 6
+
     image_pull_secrets:
       name: "ibm-entitlement-key"
     use_sync_with_zen_url: true
 
-  # # IBM Business Automation Application server
-  # application_engine_configuration:
-  # ## The application_engine_configuration is a list. You can deploy multiple instances of App Engine and assign different configurations for each instance.
-  # ## For each instance, application_engine_configuration.name, database, admin_secret_name and hostname must be assigned to different values.
-  # ## Each application_engine_configuration.name can consist of lowercase alphanumeric characters or '-', and must start and end with an alphanumeric character. Keep the instance name as short as possible.
-  # ## You should use different database, admin_secret_name, hostname for playback server and the application engine servers
-  # - name: workspace
-  #   admin_secret_name: "{{ meta.name }}-workspace-aae-app-engine-admin-secret"
-  #   admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
-  #   database:
-  #     #-----------------------------------------------------------------------
-  #     # Configuration required for configure PostgreSQL for App engine server
-  #     # If you are going to use PostgreSQL. Please uncomment this section
-  #     #-----------------------------------------------------------------------
-  #     type: PostgreSQL
-  #     host: "${CP4BA_INST_DB_1_SERVER_NAME}"
-  #     port: "${CP4BA_INST_DB_SERVER_PORT}"
-  #     #Provide the database name for runtime application engine use, for example, AAEDB. It is case sensitive.
-  #     #Please pay attention that if you are install authoring environment also.
-  #     #The database used by playback server and this one should be different
-  #     name: "${CP4BA_INST_AE_DB_NAME}"
-# 
-  #     #-----------------------------------------------------------------------
-  #     # SSL connection for database is enabled by default. Please input the secret name including cert
-  #     #-----------------------------------------------------------------------
-  #     enable_ssl: ${CP4BA_INST_DB_1_TLS_ENABLED}
-  #     db_cert_secret_name: "${CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME}"
-  #   #-----------------------------------------------------------------------
-  #   # If you want better HA experience.
-  #   # - Set the session.use_external_store to true
-  #   # - Fill in your redis server information
-  #   #-----------------------------------------------------------------------
-  #   session:
-  #     use_external_store: false
-  #   #redis:
-  #   #  # Your external redis host/ip
-  #   #  host:
-  #   #  # Your external redis port
-  #   #  port: '6379'
-  #   #  # If your redis enabled TLS connection set this to true
-  #   #  # You should add redis server CA certificate in tls_trust_list or trusted_certificate_list
-  #   #  tls_enabled: false
-  #   #  # If you are using Redis V6 and above with username fill in this field.
-  #   #  # Otherwise leave this field as empty
-  #   #  username:
-  #   data_persistence:
-  #     enable: true
-  #     object_store_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}
+  # IBM Business Automation Application server
+  application_engine_configuration:
+  ## The application_engine_configuration is a list. You can deploy multiple instances of App Engine and assign different configurations for each instance.
+  ## For each instance, application_engine_configuration.name, database, admin_secret_name and hostname must be assigned to different values.
+  ## Each application_engine_configuration.name can consist of lowercase alphanumeric characters or '-', and must start and end with an alphanumeric character. Keep the instance name as short as possible.
+  ## You should use different database, admin_secret_name, hostname for playback server and the application engine servers
+  - name: workspace
+    admin_secret_name: "{{ meta.name }}-workspace-aae-app-engine-admin-secret"
+    admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
+    database:
+      #-----------------------------------------------------------------------
+      # Configuration required for configure PostgreSQL for App engine server
+      # If you are going to use PostgreSQL. Please uncomment this section
+      #-----------------------------------------------------------------------
+      type: PostgreSQL
+      host: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      port: "${CP4BA_INST_DB_SERVER_PORT}"
+      #Provide the database name for runtime application engine use, for example, AAEDB. It is case sensitive.
+      #Please pay attention that if you are install authoring environment also.
+      #The database used by playback server and this one should be different
+      name: "${CP4BA_INST_AE_DB_NAME}"
+
+      #-----------------------------------------------------------------------
+      # SSL connection for database is enabled by default. Please input the secret name including cert
+      #-----------------------------------------------------------------------
+      enable_ssl: ${CP4BA_INST_DB_1_TLS_ENABLED}
+      db_cert_secret_name: "${CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME}"
+    #-----------------------------------------------------------------------
+    # If you want better HA experience.
+    # - Set the session.use_external_store to true
+    # - Fill in your redis server information
+    #-----------------------------------------------------------------------
+    session:
+      use_external_store: false
+    #redis:
+    #  # Your external redis host/ip
+    #  host:
+    #  # Your external redis port
+    #  port: '6379'
+    #  # If your redis enabled TLS connection set this to true
+    #  # You should add redis server CA certificate in tls_trust_list or trusted_certificate_list
+    #  tls_enabled: false
+    #  # If you are using Redis V6 and above with username fill in this field.
+    #  # Otherwise leave this field as empty
+    #  username:
+    data_persistence:
+      enable: true
+      object_store_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}

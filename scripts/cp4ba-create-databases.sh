@@ -117,6 +117,24 @@ _generateSQL () {
     export CP4BA_INST_DB_CUSTOMDB_PWD="dem0s"
   fi
 
+  # 20260706
+  if [[ -z "${CP4BA_INST_DB_ODM_USER}" || -z "${CP4BA_INST_DB_ODM_PWD}" ]]; then
+    export CP4BA_INST_DB_ODM_USER="odm"
+    export CP4BA_INST_DB_ODM_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials for 'CP4BA_INST_DB_ODM_USER'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_ADSRT_USER}" || -z "${CP4BA_INST_DB_ADSRT_PWD}" ]]; then
+    export CP4BA_INST_DB_ADSRT_USER="adsrt"
+    export CP4BA_INST_DB_ADSRT_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials for 'CP4BA_INST_DB_ADSRT_USER'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_ADSDES_USER}" || -z "${CP4BA_INST_DB_ADSDES_PWD}" ]]; then
+    export CP4BA_INST_DB_ADSDES_USER="adsdes"
+    export CP4BA_INST_DB_ADSDES_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials for 'CP4BA_INST_DB_ADSDES_USER'${_CLR_NC}"
+  fi
+
+
   # _DB_BASE_PATH may contain / chars so use # in 'sed' line
   cat ${_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' \
     | sed 's/-\{2,\}/@@savecomment@@/g' \

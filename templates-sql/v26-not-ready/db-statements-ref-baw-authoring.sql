@@ -4,6 +4,8 @@ DISCLAIMER
 These configurations are not indicated or intended TO be valid for production environments.
 The purpose is purely educational.
 ===========================================================================================
+
+TEMPLATES from v26
 */
 
 /*
@@ -15,75 +17,89 @@ Databases for BAW Authoring
 /* 
 Db BAW or BAS
 */
-CREATE ROLE §§dbBAWowner§§ PASSWORD '§§dbBAWowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_baw_1 OWNER §§dbBAWowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_baw_1 TO §§dbBAWowner§§;
+-- create the user
+CREATE ROLE §§dbBAWowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbBAWowner_password§§';
+-- create the database:
+CREATE DATABASE §§dbPrefix§§_baw_1 WITH OWNER §§dbBAWowner§§ ENCODING 'UTF8';
+-- Connect to your database and create schema
 \c §§dbPrefix§§_baw_1;
 CREATE SCHEMA IF NOT EXISTS §§dbBAWowner§§ AUTHORIZATION §§dbBAWowner§§;
-GRANT ALL ON SCHEMA §§dbBAWowner§§ TO §§dbBAWowner§§;
+GRANT ALL ON schema §§dbBAWowner§§ to §§dbBAWowner§§;
 
 /* 
 Db ICN 
 */
-CREATE ROLE §§dbICNowner§§ PASSWORD '§§dbICNowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_icn OWNER §§dbICNowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_icn TO §§dbICNowner§§;
+-- create user dbuser
+CREATE ROLE §§dbICNowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbICNowner_password§§';
+-- please modify location follow your requirement
+create tablespace §§dbPrefix§§_icndb_tbs owner §§dbICNowner§§ location '/§§dbBasePath§§/tbs/icn';
+grant create on tablespace §§dbPrefix§§_icndb_tbs to §§dbICNowner§§;  
+-- create database icndb
+create database §§dbPrefix§§_icn owner §§dbICNowner§§ tablespace §§dbPrefix§§_icndb_tbs template template0 encoding UTF8 ;
 \c §§dbPrefix§§_icn;
 CREATE SCHEMA IF NOT EXISTS §§dbICNowner§§ AUTHORIZATION §§dbICNowner§§;
-GRANT ALL ON SCHEMA §§dbICNowner§§ TO §§dbICNowner§§;
-CREATE TABLESPACE §§dbPrefix§§_icndb_tbs OWNER §§dbICNowner§§ LOCATION '/§§dbBasePath§§/tbs/icn';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_icndb_tbs TO §§dbICNowner§§; 
+GRANT ALL ON schema §§dbICNowner§§ to §§dbICNowner§§;
+-- create a schema for icndb and set the default
+-- connect to the respective database before executing the below commands
+SET ROLE §§dbICNowner§§;
+ALTER DATABASE §§dbPrefix§§_icn SET search_path TO §§dbICNowner§§;
+revoke connect on database §§dbPrefix§§_icn from public;
 
 /* 
 Db GCD 
 */
-CREATE ROLE §§dbGCDowner§§ PASSWORD '§§dbGCDowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_gcd OWNER §§dbGCDowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_gcd TO §§dbGCDowner§§;
+-- create user dbuser
+CREATE ROLE §§dbGCDowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbGCDowner_password§§';
+-- please modify location follow your requirement
+create tablespace §§dbPrefix§§_gcd_tbs owner §§dbGCDowner§§ location '/§§dbBasePath§§/tbs/gcd';
+grant create on tablespace §§dbPrefix§§_gcd_tbs to §§dbGCDowner§§;  
+-- create database gcddb
+create database §§dbPrefix§§_gcd owner §§dbGCDowner§§ tablespace §§dbPrefix§§_gcd_tbs template template0 encoding UTF8 ;
+-- Connect to your database and create schema
 \c §§dbPrefix§§_gcd;
 CREATE SCHEMA IF NOT EXISTS §§dbGCDowner§§ AUTHORIZATION §§dbGCDowner§§;
-GRANT ALL ON SCHEMA §§dbGCDowner§§ TO §§dbGCDowner§§;
-CREATE TABLESPACE §§dbPrefix§§_gcd_tbs OWNER §§dbGCDowner§§ LOCATION '/§§dbBasePath§§/tbs/gcd';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_gcd_tbs TO §§dbGCDowner§§; 
+GRANT ALL ON schema §§dbGCDowner§§ to §§dbGCDowner§§;
+-- create a schema for gcddb and set the default
+-- connect to the respective database before executing the below commands
+SET ROLE §§dbGCDowner§§;
+ALTER DATABASE §§dbPrefix§§_gcd SET search_path TO §§dbGCDowner§§;
+revoke connect on database §§dbPrefix§§_gcd from public;
 
 /* 
 Db DOCS 
 */
-CREATE ROLE §§dbBAWDOCSowner§§ PASSWORD '§§dbBAWDOCSowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_bawdocs OWNER §§dbBAWDOCSowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_bawdocs TO §§dbBAWDOCSowner§§;
+CREATE ROLE §§dbBAWDOCSowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbBAWDOCSowner_password§§';
+create tablespace §§dbPrefix§§_bawdocs_tbs owner §§dbBAWDOCSowner§§ location '/§§dbBasePath§§/tbs/docs';
+grant create on tablespace §§dbPrefix§§_bawdocs_tbs to §§dbBAWDOCSowner§§;  
+create database §§dbPrefix§§_bawdocs owner §§dbBAWDOCSowner§§ tablespace §§dbPrefix§§_bawdocs_tbs template template0 encoding UTF8 ;
 \c §§dbPrefix§§_bawdocs;
 CREATE SCHEMA IF NOT EXISTS §§dbBAWDOCSowner§§ AUTHORIZATION §§dbBAWDOCSowner§§;
-GRANT ALL ON SCHEMA §§dbBAWDOCSowner§§ TO §§dbBAWDOCSowner§§;
-CREATE TABLESPACE §§dbPrefix§§_bawdocs_tbs OWNER §§dbBAWDOCSowner§§ LOCATION '/§§dbBasePath§§/tbs/docs';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_bawdocs_tbs TO §§dbBAWDOCSowner§§; 
+GRANT ALL ON schema §§dbBAWDOCSowner§§ to §§dbBAWDOCSowner§§;
 
 /* 
 Db DOS 
 */
-CREATE ROLE §§dbBAWDOSowner§§ PASSWORD '§§dbBAWDOSowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_bawdos OWNER §§dbBAWDOSowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_bawdos TO §§dbBAWDOSowner§§;
+CREATE ROLE §§dbBAWDOSowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbBAWDOSowner_password§§';
+create tablespace §§dbPrefix§§_bawdos_tbs owner §§dbBAWDOSowner§§ location '/§§dbBasePath§§/tbs/dos';
+grant create on tablespace §§dbPrefix§§_bawdos_tbs to §§dbBAWDOSowner§§;  
+create database §§dbPrefix§§_bawdos owner §§dbBAWDOSowner§§ tablespace §§dbPrefix§§_bawdos_tbs template template0 encoding UTF8 ;
 \c §§dbPrefix§§_bawdos;
 CREATE SCHEMA IF NOT EXISTS §§dbBAWDOSowner§§ AUTHORIZATION §§dbBAWDOSowner§§;
-GRANT ALL ON SCHEMA §§dbBAWDOSowner§§ TO §§dbBAWDOSowner§§;
-CREATE TABLESPACE §§dbPrefix§§_bawdos_tbs OWNER §§dbBAWDOSowner§§ LOCATION '/§§dbBasePath§§/tbs/dos';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_bawdos_tbs TO §§dbBAWDOSowner§§; 
+GRANT ALL ON schema §§dbBAWDOSowner§§ to §§dbBAWDOSowner§§;
+
 
 /* 
 Db CHOS 
 */
-CREATE ROLE §§dbCHOSowner§§ PASSWORD '§§dbCHOSowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
-CREATE DATABASE §§dbPrefix§§_chos OWNER §§dbCHOSowner§§ ENCODING UTF8;
-GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_chos TO §§dbCHOSowner§§;
+CREATE ROLE §§dbCHOSowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbCHOSowner_password§§';
+create database §§dbPrefix§§_chos owner §§dbCHOSowner§§ encoding UTF8 ;
 \c §§dbPrefix§§_chos;
 CREATE SCHEMA IF NOT EXISTS §§dbCHOSowner§§ AUTHORIZATION §§dbCHOSowner§§;
-GRANT ALL ON SCHEMA §§dbCHOSowner§§ TO §§dbCHOSowner§§;
+GRANT ALL ON schema §§dbCHOSowner§§ to §§dbCHOSowner§§;
 
 /* 
 Db TOS 
 */
-CREATE ROLE §§dbBAWTOSowner§§ PASSWORD '§§dbBAWTOSowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
 CREATE DATABASE §§dbPrefix§§_bawtos OWNER §§dbBAWTOSowner§§ ENCODING UTF8;
 GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_bawtos TO §§dbBAWTOSowner§§;
 \c §§dbPrefix§§_bawtos;
@@ -119,7 +135,6 @@ ALTER DATABASE §§dbPrefix§§_awsdocs SET search_path TO §§dbAWSowner§§;
 SET ROLE postgres;
 /* revoke connect ON DATABASE §§dbPrefix§§_awsdocs from public;
 */
-
 
 /* 
 Db CONTENT 

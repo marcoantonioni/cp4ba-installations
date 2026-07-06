@@ -160,6 +160,32 @@ createSecretFNCM () {
   oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
 
 
+  # 20260706
+  if [[ -z "${CP4BA_INST_DB_AE_LBL}" || -z "${CP4BA_INST_DB_AE_USER}" || -z "${CP4BA_INST_DB_AE_PWD}" ]]; then
+    export CP4BA_INST_DB_AE_LBL="ae"
+    export CP4BA_INST_DB_AE_USER="ae"
+    export CP4BA_INST_DB_AE_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_AE_(*)'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_AEOS_LBL}" || -z "${CP4BA_INST_DB_AEOS_USER}" || -z "${CP4BA_INST_DB_AEOS_PWD}" ]]; then
+    export CP4BA_INST_DB_AEOS_LBL="aeos"
+    export CP4BA_INST_DB_AEOS_USER="ae"
+    export CP4BA_INST_DB_AEOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_AEOS_(*)'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_PBK_LBL}" || -z "${CP4BA_INST_DB_APP_USER}" || -z "${}" ]]; then
+    export CP4BA_INST_DB_PBK_LBL="pbk"
+    export CP4BA_INST_DB_APP_USER="app"
+    export CP4BA_INST_DB_APP_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_PBK_(*)'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_AWS_LBL}" || -z "${CP4BA_INST_DB_AWS_USER}" || -z "${CP4BA_INST_DB_AWS_PWD}" ]]; then
+    export CP4BA_INST_DB_AWS_LBL="aws"
+    export CP4BA_INST_DB_AWS_USER="aws"
+    export CP4BA_INST_DB_AWS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_AWS_(*)'${_CLR_NC}"
+  fi
+
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null  
   _ERR=0  
   if [[ ! -z "${CP4BA_INST_DB_BAWDOCS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWDOS_USER}" ]] && [[ ! -z "${CP4BA_INST_DB_BAWTOS_USER}" ]]; then
@@ -181,8 +207,10 @@ createSecretFNCM () {
       --from-literal="${CP4BA_INST_DB_CHOS_LBL}"DBPassword="${CP4BA_INST_DB_CHOS_PWD}" \
       --from-literal="${CP4BA_INST_DB_AE_LBL}"DBUsername="${CP4BA_INST_DB_AE_USER}" \
       --from-literal="${CP4BA_INST_DB_AE_LBL}"DBPassword="${CP4BA_INST_DB_AE_PWD}" \
-      --from-literal="${CP4BA_INST_DB_PBK_LBL}"DBUsername="${CP4BA_INST_DB_PBK_USER}" \
-      --from-literal="${CP4BA_INST_DB_PBK_LBL}"DBPassword="${CP4BA_INST_DB_PBK_PWD}" \
+      --from-literal="${CP4BA_INST_DB_AEOS_LBL}"DBUsername="${CP4BA_INST_DB_AEOS_USER}" \
+      --from-literal="${CP4BA_INST_DB_AEOS_LBL}"DBPassword="${CP4BA_INST_DB_AEOS_PWD}" \
+      --from-literal="${CP4BA_INST_DB_PBK_LBL}"DBUsername="${CP4BA_INST_DB_APP_USER}" \
+      --from-literal="${CP4BA_INST_DB_PBK_LBL}"DBPassword="${CP4BA_INST_DB_APP_PWD}" \
       --from-literal="${CP4BA_INST_DB_APP_LBL}"DBUsername="${CP4BA_INST_DB_APP_USER}" \
       --from-literal="${CP4BA_INST_DB_APP_LBL}"DBPassword="${CP4BA_INST_DB_APP_PWD}" \
       --from-literal="${CP4BA_INST_DB_AWS_LBL}"DBUsername="${CP4BA_INST_DB_AWS_USER}" \
@@ -359,7 +387,7 @@ createSecretAE () {
 
 
   #---------------------------------
-  _SECRET_NAME="playback-server-admin-secret"
+  _SECRET_NAME="${CP4BA_INST_CR_NAME}-pbk-app-engine-admin-secret"
   log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null  
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
