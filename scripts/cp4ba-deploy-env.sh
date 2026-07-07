@@ -472,6 +472,7 @@ verifyCreateSecretsForExternalDb () {
     export CP4BA_INST_DB_1_TLS_ENABLED="${CP4BA_INST_DB_ONLY_SSL}"
   fi
 
+  # sslmode=<require|verify-ca|verify-full>
   _SEC_NAME="${CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME}"
   log_debug "Creating secret '${_CLR_YELLOW}${_SEC_NAME}${_CLR_GREEN}'"
   oc delete secret ${_SEC_NAME} -n ${_PG_TARGET_NS} 2>/dev/null 1>/dev/null
@@ -481,6 +482,7 @@ verifyCreateSecretsForExternalDb () {
     --from-file=server.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/server.key"  \
     --from-file=tls.crt="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.cert"  \
     --from-file=tls.key="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}/client.key"  \
+    --from-literal=sslmode="require"  \
     --type=kubernetes.io/tls 2>/dev/null 1>/dev/null
   oc label secret -n ${_PG_TARGET_NS} ${_SEC_NAME} cp4ba.ibm.com/backup-type=mandatory 2>/dev/null 1>/dev/null
 

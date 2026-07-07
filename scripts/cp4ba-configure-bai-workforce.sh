@@ -257,25 +257,7 @@ _createBAIWorkforceSecret () {
       _IS_SLASH="/"
     fi
 
-# ???
-# inserire loop di attesa su 404
-    #bpmSystemID=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}" | jq -r .data.systems[].systemID)
     bpmSystemID=""
-
-
-
-    #_curlResult=$(curl -sk -X GET ${_WFS_URL}${_IS_SLASH}rest/bpm/wle/v1/systems -H "Accept: application/json" -H "Authorization: Bearer ${zentoken}")
-    #if [[ ! -z "${_curlResult}" ]]; then
-    #  bpmSystemID=$(echo ${_curlResult} | jq -r .data.systems[].systemID 2>/dev/null)
-    #  if [[ -z "${bpmSystemID}" ]]; then
-    #    log_error "BPM System ID is empty !"
-    #    log_error "${_curlResult}"
-    #    _errorBuild=1
-    #  fi
-    #else
-    #  log_error "Cannot get BPM System ID !"
-    #  _errorBuild=1
-    #fi
     _maxAttempts=60
     _interval=10
     counter=0
@@ -368,8 +350,7 @@ stringData:
 " > ${_BAI_WKF_TMP}
 
     if [[ ${_errorBuild} -eq 0 ]]; then
-      # create secret for BAI Workforce
-      log_info "Creating BAI Workforce secret '${_CLR_YELLOW}${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}${_CLR_GREEN}'"
+      log_info "${_CLR_GREEN}Creating BAI Workforce secret '${_CLR_YELLOW}${CP4BA_INST_BAI_BPC_WORKFORCE_SECRET}${_CLR_GREEN}' for bpmSystemId '${_CLR_YELLOW}${bpmSystemID}${_CLR_GREEN}'"
       oc create secret generic -n $1 $2 --from-file=workforce-insights-configuration.yml=${_BAI_WKF_TMP} 2>/dev/null 1>/dev/null
     else
       log_error "Cannot set BAI Workforce configuration try to run the tool manually './cp4ba-configure-bai-workforce.sh -c your-config-file.properties'"

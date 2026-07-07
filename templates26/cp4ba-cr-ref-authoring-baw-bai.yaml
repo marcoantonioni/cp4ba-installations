@@ -348,6 +348,8 @@ spec:
 
       object_stores:
 
+        ##-----------------------------------------
+        ## BAW
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_conn:
@@ -392,6 +394,7 @@ spec:
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
 
+        ##-----------------------------------------
         # # CONTENT
         # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
         #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
@@ -440,6 +443,7 @@ spec:
         #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
         #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
 # 
+        ##-----------------------------------------
         # # o.s. AEOS (application engine)
         # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
         #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
@@ -473,6 +477,8 @@ spec:
         #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
         #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
 # 
+        ##-----------------------------------------
+        ## Application Workstream Services
         # # o.s. AWSDB 
         # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
         #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"

@@ -1,13 +1,15 @@
 
 # Change Log
 
-## [1.6.4] - 2026-07-06
+## [1.6.4] - 2026-07-07
 
 Tested ok
 
 - configs26/env1-authoring-baw-bai.properties
+- configs26/env1-authoring-baw-bai-ae.properties
+- configs26/env1-authoring-wfps-pfs-bai.properties
 - configs26/env1-runtime-baw-bai.properties
-
+- configs26/env1-runtime-opensearch-foundation.properties
 
 ### Added
 

@@ -160,7 +160,65 @@ createSecretFNCM () {
   oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
 
 
-  # 20260706
+  # 20260706 to avoid error on secret creation if any non defined value
+  if [[ -z "${CP4BA_INST_PAKBA_ADMIN_USER}" ]]; then
+    export CP4BA_INST_PAKBA_ADMIN_USER="cp4admin"
+    log_warning "Set default credentials/label for 'CP4BA_INST_PAKBA_ADMIN_USER'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_PAKBA_ADMIN_PWD}" ]]; then
+    export CP4BA_INST_PAKBA_ADMIN_PWD="dem0s"
+    log_warning "Set default credentials/label for 'CP4BA_INST_PAKBA_ADMIN_PWD'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_PAKBA_PASSW_LTPA}" ]]; then
+    export CP4BA_INST_PAKBA_PASSW_LTPA="passw0rd"
+    log_warning "Set default credentials/label for 'CP4BA_INST_PAKBA_PASSW_LTPA'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" ]]; then
+    export CP4BA_INST_PAKBA_PASSW_KEYSTORE="passw0rd"
+    log_warning "Set default credentials/label for 'CP4BA_INST_PAKBA_PASSW_KEYSTORE'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_GCD_LBL}" || -z "${CP4BA_INST_DB_GCD_USER}" || -z "${CP4BA_INST_DB_GCD_PWD}" ]]; then
+    export CP4BA_INST_DB_GCD_LBL="gcd"
+    export CP4BA_INST_DB_GCD_USER="gcd"
+    export CP4BA_INST_DB_GCD_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_GCD_(*)'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_BAWDOCS_LBL}" || -z "${CP4BA_INST_DB_BAWDOCS_USER}" || -z "${CP4BA_INST_DB_BAWDOCS_PWD}" ]]; then
+    export CP4BA_INST_DB_BAWDOCS_LBL="docs"
+    export CP4BA_INST_DB_BAWDOCS_USER="bawdocs"
+    export CP4BA_INST_DB_BAWDOCS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_BAWDOCS_(*)'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_BAWDOS_LBL}" || -z "${CP4BA_INST_DB_BAWDOS_USER}" || -z "${CP4BA_INST_DB_BAWDOS_PWD}" ]]; then
+    export CP4BA_INST_DB_BAWDOS_LBL="dos"
+    export CP4BA_INST_DB_BAWDOS_USER="bawdos"
+    export CP4BA_INST_DB_BAWDOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_BAWDOS_(*)'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_BAWTOS_LBL}" || -z "${CP4BA_INST_DB_BAWTOS_USER}" || -z "${CP4BA_INST_DB_BAWTOS_PWD}" ]]; then
+    export CP4BA_INST_DB_BAWTOS_LBL="tos"
+    export CP4BA_INST_DB_BAWTOS_USER="bawtos"
+    export CP4BA_INST_DB_BAWTOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_BAWTOS_(*)'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_OS_LBL}" || -z "${CP4BA_INST_DB_OS_USER}" || -z "${CP4BA_INST_DB_OS_PWD}" ]]; then
+    export CP4BA_INST_DB_OS_LBL="os"
+    export CP4BA_INST_DB_OS_USER="os"
+    export CP4BA_INST_DB_OS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_OS_(*)'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_CONTENT_LBL}" || -z "${CP4BA_INST_DB_CONTENT_USER}" || -z "${CP4BA_INST_DB_CONTENT_PWD}" ]]; then
+    export CP4BA_INST_DB_CONTENT_LBL="content"
+    export CP4BA_INST_DB_CONTENT_USER="content"
+    export CP4BA_INST_DB_CONTENT_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_CONTENT_(*)'${_CLR_NC}"
+  fi
+  if [[ -z "${CP4BA_INST_DB_CHOS_LBL}" || -z "${CP4BA_INST_DB_CHOS_USER}" || -z "${CP4BA_INST_DB_CHOS_PWD}" ]]; then
+    export CP4BA_INST_DB_CHOS_LBL="chos"
+    export CP4BA_INST_DB_CHOS_USER="chos"
+    export CP4BA_INST_DB_CHOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
+    log_warning "Set default credentials/label for 'CP4BA_INST_DB_CHOS_(*)'${_CLR_NC}"
+  fi
   if [[ -z "${CP4BA_INST_DB_AE_LBL}" || -z "${CP4BA_INST_DB_AE_USER}" || -z "${CP4BA_INST_DB_AE_PWD}" ]]; then
     export CP4BA_INST_DB_AE_LBL="ae"
     export CP4BA_INST_DB_AE_USER="ae"
