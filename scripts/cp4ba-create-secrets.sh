@@ -227,7 +227,7 @@ createSecretFNCM () {
   fi
   if [[ -z "${CP4BA_INST_DB_AEOS_LBL}" || -z "${CP4BA_INST_DB_AEOS_USER}" || -z "${CP4BA_INST_DB_AEOS_PWD}" ]]; then
     export CP4BA_INST_DB_AEOS_LBL="aeos"
-    export CP4BA_INST_DB_AEOS_USER="ae"
+    export CP4BA_INST_DB_AEOS_USER="${CP4BA_INST_DB_AE_USER}"
     export CP4BA_INST_DB_AEOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
     log_warning "Set default credentials/label for 'CP4BA_INST_DB_AEOS_(*)'${_CLR_NC}"
   fi
@@ -417,7 +417,10 @@ createSecretAE () {
   #   SESSION_SECRET:  
   #   SESSION_COOKIE_NAME:  
 
-  _SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-aae-app-engine-admin-secret"
+  if [[ -z "${CP4BA_INST_AE_SECRET_NAME}" ]]; then
+    export CP4BA_INST_AE_SECRET_NAME="${CP4BA_INST_CR_NAME}-workspace-aae-app-engine-admin-secret"
+  fi
+  _SECRET_NAME="${CP4BA_INST_AE_SECRET_NAME}"
   log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null  
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \

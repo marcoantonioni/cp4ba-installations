@@ -196,7 +196,7 @@ _createDatabases () {
     log_debug "Using mount path for Postgres '${CP4BA_INST_DB_POSTGRES_MOUNTPATH}'"
   fi
 
-  _PG_BASE_FOLDER="${CP4BA_INST_DB_POSTGRES_MOUNTPATH}/cp4ba"
+  _PG_BASE_FOLDER=$(echo "${CP4BA_INST_DB_POSTGRES_MOUNTPATH}/cp4ba" | sed 's#//#/#g')
 
   _generateSQL ${_DB_CR_NAME} ${_DB_TEMPLATE} "${_PG_BASE_FOLDER}"
   if [[ "${_GENERATE_SQL_ONLY}" = "true" ]]; then

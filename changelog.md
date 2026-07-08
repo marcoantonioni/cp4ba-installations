@@ -1,6 +1,18 @@
 
 # Change Log
 
+## [1.6.5] - 2026-07-08
+
+### Added
+
+### Changed
+
+App engine variables (.properties) and structure (.yaml)
+
+### Fixed
+
+Fixed // if front of tablespace location
+
 ## [1.6.4] - 2026-07-07
 
 Tested ok

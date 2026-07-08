@@ -1256,49 +1256,20 @@ spec:
 
   # IBM Business Automation Application server
   application_engine_configuration:
-  ## The application_engine_configuration is a list. You can deploy multiple instances of App Engine and assign different configurations for each instance.
-  ## For each instance, application_engine_configuration.name, database, admin_secret_name and hostname must be assigned to different values.
-  ## Each application_engine_configuration.name can consist of lowercase alphanumeric characters or '-', and must start and end with an alphanumeric character. Keep the instance name as short as possible.
-  ## You should use different database, admin_secret_name, hostname for playback server and the application engine servers
-  - name: workspace
-    admin_secret_name: "{{ meta.name }}-workspace-aae-app-engine-admin-secret"
+  - name: ${CP4BA_INST_AE_NAME}
+    admin_secret_name: "${CP4BA_INST_AE_SECRET_NAME}"
     admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
     database:
-      #-----------------------------------------------------------------------
-      # Configuration required for configure PostgreSQL for App engine server
-      # If you are going to use PostgreSQL. Please uncomment this section
-      #-----------------------------------------------------------------------
-      type: PostgreSQL
+      type: "${CP4BA_INST_AE_DB_TYPE}:=postgresql"
       host: "${CP4BA_INST_DB_1_SERVER_NAME}"
       port: "${CP4BA_INST_DB_SERVER_PORT}"
-      #Provide the database name for runtime application engine use, for example, AAEDB. It is case sensitive.
-      #Please pay attention that if you are install authoring environment also.
-      #The database used by playback server and this one should be different
       name: "${CP4BA_INST_AE_DB_NAME}"
-
-      #-----------------------------------------------------------------------
-      # SSL connection for database is enabled by default. Please input the secret name including cert
-      #-----------------------------------------------------------------------
       enable_ssl: ${CP4BA_INST_DB_1_TLS_ENABLED}
       db_cert_secret_name: "${CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME}"
-    #-----------------------------------------------------------------------
-    # If you want better HA experience.
-    # - Set the session.use_external_store to true
-    # - Fill in your redis server information
-    #-----------------------------------------------------------------------
+    env:
+      server_env_type: ${CP4BA_INST_AE_SERVER_ENV_TYPE}
     session:
       use_external_store: false
-    #redis:
-    #  # Your external redis host/ip
-    #  host:
-    #  # Your external redis port
-    #  port: '6379'
-    #  # If your redis enabled TLS connection set this to true
-    #  # You should add redis server CA certificate in tls_trust_list or trusted_certificate_list
-    #  tls_enabled: false
-    #  # If you are using Redis V6 and above with username fill in this field.
-    #  # Otherwise leave this field as empty
-    #  username:
     data_persistence:
-      enable: true
-      object_store_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}
+      enable: ${CP4BA_INST_AE_PERSISTENCE_ENABLE}
+      object_store_name: ${CP4BA_INST_AE_OS_NAME}

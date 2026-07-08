@@ -878,4 +878,4 @@ spec:
   #   #  username:
   #   data_persistence:
   #     enable: true
-  #     object_store_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}
+  #     object_store_name: ${CP4BA_INST_AE_OS_NAME}

@@ -20,6 +20,7 @@
 ## patterns: foundation,baw_authoring
 ##
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-workflow-authoring
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=foundation-application-engine
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
@@ -185,6 +186,7 @@ spec:
 
     dc_os_datasources:
 
+      # d.s. DOCS
       - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWDOCS_LBL}"
         dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
@@ -199,6 +201,7 @@ spec:
         dc_hadr_retry_interval_for_client_reroute: 15
         dc_hadr_max_retries_for_client_reroute: 3
 
+      # d.s. DOS
       - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWDOS_LBL}"
         dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
@@ -214,6 +217,7 @@ spec:
         dc_hadr_retry_interval_for_client_reroute: 15
         dc_hadr_max_retries_for_client_reroute: 3
 
+      # d.s. TOS
       - dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
         dc_os_label: "${CP4BA_INST_DB_BAWTOS_LBL}"
         dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
@@ -321,8 +325,10 @@ spec:
 
       object_stores:
 
-        ##-----------------------------------------
-        ## BAW
+        #-----------------------------------------
+        # BAW
+
+        # o.s DOCS
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
           oc_cpe_obj_store_conn:
@@ -333,6 +339,7 @@ spec:
             - "${CP4BA_INST_PAKBA_ADMIN_USER}"
             - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
 
+        # o.s DOS
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
           oc_cpe_obj_store_conn:
@@ -343,6 +350,7 @@ spec:
             - "${CP4BA_INST_PAKBA_ADMIN_USER}"
             - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           
+        # o.s TOS
         - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
           oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
           oc_cpe_obj_store_conn:
@@ -367,52 +375,56 @@ spec:
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
 
-#        ##-----------------------------------------
-#        ## Application Engine
-#        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-#          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-#          oc_cpe_obj_store_conn:
-#            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE_CONN_NAME}"
-#            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
-#            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
-#          oc_cpe_obj_store_admin_user_groups:
-#            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-#            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-#          #-----
-#          oc_cpe_obj_store_asa_file_systems_storage_device_name: ${CP4BA_INST_DB_AE_LBL}_file_system_storage
-#          oc_cpe_obj_store_asa_name: ${CP4BA_INST_DB_AE_LBL}_asa
-#          oc_cpe_obj_store_asa_root_dir_path: /opt/ibm/asa/${CP4BA_INST_DB_AE_LBL}_storagearea
-#
-#        # o.s. AEOS (application engine)
-#        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
-#          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
-#          oc_cpe_obj_store_conn:
-#            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS_CONN_NAME}"
-#            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
-#            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}XA"
-#          oc_cpe_obj_store_admin_user_groups:
-#            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-#            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-#          oc_cpe_obj_store_asa_file_systems_storage_device_name: ${CP4BA_INST_DB_AEOS_LBL}_file_system_storage
-#          oc_cpe_obj_store_asa_name: ${CP4BA_INST_DB_AEOS_LBL}_asa
-#          oc_cpe_obj_store_asa_root_dir_path: /opt/ibm/asa/${CP4BA_INST_DB_AEOS_LBL}_storagearea
-#
-#        # o.s. APP (playback server)
-#        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
-#          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
-#          oc_cpe_obj_store_conn:
-#            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP_CONN_NAME}"
-#            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
-#            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}XA"
-#          oc_cpe_obj_store_admin_user_groups:
-#            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-#            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-#          oc_cpe_obj_store_asa_file_systems_storage_device_name: ${CP4BA_INST_DB_APP_LBL}_file_system_storage
-#          oc_cpe_obj_store_asa_name: ${CP4BA_INST_DB_APP_LBL}_asa
-#          oc_cpe_obj_store_asa_root_dir_path: /opt/ibm/asa/${CP4BA_INST_DB_APP_LBL}_storagearea
+        #-----------------------------------------
+        # Application Engine
 
-        ##-----------------------------------------
-        ## Application Workstream Services
+        # o.s AE
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE_CONN_NAME}"
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+          #-----
+          oc_cpe_obj_store_asa_file_systems_storage_device_name: ${CP4BA_INST_DB_AE_LBL}_file_system_storage
+          oc_cpe_obj_store_asa_name: ${CP4BA_INST_DB_AE_LBL}_asa
+          oc_cpe_obj_store_asa_root_dir_path: /opt/ibm/asa/${CP4BA_INST_DB_AE_LBL}_storagearea
+
+        # o.s. AEOS (application engine)
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS_CONN_NAME}"
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+          #-----
+          oc_cpe_obj_store_asa_file_systems_storage_device_name: ${CP4BA_INST_DB_AEOS_LBL}_file_system_storage
+          oc_cpe_obj_store_asa_name: ${CP4BA_INST_DB_AEOS_LBL}_asa
+          oc_cpe_obj_store_asa_root_dir_path: /opt/ibm/asa/${CP4BA_INST_DB_AEOS_LBL}_storagearea
+
+        # o.s. APP (playback server)
+        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
+          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
+          oc_cpe_obj_store_conn:
+            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP_CONN_NAME}"
+            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}"
+            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1APP}XA"
+          oc_cpe_obj_store_admin_user_groups:
+            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+          #-----
+          oc_cpe_obj_store_asa_file_systems_storage_device_name: ${CP4BA_INST_DB_APP_LBL}_file_system_storage
+          oc_cpe_obj_store_asa_name: ${CP4BA_INST_DB_APP_LBL}_asa
+          oc_cpe_obj_store_asa_root_dir_path: /opt/ibm/asa/${CP4BA_INST_DB_APP_LBL}_storagearea
+
+        #-----------------------------------------
+        # Application Workstream Services
         # # o.s. AWSDB 
         # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
         #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AWS}"
@@ -438,34 +450,37 @@ spec:
 
     ic_icn_init_info:
       icn_repos:
-        - add_repo_id: "my_demo_repo1"
+        - add_repo_id: "my_repo_ae"
           add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
-          add_repo_os_sym_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
-          add_repo_os_dis_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1}"
+          add_repo_os_sym_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          add_repo_os_dis_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
           add_repo_workflow_enable: false
-          add_repo_work_conn_pnt: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1OS1_CONN_NAME}:${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}"
+          add_repo_work_conn_pnt: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE_CONN_NAME}:${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}"
           add_repo_protocol: "FileNetP8WSI"
 
-        - add_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+        - add_repo_id: "my_repo_aeos"
           add_repo_ce_wsi_url: "https://{{ meta.name }}-cpe-stateless-svc.{{ meta.namespace }}.svc:9443/wsi/FNCEWS40MTOM/"
-          add_repo_os_sym_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-          add_repo_os_dis_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+          add_repo_os_sym_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+          add_repo_os_dis_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
           add_repo_workflow_enable: false
-          add_repo_work_conn_pnt: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_CONN_NAME}:${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_REGION_NUM}"
+          add_repo_work_conn_pnt: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS_CONN_NAME}:${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}"
           add_repo_protocol: "FileNetP8WSI"
 
       icn_desktop:
-        - add_desktop_id: "my_demo"
-          add_desktop_name: "icn_desktop"
-          add_desktop_description: "This is My ICN desktop"
-          add_desktop_is_default: false
-          add_desktop_repo_id: "my_demo_repo1"
-          add_desktop_repo_workflow_enable: false
 
-        - add_desktop_description: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-          add_desktop_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-          add_desktop_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
-          add_desktop_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
+        - add_desktop_description: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          add_desktop_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          add_desktop_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          add_desktop_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AE}"
+          add_desktop_repo_workflow_enable: false
+          add_desktop_is_default: false
+
+        - add_desktop_description: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+          add_desktop_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+          add_desktop_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+          add_desktop_repo_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}"
+          add_desktop_repo_workflow_enable: false
+          add_desktop_is_default: false
 
   ## BAI
   bai_configuration:
@@ -785,20 +800,20 @@ spec:
 
   # IBM Business Automation Application server
   application_engine_configuration:
-  - name: workspace
-    admin_secret_name: "{{ meta.name }}-workspace-aae-app-engine-admin-secret"
+  - name: ${CP4BA_INST_AE_NAME}
+    admin_secret_name: "${CP4BA_INST_AE_SECRET_NAME}"
     admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
     database:
-      type: PostgreSQL
+      type: "${CP4BA_INST_AE_DB_TYPE}:=postgresql"
       host: "${CP4BA_INST_DB_1_SERVER_NAME}"
       port: "${CP4BA_INST_DB_SERVER_PORT}"
       name: "${CP4BA_INST_AE_DB_NAME}"
       enable_ssl: ${CP4BA_INST_DB_1_TLS_ENABLED}
       db_cert_secret_name: "${CP4BA_INST_DB_1_TLS_CERTS_SECRET_NAME}"
     env:
-      server_env_type: development
+      server_env_type: ${CP4BA_INST_AE_SERVER_ENV_TYPE}
     session:
       use_external_store: false
     data_persistence:
-      enable: false
-      #object_store_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1AEOS}
+      enable: ${CP4BA_INST_AE_PERSISTENCE_ENABLE}
+      object_store_name: ${CP4BA_INST_AE_OS_NAME}

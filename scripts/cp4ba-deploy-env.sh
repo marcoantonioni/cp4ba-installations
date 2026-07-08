@@ -71,7 +71,7 @@ usage () {
     -l(optional) ldap-config-file
        (eg: '../configs/_cfg-production-ldap-domain.properties')
     -w(optional) wait only, skip deployment and create access info file
-    -g(optional) generate yaml only, skip deployment
+    -g(optional) generate yaml and sql [skip deployment]
     -f(optional) federate only, skip deployment
     -t(optional) trace enabled${_CLR_NC}"
 }
@@ -1007,7 +1007,7 @@ waitDeploymentReadiness () {
             log_msg ""
             federateBawsInDeployment
           else
-            log_error "${_CLR_RED}[✗] Error, deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_RED}' capability.${_CLR_NC}"
+            log_warning "${_CLR_GREEN}[✗] Deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_GREEN}' capability.${_CLR_NC}"
           fi
         fi
       fi

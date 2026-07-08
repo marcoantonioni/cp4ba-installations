@@ -457,7 +457,7 @@ configureGenAI() {
       if [[ ${CP4BA_INST_DEPL_PATTERNS} == *"workflow"* ]]; then
         _createGenAiConfiguration $1
       else
-        log_error "${_CLR_RED}[✗] Error, deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_RED}' capability.${_CLR_NC}"
+        log_warning "${_CLR_GREEN}[✗] Deployment pattern configuration doesn't contain '${_CLR_YELLOW}workflow${_CLR_GREEN}' capability.${_CLR_NC}"
       fi
     else
       log_error "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}$1${_CLR_RED}' doesn't exists. ${_CLR_NC}"
