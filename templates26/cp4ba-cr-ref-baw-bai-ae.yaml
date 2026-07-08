@@ -1260,7 +1260,7 @@ spec:
     admin_secret_name: "${CP4BA_INST_AE_SECRET_NAME}"
     admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
     database:
-      type: "${CP4BA_INST_AE_DB_TYPE}:=postgresql"
+      type: "${CP4BA_INST_AE_DB_TYPE}"
       host: "${CP4BA_INST_DB_1_SERVER_NAME}"
       port: "${CP4BA_INST_DB_SERVER_PORT}"
       name: "${CP4BA_INST_AE_DB_NAME}"
