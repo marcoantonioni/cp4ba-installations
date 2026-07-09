@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.6.6] - 2026-07-09
+
+### Added
+
+### Changed
+
+Some env configuration files
+
+### Fixed
+
+
 ## [1.6.5] - 2026-07-08
 
 ### Added
