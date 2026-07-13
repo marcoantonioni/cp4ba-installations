@@ -64,7 +64,10 @@ spec:
     enable_fips: false
     sc_egress_configuration:
       sc_restricted_internet_access: false
-    sc_content_initialization: true
+
+    # !!!!
+    sc_content_initialization: false
+    
     sc_content_verification: false
     encryption_key_secret: ibm-iaws-shared-key-secret
     image_pull_secrets:
@@ -172,62 +175,62 @@ spec:
       dc_hadr_retry_interval_for_client_reroute: 15
       dc_hadr_max_retries_for_client_reroute: 3
 
-    dc_cpe_datasources:
-
-      - database_name: "${CP4BA_INST_CHOS_DB_NAME}"
-        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-        database_ssl_secret_name: ""
-        dc_common_conn_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1_CONN_NAME}"
-        dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
-        dc_common_cpe_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}XA"
-        dc_os_label: ${CP4BA_INST_DB_CHOS_LBL}
-
-    dc_os_datasources:
-
-      - database_name: "${CP4BA_INST_DOCS_DB_NAME}"
-        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-        dc_os_label: "${CP4BA_INST_DB_BAWDOCS_LBL}"
-        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
-        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}XA"
-        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-        database_ssl_secret_name: ""
-        dc_hadr_validation_timeout: 15
-        dc_hadr_standby_servername: ""
-        dc_hadr_standby_port: ""
-        dc_hadr_retry_interval_for_client_reroute: 15
-        dc_hadr_max_retries_for_client_reroute: 3
-
-      - database_name: "${CP4BA_INST_DOS_DB_NAME}"
-        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-        dc_os_label: "${CP4BA_INST_DB_BAWDOS_LBL}"
-        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
-        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}XA"
-        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-        database_ssl_secret_name: ""
-        dc_oracle_os_jdbc_url: ""
-        dc_hadr_validation_timeout: 15
-        dc_hadr_standby_servername: ""
-        dc_hadr_standby_port: ""
-        dc_hadr_retry_interval_for_client_reroute: 15
-        dc_hadr_max_retries_for_client_reroute: 3
-
-      - database_name: "${CP4BA_INST_TOS_DB_NAME}"
-        dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-        dc_os_label: "${CP4BA_INST_DB_BAWTOS_LBL}"
-        dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
-        dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}XA"
-        database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
-        database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-        database_ssl_secret_name: ""
-        dc_hadr_validation_timeout: 15
-        dc_hadr_standby_servername: ""
-        dc_hadr_standby_port: ""
-        dc_hadr_retry_interval_for_client_reroute: 15
-        dc_hadr_max_retries_for_client_reroute: 3
+    # dc_cpe_datasources:
+# 
+    #   - database_name: "${CP4BA_INST_CHOS_DB_NAME}"
+    #     dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+    #     database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+    #     database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+    #     database_ssl_secret_name: ""
+    #     dc_common_conn_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1_CONN_NAME}"
+    #     dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
+    #     dc_common_cpe_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}XA"
+    #     dc_os_label: ${CP4BA_INST_DB_CHOS_LBL}
+# 
+    # dc_os_datasources:
+# 
+    #   - database_name: "${CP4BA_INST_DOCS_DB_NAME}"
+    #     dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+    #     dc_os_label: "${CP4BA_INST_DB_BAWDOCS_LBL}"
+    #     dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
+    #     dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}XA"
+    #     database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+    #     database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+    #     database_ssl_secret_name: ""
+    #     dc_hadr_validation_timeout: 15
+    #     dc_hadr_standby_servername: ""
+    #     dc_hadr_standby_port: ""
+    #     dc_hadr_retry_interval_for_client_reroute: 15
+    #     dc_hadr_max_retries_for_client_reroute: 3
+# 
+    #   - database_name: "${CP4BA_INST_DOS_DB_NAME}"
+    #     dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+    #     dc_os_label: "${CP4BA_INST_DB_BAWDOS_LBL}"
+    #     dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
+    #     dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}XA"
+    #     database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
+    #     database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+    #     database_ssl_secret_name: ""
+    #     dc_oracle_os_jdbc_url: ""
+    #     dc_hadr_validation_timeout: 15
+    #     dc_hadr_standby_servername: ""
+    #     dc_hadr_standby_port: ""
+    #     dc_hadr_retry_interval_for_client_reroute: 15
+    #     dc_hadr_max_retries_for_client_reroute: 3
+# 
+    #   - database_name: "${CP4BA_INST_TOS_DB_NAME}"
+    #     dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+    #     dc_os_label: "${CP4BA_INST_DB_BAWTOS_LBL}"
+    #     dc_common_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
+    #     dc_common_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}XA"
+    #     database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"        
+    #     database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+    #     database_ssl_secret_name: ""
+    #     dc_hadr_validation_timeout: 15
+    #     dc_hadr_standby_servername: ""
+    #     dc_hadr_standby_port: ""
+    #     dc_hadr_retry_interval_for_client_reroute: 15
+    #     dc_hadr_max_retries_for_client_reroute: 3
 
       # - database_name: "${CP4BA_INST_CONTENT_DB_NAME}"
       #   dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
@@ -342,58 +345,58 @@ spec:
       ic_ldap_admins_groups_name:
         - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
     ic_domain_creation:
-      domain_name: "P8DOMAIN"
-      encryption_key: "128"
+      # domain_name: "P8DOMAIN"
+      # encryption_key: "128"
     ic_obj_store_creation:
 
       object_stores:
 
         ##-----------------------------------------
         ## BAW
-        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
-          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
-          oc_cpe_obj_store_conn:
-            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS_CONN_NAME}"
-            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
-            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}XA"
-          oc_cpe_obj_store_admin_user_groups:
-            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-
-        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
-          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
-          oc_cpe_obj_store_conn:
-            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS_CONN_NAME}"
-            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
-            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}XA"
-          oc_cpe_obj_store_admin_user_groups:
-            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          
-        - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
-          oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
-          oc_cpe_obj_store_conn:
-            name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_CONN_NAME}"
-            site_name: InitialSite
-            dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
-            dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}XA"
-          oc_cpe_obj_store_admin_user_groups:
-            - "${CP4BA_INST_PAKBA_ADMIN_USER}"
-            - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          oc_cpe_obj_store_enable_compression: false
-          oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
-          oc_cpe_obj_store_enable_workflow: true
-          oc_cpe_obj_store_workflow_locale: en
-          oc_cpe_obj_store_workflow_region_number: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}
-          oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NAME}"
-          oc_cpe_obj_store_workflow_date_time_mask: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_DT_MASK}"
-          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
-          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
-          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"          
-          oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
-          oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
-
+        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
+        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
+        #   oc_cpe_obj_store_conn:
+        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS_CONN_NAME}"
+        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
+        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}XA"
+        #   oc_cpe_obj_store_admin_user_groups:
+        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+# 
+        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
+        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
+        #   oc_cpe_obj_store_conn:
+        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS_CONN_NAME}"
+        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
+        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}XA"
+        #   oc_cpe_obj_store_admin_user_groups:
+        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+        #   
+        # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
+        #   oc_cpe_obj_store_symb_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
+        #   oc_cpe_obj_store_conn:
+        #     name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_CONN_NAME}"
+        #     site_name: InitialSite
+        #     dc_os_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
+        #     dc_os_xa_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}XA"
+        #   oc_cpe_obj_store_admin_user_groups:
+        #     - "${CP4BA_INST_PAKBA_ADMIN_USER}"
+        #     - "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+        #   oc_cpe_obj_store_enable_compression: false
+        #   oc_cpe_obj_store_enable_content_event_emitter: ${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}
+        #   oc_cpe_obj_store_enable_workflow: true
+        #   oc_cpe_obj_store_workflow_locale: en
+        #   oc_cpe_obj_store_workflow_region_number: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}
+        #   oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NAME}"
+        #   oc_cpe_obj_store_workflow_date_time_mask: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_DT_MASK}"
+        #   oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
+        #   oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
+        #   oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"          
+        #   oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+        #   oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
+        #   oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
+# 
         ##-----------------------------------------
         # # CONTENT
         # - oc_cpe_obj_store_display_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
@@ -519,13 +522,13 @@ spec:
         #   add_repo_work_conn_pnt: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_CONN_NAME}:${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT_REGION_NUM}"
         #   add_repo_protocol: "FileNetP8WSI"
 
-      icn_desktop:
-        - add_desktop_id: "my_demo"
-          add_desktop_name: "icn_desktop"
-          add_desktop_description: "This is My ICN desktop"
-          add_desktop_is_default: false
-          add_desktop_repo_id: "my_demo_repo1"
-          add_desktop_repo_workflow_enable: false
+      # icn_desktop:
+      #   - add_desktop_id: "my_demo"
+      #     add_desktop_name: "icn_desktop"
+      #     add_desktop_description: "This is My ICN desktop"
+      #     add_desktop_is_default: false
+      #     add_desktop_repo_id: "my_demo_repo1"
+      #     add_desktop_repo_workflow_enable: false
 
         # - add_desktop_description: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
         #   add_desktop_id: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CONTENT}"
@@ -613,38 +616,38 @@ spec:
   workflow_authoring_configuration:
 
     ## The configurations for content integration for attachment in process
-    content_integration:
-      ## Domain name for content integration. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
-      domain_name: "P8DOMAIN"
-      object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
+    # content_integration:
+    #   ## Domain name for content integration. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
+    #   domain_name: "P8DOMAIN"
+    #   object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOCS}"
 
     ## The configuration for case
-    case:
-      ## Domain name for CASE. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
-      domain_name: "P8DOMAIN"
-      object_store_name_dos: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
-      tos_list:
-      - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
-        connection_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
-        target_environment_name: "dev_env_connection_definition"
-        is_default: true
-
-      network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
-      custom_package_names: ""
-      custom_extension_names: ""
-      cpe_metadata_cache_time_to_live: ""
-
-      event_emitter:
-      - casetype_list: '*'
-        connection_point_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}
-        date_sql: ${CP4BA_INST_BAI_EVENT_EMITTER_DATE_SQL}
-        logical_unique_id: ${CP4BA_INST_BAI_EVENT_EMITTER_UNIQUE_ID}
-        solution_list: '*'
-        tos_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}
-      case_history_emitter:
-        case_history_store_schema_name: ${CP4BA_INST_DB_CHOS_USER} # schema name = owner name = user name
-        dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
-        enable: true
+    # case:
+    #   ## Domain name for CASE. The value must be the same as initialize_configuration.ic_domain_creation.domain_name.
+    #   domain_name: "P8DOMAIN"
+    #   object_store_name_dos: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1DOS}"
+    #   tos_list:
+    #   - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
+    #     connection_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"
+    #     target_environment_name: "dev_env_connection_definition"
+    #     is_default: true
+# 
+    #   network_shared_directory_pvc: "{{ navigator_configuration.datavolume.existing_pvc_for_icn_pluginstore.name | default('icn-pluginstore', true) }}"
+    #   custom_package_names: ""
+    #   custom_extension_names: ""
+    #   cpe_metadata_cache_time_to_live: ""
+# 
+    #   event_emitter:
+    #   - casetype_list: '*'
+    #     connection_point_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}
+    #     date_sql: ${CP4BA_INST_BAI_EVENT_EMITTER_DATE_SQL}
+    #     logical_unique_id: ${CP4BA_INST_BAI_EVENT_EMITTER_UNIQUE_ID}
+    #     solution_list: '*'
+    #     tos_name: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}
+    #   case_history_emitter:
+    #     case_history_store_schema_name: ${CP4BA_INST_DB_CHOS_USER} # schema name = owner name = user name
+    #     dc_common_cpe_datasource_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1CHOS1}"
+    #     enable: true
 
     ## Application engine configuration, because application engine is an array,
     ## when there is only one Application engine deployed along with this CR, below four parameters are not required.
@@ -700,19 +703,19 @@ spec:
       # content_security_policy_additional_style_src: []
 
     ## federation config
-    federation_config:
-      # workflow_server:
-      #     ## Number of primary shards of the Elasticsearch/Opensearch index used to store Workflow Authoring data.
-      #     index_number_of_shards: 3
-      #     ## Number of shard replicas of the Elasticsearch/Opensearch index used to store Workflow Authoring data.
-      #     index_number_of_replicas: 1
-      case_manager:
-            ## Case Manager object store name.
-          - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
-            ## Number of primary shards of the Elasticsearch/Opensearch index used to store Case Manager object store data.
-            # index_number_of_shards: 3
-            ## Number of shard replicas of the Elasticsearch/Opensearch index used to store Case Manager object store data.
-            # index_number_of_replicas: 1
+    # federation_config:
+    #   # workflow_server:
+    #   #     ## Number of primary shards of the Elasticsearch/Opensearch index used to store Workflow Authoring data.
+    #   #     index_number_of_shards: 3
+    #   #     ## Number of shard replicas of the Elasticsearch/Opensearch index used to store Workflow Authoring data.
+    #   #     index_number_of_replicas: 1
+    #   case_manager:
+    #         ## Case Manager object store name.
+    #       - object_store_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS}"
+    #         ## Number of primary shards of the Elasticsearch/Opensearch index used to store Case Manager object store data.
+    #         # index_number_of_shards: 3
+    #         ## Number of shard replicas of the Elasticsearch/Opensearch index used to store Case Manager object store data.
+    #         # index_number_of_replicas: 1
 
     ## JVM options separated with spaces, for example: -Dtest1=test -Dtest2=test2.
     ## jvm_customize_options:

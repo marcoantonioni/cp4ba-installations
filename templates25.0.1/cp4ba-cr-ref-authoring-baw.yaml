@@ -95,7 +95,7 @@ spec:
       ## All CP4A components should use this pull_policy as the default, but it can override by each component
       pull_policy: IfNotPresent
 
-    sc_drivers_url:
+    sc_drivers_url: ''
 
   ldap_configuration:
     lc_selected_ldap_type: "Custom"

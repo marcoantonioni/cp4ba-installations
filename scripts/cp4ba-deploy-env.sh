@@ -636,18 +636,28 @@ postInstallationSteps () {
 
 }
 
-
-#-------------------------------
-generateCR () {
+_setDefaultValuesIfNotDefined () {
 
   if [[ -z "${CP4BA_INST_FNCM_LICENSE_TYPE}" ]]; then
     export CP4BA_INST_FNCM_LICENSE_TYPE="production"
     log_warning "Value for CP4BA_INST_FNCM_LICENSE_TYPE is not set, default to 'production' value"
   fi
+
   if [[ -z "${CP4BA_INST_BAW_LICENSE_TYPE}" ]]; then
     export CP4BA_INST_BAW_LICENSE_TYPE="production"
     log_warning "Value for CP4BA_INST_BAW_LICENSE_TYPE is not set, default to 'production' value"
   fi
+
+  if [[ -z "${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}" ]]; then
+    export CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED=false
+    log_warning "Value for CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED is not set, default to 'false' value"
+  fi
+
+}
+
+#-------------------------------
+generateCR () {
+  _setDefaultValuesIfNotDefined
 
   _INST_ENV_FULL_PATH="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   envsubst < ../${CP4BA_INST_CR_TEMPLATE} > ${_INST_ENV_FULL_PATH}
@@ -661,6 +671,7 @@ generateCR () {
     _MISSED_PLACEHOLDERS=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\${" | wc -l)
     _MISSED_OPTIONALS=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\"<Optional>\"" | wc -l)
     _MISSED_REQUIRED=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\"<Required>\"" | wc -l)
+    _NULL_VALUES=$(cat ${_INST_ENV_FULL_PATH} | grep ": null" | wc -l)
 
     if [ $_MISSED_PLACEHOLDERS -gt 0 ]; then
       log_error "${_CLR_RED}[✗] Error, $_MISSED_PLACEHOLDERS missed placeholder '\${...}' in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
@@ -674,6 +685,10 @@ generateCR () {
 
     if [[ $_MISSED_PLACEHOLDERS -gt 0 || $_MISSED_OPTIONALS -gt 0 || $_MISSED_REQUIRED -gt 0 ]]; then
       exit 1
+    fi
+
+    if [[ $_NULL_VALUES -gt 0 ]]; then
+      log_warning "${_CLR_RED}[✗] Found, $_NULL_VALUES null values in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
     fi
 
     yq ${_INST_ENV_FULL_PATH} 2>/dev/null 1>/dev/null

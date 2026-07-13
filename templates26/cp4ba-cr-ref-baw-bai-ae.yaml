@@ -94,7 +94,7 @@ spec:
         tag: "26.0.0"
       pull_policy: IfNotPresent
 
-    sc_drivers_url:
+    sc_drivers_url: ''
 
     # v26
     sc_deployment_ocp_platform:
