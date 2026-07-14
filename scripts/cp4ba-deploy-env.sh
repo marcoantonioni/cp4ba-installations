@@ -1125,18 +1125,7 @@ waitDeploymentReadiness () {
 }
 
 checkUndefinedVariables () {
-  _FOLDER_CONFIGS="/home/marco/cp4ba-projects/cp4ba-installations/configs26"
-  _FILE_PROPS="env1-authoring-baw-bai.properties"
-  _FOLDER_TEMPLATES="/home/marco/cp4ba-projects/cp4ba-installations/templates26"
-  _FILE_YAML="cp4ba-cr-ref-authoring-baw-bai.yaml"
-
-  _TMP_VAR_NAMES="${_INST_TMP_FOLDER}/cp4ba-pfs-params-$USER-$RANDOM"
-
-  # source ${_FOLDER_CONFIGS}/${_FILE_PROPS} 2>/dev/null
-  # if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
-  #   source ${_FOLDER_CONFIGS}/${CP4BA_INST_LDAP_CFG_FILE}
-  #   source ${_FOLDER_CONFIGS}/${_FILE_PROPS} 2>/dev/null
-  # fi
+  _TMP_VAR_NAMES="${_INST_TMP_FOLDER}/cp4ba-undef-vars-$USER-$RANDOM"
 
   _ERRORS=0
   cat ../${CP4BA_INST_CR_TEMPLATE} | grep "\${" | awk '{$1=$1};1' | sed '/^#/d' | sed 's/^.*\(\${.*\}\).*$/\1/' | sort | uniq | sed 's/\${//g' | sed 's/\}//g' > ${_TMP_VAR_NAMES}
