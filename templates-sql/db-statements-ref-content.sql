@@ -70,3 +70,12 @@ GRANT CREATE ON TABLESPACE §§dbPrefix§§_vwindex_ts to §§dbOSowner§§;
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_vwblob_ts to §§dbOSowner§§; 
 
 
+/*
+Db Model Gateway
+*/
+CREATE USER §§dbMGowner§§ WITH PASSWORD '§§dbMGowner_password§§';
+CREATE DATABASE §§dbPrefix§§_modelgateway; 
+GRANT CONNECT ON DATABASE §§dbPrefix§§_modelgateway TO public;
+ALTER DATABASE §§dbPrefix§§_modelgateway OWNER TO §§dbMGowner§§;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_modelgateway TO §§dbMGowner§§;
+ALTER DATABASE §§dbPrefix§§_modelgateway SET timezone TO 'Etc/UTC';

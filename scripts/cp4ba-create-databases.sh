@@ -159,7 +159,8 @@ _generateSQL () {
     | sed 's/§§dbODMowner§§/'"${CP4BA_INST_DB_ODM_USER}"'/g' | sed 's/§§dbODMowner_password§§/'"${CP4BA_INST_DB_ODM_PWD}"'/g' \
     | sed 's/§§dbADSRTowner§§/'"${CP4BA_INST_DB_ADSRT_USER}"'/g' | sed 's/§§dbADSRTowner_password§§/'"${CP4BA_INST_DB_ADSRT_PWD}"'/g' \
     | sed 's/§§dbADSDESowner§§/'"${CP4BA_INST_DB_ADSDES_USER}"'/g' | sed 's/§§dbADSDESowner_password§§/'"${CP4BA_INST_DB_ADSDES_PWD}"'/g' \
-    | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' > ${ENV_STATS}
+    | sed 's/§§dbOSowner§§/'"${CP4BA_INST_DB_OS_USER}"'/g' | sed 's/§§dbOSowner_password§§/'"${CP4BA_INST_DB_OS_PWD}"'/g' \
+    | sed 's/§§dbMGowner§§/'"${CP4BA_INST_DB_MODELGATEWAY_USER}"'/g' | sed 's/§§dbMGowner_password§§/'"${CP4BA_INST_DB_MODELGATEWAY_PWD}"'/g' > ${ENV_STATS}
 
   mkdir -p ${CP4BA_INST_OUTPUT_FOLDER}
   _T_NAME="${_DB_TEMPLATE##*/}"

@@ -102,3 +102,12 @@ GRANT ALL PRIVILEGES ON DATABASE im TO bts_user;
 ALTER DATABASE bts SET timezone TO 'Etc/UTC';
 
 
+/*
+Db Model Gateway
+*/
+CREATE USER §§dbMGowner§§ WITH PASSWORD '§§dbMGowner_password§§';
+CREATE DATABASE §§dbPrefix§§_modelgateway; 
+GRANT CONNECT ON DATABASE §§dbPrefix§§_modelgateway TO public;
+ALTER DATABASE §§dbPrefix§§_modelgateway OWNER TO §§dbMGowner§§;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_modelgateway TO §§dbMGowner§§;
+ALTER DATABASE §§dbPrefix§§_modelgateway SET timezone TO 'Etc/UTC';

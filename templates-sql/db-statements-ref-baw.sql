@@ -285,3 +285,12 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_appdb TO §§dbAPPowner§§;
 CREATE SCHEMA IF NOT EXISTS §§dbAPPowner§§ AUTHORIZATION §§dbAPPowner§§;
 GRANT ALL ON SCHEMA §§dbAPPowner§§ TO §§dbAPPowner§§;
 
+/*
+Db Model Gateway
+*/
+CREATE USER §§dbMGowner§§ WITH PASSWORD '§§dbMGowner_password§§';
+CREATE DATABASE §§dbPrefix§§_modelgateway; 
+GRANT CONNECT ON DATABASE §§dbPrefix§§_modelgateway TO public;
+ALTER DATABASE §§dbPrefix§§_modelgateway OWNER TO §§dbMGowner§§;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_modelgateway TO §§dbMGowner§§;
+ALTER DATABASE §§dbPrefix§§_modelgateway SET timezone TO 'Etc/UTC';

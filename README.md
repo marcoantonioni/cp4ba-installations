@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-07-13</i> (see changelog.md for details)
+<i>Last update: 2026-07-14</i> (see changelog.md for details)
 
 As of June 26 2026, the 'main' branch contains artifacts compatible with v26.
 
@@ -70,6 +70,8 @@ A linux box (scripts are only available in the bash shell)
 'openssl' client tool (mandatory)
 
 'podman' (mandatory)
+
+'helm' (mandatory from v26 to deploy Model Gateway)
 
 **Warning: Use recent versions of the tools.**
 
@@ -885,6 +887,15 @@ You may find a portable version of 'yq' in folder './scripts/helper/yq/' of CP4B
 
 ### Openssl
 [https://www.openssl.org/](https://www.openssl.org/)
+
+### Helm
+
+Fast linux amd64 installation for OCP envs
+```bash
+sudo curl -L https://mirror.openshift.com/pub/openshift-v4/clients/helm/latest/helm-linux-amd64 -o /usr/local/bin/helm
+sudo chmod +x /usr/local/bin/helm
+helm version
+```
 
 ### Home of CP4BA Case Installation tool
 https://github.com/IBM/cloud-pak/tree/master/repo/case/ibm-cp-automation

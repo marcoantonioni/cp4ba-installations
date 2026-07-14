@@ -1,6 +1,20 @@
 
 # Change Log
 
+## [1.6.8] - 2026-07-14
+
+### Added
+
+
+### Changed
+
+Helm prerequisite for model gateway deployment
+
+Added checks on the validity of the generated CR in case of undefined variables and possible attributes with a 'null' value.
+
+### Fixed
+
+
 ## [1.6.7] - 2026-07-13
 
 ### Added

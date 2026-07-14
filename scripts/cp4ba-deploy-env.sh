@@ -2,7 +2,6 @@
 
 #set -euo pipefail
 
-
 _me=$(basename "$0")
 
 _CFG=""
@@ -657,7 +656,6 @@ _setDefaultValuesIfNotDefined () {
 
 #-------------------------------
 generateCR () {
-  _setDefaultValuesIfNotDefined
 
   _INST_ENV_FULL_PATH="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}.yaml"
   envsubst < ../${CP4BA_INST_CR_TEMPLATE} > ${_INST_ENV_FULL_PATH}
@@ -689,6 +687,10 @@ generateCR () {
 
     if [[ $_NULL_VALUES -gt 0 ]]; then
       log_warning "${_CLR_RED}[✗] Found, $_NULL_VALUES null values in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      echo "!!! Suspicious 'null' values !!!"
+      echo "----------------------------------------------"
+      cat ${_INST_ENV_FULL_PATH} | grep "null"
+      echo "----------------------------------------------"
     fi
 
     yq ${_INST_ENV_FULL_PATH} 2>/dev/null 1>/dev/null
@@ -745,8 +747,6 @@ checkEnvVarsForCR () {
 
 #-------------------------------
 deployEnvironment () {
-
-  checkEnvVarsForCR
 
   log_msg "==============================================================${_CLR_NC}"
   log_info "${_CLR_GREEN}Deploy the environment${_CLR_NC}"
@@ -1124,10 +1124,48 @@ waitDeploymentReadiness () {
   fi
 }
 
+checkUndefinedVariables () {
+  _FOLDER_CONFIGS="/home/marco/cp4ba-projects/cp4ba-installations/configs26"
+  _FILE_PROPS="env1-authoring-baw-bai.properties"
+  _FOLDER_TEMPLATES="/home/marco/cp4ba-projects/cp4ba-installations/templates26"
+  _FILE_YAML="cp4ba-cr-ref-authoring-baw-bai.yaml"
+
+  _TMP_VAR_NAMES="${_INST_TMP_FOLDER}/cp4ba-pfs-params-$USER-$RANDOM"
+
+  # source ${_FOLDER_CONFIGS}/${_FILE_PROPS} 2>/dev/null
+  # if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
+  #   source ${_FOLDER_CONFIGS}/${CP4BA_INST_LDAP_CFG_FILE}
+  #   source ${_FOLDER_CONFIGS}/${_FILE_PROPS} 2>/dev/null
+  # fi
+
+  _ERRORS=0
+  cat ../${CP4BA_INST_CR_TEMPLATE} | grep "\${" | awk '{$1=$1};1' | sed '/^#/d' | sed 's/^.*\(\${.*\}\).*$/\1/' | sort | uniq | sed 's/\${//g' | sed 's/\}//g' > ${_TMP_VAR_NAMES}
+  _LIST_VARS=$(cat ${_TMP_VAR_NAMES})
+  for _VAR_NAME in ${_LIST_VARS}
+  do
+    _VAR_VALUE=${!_VAR_NAME}
+    if [[ "$_VAR_VALUE" = "" ]]; then
+      log_error "Variable '$_VAR_NAME' not set."
+      _ERRORS=$((_ERRORS + 1))
+    fi
+  done
+  rm ${_TMP_VAR_NAMES}
+  if [[ $_ERRORS -gt 0 ]]; then
+    echo "Total errors $_ERRORS, verify property file '$_CFG' for variables defined in '$CP4BA_INST_CR_TEMPLATE'"
+    exit 1
+  fi
+
+}
+
 startDeployEnv () {
   setTemporaryFolder
   checkPrereqTools
   checkPrereqVars
+
+  _setDefaultValuesIfNotDefined
+  checkEnvVarsForCR
+
+  checkUndefinedVariables
 
   if [[ "${_GENERATE_ONLY}" = "true" ]]; then
     generateCR
