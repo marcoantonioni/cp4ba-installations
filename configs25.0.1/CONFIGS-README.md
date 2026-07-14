@@ -76,6 +76,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-wfps-pfs-bai.properties
 
 #### Configuration Validation
 
+##### v26
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw-bai-ae.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw-bai-nocpeinit.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw-bai.properties
@@ -84,6 +85,34 @@ CONFIG_FILE=${_PTC}/env1-authoring-wfps-pfs-bai.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-runtime-baw-bai.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-runtime-opensearch-foundation.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-runtime-os-bai-pfs.properties
+
+##### v25
+
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw-bai-onedb-ext.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw-bai-onedb-int-1000.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw-bai-onedb-int.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw-bai-pg17.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw-bai.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw-multi-db.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-wfps-bai.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-wfps-pfs-bai.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-wfps-pfs.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-wfps.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-extdb-authoring-wfps.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-baw-bai-perf-test.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-baw-bai.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-baw-double-pfs.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-baw-double.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-baw-no-case.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-baw.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-opensearch-foundation.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-wfps-1000.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-wfps-bai.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-wfps-np.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-wfps-pfs-bai.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-wfps-pfs.properties
+./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-wfps.properties
 
 
 ### v25

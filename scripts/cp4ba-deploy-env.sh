@@ -1132,10 +1132,12 @@ checkUndefinedVariables () {
   _LIST_VARS=$(cat ${_TMP_VAR_NAMES})
   for _VAR_NAME in ${_LIST_VARS}
   do
-    _VAR_VALUE=${!_VAR_NAME}
-    if [[ "$_VAR_VALUE" = "" ]]; then
-      log_error "Variable '$_VAR_NAME' not set."
-      _ERRORS=$((_ERRORS + 1))
+    if [[ "${_VAR_NAME}" != "CP4BA_INST_OPT_COMPONENTS" ]]; then
+      _VAR_VALUE=${!_VAR_NAME}
+      if [[ "$_VAR_VALUE" = "" ]]; then
+        log_error "Variable '$_VAR_NAME' not set."
+        _ERRORS=$((_ERRORS + 1))
+      fi
     fi
   done
   rm ${_TMP_VAR_NAMES}

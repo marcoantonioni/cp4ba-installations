@@ -117,8 +117,8 @@ spec:
     kafka_services:
       enabled: true
     database:
-      cm_min_pool_size: ${CP4BA_INST_BASTUDIO_DB_MIN_POOL}
-      cm_max_pool_size: ${CP4BA_INST_BASTUDIO_DB_MAX_POOL}
+      cm_min_pool_size: ${CP4BA_INST_DB_MIN_POOL_SIZE}
+      cm_max_pool_size: ${CP4BA_INST_DB_MAX_POOL_SIZE}
     resources:
       bastudio:
         limits:          

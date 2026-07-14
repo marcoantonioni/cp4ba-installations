@@ -158,13 +158,15 @@ verifyConfigurationVariables () {
   _LIST_VARS=$(cat ${_TMP_VAR_NAMES})
   for _VAR_NAME in ${_LIST_VARS}
   do
-    _VAR_VALUE=${!_VAR_NAME}
-    if [[ "$_VAR_VALUE" = "" ]]; then
-      log_error "Variable '$_VAR_NAME' not set."
-      _ERRORS=$((_ERRORS + 1))
+    if [[ "${_VAR_NAME}" != "CP4BA_INST_OPT_COMPONENTS" ]]; then
+      _VAR_VALUE=${!_VAR_NAME}
+      if [[ "$_VAR_VALUE" = "" ]]; then
+        log_error "Variable '$_VAR_NAME' not set."
+        _ERRORS=$((_ERRORS + 1))
+      fi
     fi
   done
-  echo rm ${_TMP_VAR_NAMES}
+  rm ${_TMP_VAR_NAMES}
   if [[ $_ERRORS -gt 0 ]]; then
     echo "Total errors $_ERRORS, verify property file '$_FILE_PROPS' for variables defined in '$CP4BA_INST_CR_TEMPLATE'"
     exit 1
