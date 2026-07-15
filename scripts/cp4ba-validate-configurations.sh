@@ -4,6 +4,9 @@
 
 _me=$(basename "$0")
 
+CP4BA_LOGGING_ENABLED=false
+_VERBOSE=true
+
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
@@ -42,10 +45,11 @@ setTemporaryFolder () {
 
 #--------------------------------------------------------
 # read command line params
-while getopts c: flag
+while getopts c:v flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
+        v) _VERBOSE=true;;
     esac
 done
 
@@ -141,6 +145,13 @@ _setDefaultValuesIfNotDefined () {
 
 
 verifyConfigurationVariables () {
+
+  if [[ "${_VERBOSE}" = "true" ]]; then
+    export CP4BA_LOGGING_ENABLED=true
+    export CP4BA_LOG_TO_CONSOLE=true
+    export CP4BA_LOG_TO_FILE=false
+  fi
+
   _setDefaultValuesIfNotDefined
 
   source ${_FILE_PROPS} 2>/dev/null
