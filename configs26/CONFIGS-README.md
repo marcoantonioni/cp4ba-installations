@@ -8,6 +8,8 @@
 
 ### v26
 
+#### Authoring envs
+
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -28,19 +30,19 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai.properties
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
-CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-nocpeinit.properties
+CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-ae.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
-
-
 
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
-CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-ae.properties
+CONFIG_FILE=${_PTC}/env1-authoring-wfps-pfs-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
+
+#### Runtime envs
 
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
@@ -63,14 +65,6 @@ _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
 CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
-```
-
-```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
-_VV=26.0.0
-_KK=26.0.0
-CONFIG_FILE=${_PTC}/env1-authoring-wfps-pfs-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
