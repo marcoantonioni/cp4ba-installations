@@ -5,7 +5,7 @@
 _me=$(basename "$0")
 
 CP4BA_LOGGING_ENABLED=false
-_VERBOSE=true
+_VERBOSE=false
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -160,6 +160,8 @@ verifyConfigurationVariables () {
     source ${_FILE_PROPS} 2>/dev/null
   fi
 
+  echo -e "${_CLR_GREEN}Analysis of the '${_CLR_YELLOW}$_FILE_PROPS${_CLR_GREEN}' file and its template '${_CLR_YELLOW}$CP4BA_INST_CR_TEMPLATE${_CLR_GREEN}'"
+
   _FILE_YAML="${CP4BA_INST_CR_TEMPLATE}"
 
   _TMP_VAR_NAMES="${_INST_TMP_FOLDER}/cp4ba-undef-vars-$USER-$RANDOM"
@@ -179,10 +181,10 @@ verifyConfigurationVariables () {
   done
   rm ${_TMP_VAR_NAMES}
   if [[ $_ERRORS -gt 0 ]]; then
-    echo "Total errors $_ERRORS, verify property file '$_FILE_PROPS' for variables defined in '$CP4BA_INST_CR_TEMPLATE'"
+    echo -e "${_CLR_RED}Total errors $_ERRORS, verify property file '${_CLR_YELLOW}$_FILE_PROPS${_CLR_RED}' for variables defined in '${_CLR_YELLOW}$CP4BA_INST_CR_TEMPLATE${_CLR_RED}'${_CLR_NC}"
     exit 1
   else
-    echo "Configuration is OK for file '$_FILE_PROPS' / '$CP4BA_INST_CR_TEMPLATE'"
+    echo -e "${_CLR_GREEN}Configuration is OK for file '${_CLR_YELLOW}$_FILE_PROPS${_CLR_GREEN}'"
   fi
   
 }
