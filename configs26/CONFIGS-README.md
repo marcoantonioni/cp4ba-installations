@@ -117,22 +117,15 @@ CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
 ./cp4ba-validate-configurations.sh -c ../configs25/env1-starter-all-but-adp.properties
 ./cp4ba-validate-configurations.sh -c ../configs25/env1-starter-only-baw.properties
 
-
 ### v25
+
+#### Authoring envs
 
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.0
 _KK=25.0.1
 CONFIG_FILE=${_PTC}/env1-authoring-baw-bai.properties
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
-```
-
-```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
-_VV=25.1.0
-_KK=25.0.1
-CONFIG_FILE=${_PTC}/env1-runtime-baw-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
@@ -148,39 +141,10 @@ CONFIG_FILE=${_PTC}/env1-authoring-wfps.properties
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.0
 _KK=25.0.1
-CONFIG_FILE=${_PTC}/env1-runtime-wfps.properties
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
-```
-
-
----
-```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
-_VV=25.1.0
-_KK=25.0.1
 CONFIG_FILE=${_PTC}/env1-authoring-baw-multi-db.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
----
-```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
-_VV=25.1.0
-_KK=25.0.1
-CONFIG_FILE=${_PTC}/crash-tests/env1-authoring-baw-bai-crash-np-denyall.properties
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
-```
-
----
-```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
-_VV=25.1.0
-_KK=25.0.1
-CONFIG_FILE=${_PTC}/env1-runtime-wfps-np.properties
-./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
-```
-
----
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.0
@@ -189,7 +153,32 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-onedb-int.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
----
+#### Runtime envs
+
+```bash
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.0
+_KK=25.0.1
+CONFIG_FILE=${_PTC}/env1-runtime-baw-bai.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+```
+
+```bash
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.0
+_KK=25.0.1
+CONFIG_FILE=${_PTC}/env1-runtime-wfps.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+```
+
+```bash
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.0
+_KK=25.0.1
+CONFIG_FILE=${_PTC}/env1-runtime-wfps-np.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+```
+
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.0
@@ -198,7 +187,6 @@ CONFIG_FILE=${_PTC}/env1-runtime-wfps-1000.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
----
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.0
@@ -207,9 +195,22 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-onedb-int-1000.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+#### Crash tests induced
+
+```bash
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
+_VV=25.1.0
+_KK=25.0.1
+CONFIG_FILE=${_PTC}/crash-tests/env1-authoring-baw-bai-crash-np-denyall.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+```
+
 
 ## Different namespace for Environment, DB, LDAP 
 
+Steps to create DB/LDAP in an external namespace.
+
+File env1-extdb-authoring-wfps.properties is configured with different namespace for DB/LDAP.
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.0
@@ -226,7 +227,7 @@ CONFIG_FILE=${_PTC}/env1-extdb-authoring-wfps.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
----
+Same scenario with external DB/LDAP with a single DB
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.0
@@ -243,13 +244,8 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-onedb-ext.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+## v25 with fix-pack
 
-#----------------------------------------------------------------------
-
-
-## Latest version
-
----
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.1
@@ -266,7 +262,6 @@ CONFIG_FILE=${_PTC}/env1-runtime-baw.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
----
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.1
@@ -315,8 +310,6 @@ CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
-
----
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.1
@@ -335,8 +328,6 @@ CONFIG_FILE=${_PTC}/env1-runtime-wfps.properties
 # usare versione senza fix
 ```
 
-
----
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.1
@@ -354,7 +345,6 @@ CONFIG_FILE=${_PTC}/env1-runtime-wfps-pfs.properties
 ```
 
 
----
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.1
@@ -371,7 +361,6 @@ CONFIG_FILE=${_PTC}/env1-runtime-wfps-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
----
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.1
@@ -388,7 +377,6 @@ CONFIG_FILE=${_PTC}/env1-runtime-wfps-pfs-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
----
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1
 _VV=25.1.1
