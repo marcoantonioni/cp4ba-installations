@@ -161,7 +161,7 @@ waitForResourceCreated () {
 #-------------------------------
 waitForBawStatefulSetReady () {
   _SFSET_NAME="${CP4BA_INST_CR_NAME}-$1-$2"
-  echo -e -n "${_CLR_GREEN}Wait for ${_CLR_YELLOW}${_SFSET_NAME}${_CLR_GREEN}${_CLR_NC}..."
+  log_info "${_CLR_GREEN}Wait for ${_CLR_YELLOW}${_SFSET_NAME}${_CLR_GREEN}${_CLR_NC}..."
   waitForResourceCreated ${CP4BA_INST_NAMESPACE} "statefulset" ${_SFSET_NAME} 5
 
   _SFS_READY=0
@@ -174,7 +174,7 @@ waitForBawStatefulSetReady () {
       break
     fi
   done
-  log_info "${_CLR_YELLOW}READY${_CLR_GREEN}${_CLR_NC}"
+  # log_info "${_CLR_YELLOW}READY${_CLR_GREEN}${_CLR_NC}"
 }
 
 #--------------------------------------------------------
@@ -211,7 +211,7 @@ _createGenAiConfiguration () {
       echo '      </properties>' >> ${_WX_GENAI_TMP}
 
       log_info "${_CLR_GREEN}Patching BAS section in CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
-      oc patch ICP4ACluster ${BA_DN} -n $1 --type=merge --patch-file=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
+      oc patch ICP4ACluster ${BA_DN} -n $1 --type=merge --patch-file=${_WX_GENAI_TMP} 2>/dev/null 1>/dev/null
 
       rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
     else
@@ -243,7 +243,7 @@ _createGenAiConfiguration () {
           echo '	</server>' >> ${_WX_GENAI_TMP}
           echo '</properties>' >> ${_WX_GENAI_TMP}
 
-          oc delete secret -n $1 custom-config-workplace-assistant-bas
+          oc delete secret -n $1 custom-config-workplace-assistant-bas 2>/dev/null 1>/dev/null
           oc create secret -n $1 generic custom-config-workplace-assistant-bas --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
           rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
 
@@ -253,7 +253,7 @@ _createGenAiConfiguration () {
           echo '    <authData id="workplace_watsonx.ai_auth_alias" user="ANY_USER_ID_IS_FINE" password="'${CP4BA_INST_GENAI_WX_APIKEY}'" />' >> ${_WX_GENAI_TMP}
           echo '</server>' >> ${_WX_GENAI_TMP}
 
-          oc delete secret -n $1 custom-config-assistant-authdata-bas
+          oc delete secret -n $1 custom-config-assistant-authdata-bas 2>/dev/null 1>/dev/null
           oc create secret -n $1 generic custom-config-assistant-authdata-bas --from-file=sensitiveCustomConfig=${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
           rm ${_WX_GENAI_TMP} 2> /dev/null 1> /dev/null
           
@@ -272,6 +272,8 @@ _createGenAiConfiguration () {
 
           # add workplace assistant attributes to BAW object
           cat ${_FILE_BAW_GENAI} | jq '. += {"custom_xml_secret_name": "custom-config-assistant-authdata'-bas'", "lombardi_custom_xml_secret_name": "custom-config-workplace-assistant'-bas'", "environment_config": {"content_security_policy_additional_script_src": ["*.watson.appdomain.cloud"],"content_security_policy_additional_connect_src": ["*.watson.appdomain.cloud"], "content_security_policy_additional_font_src": ["*.watson.appdomain.cloud"] } }' > ${_FILE_BAW_GENAI_PATCHED}
+#echo "_FILE_BAW_GENAI_PATCHED----------------------------------------"
+#cat ${_FILE_BAW_GENAI_PATCHED}
 
           # remove original BAW object from extracted CR
           cat ${_FILE_ORIG} | jq 'del(.spec.workflow_authoring_configuration)' > ${_FILE_ALL_BUT_BAW_GENAI}
@@ -279,8 +281,10 @@ _createGenAiConfiguration () {
           jq --argjson wac "$(<${_FILE_BAW_GENAI_PATCHED})" '.spec.workflow_authoring_configuration += $wac' ${_FILE_ALL_BUT_BAW_GENAI} > ${_FILE_FINAL}
 
           # apply modified CR
-          oc apply --overwrite=true -f ${_FILE_FINAL} 2> /dev/null 1> /dev/null
-
+          oc apply --overwrite=true -f ${_FILE_FINAL} 2>/dev/null 1>/dev/null
+          
+#echo "_FILE_FINAL----------------------------------------"
+#cat ${_FILE_FINAL}
           rm ${_FILE_ORIG} 2> /dev/null 1> /dev/null
           rm ${_FILE_ALL_BUT_BAW_GENAI} 2> /dev/null 1> /dev/null
           rm ${_FILE_BAW_GENAI} 2> /dev/null 1> /dev/null
@@ -473,5 +477,9 @@ log_msg "==============================================================${_CLR_NC
 log_info "${_CLR_GREEN}Configuring GenAI in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 setTemporaryFolder
-#configureGenAI ${CP4BA_INST_NAMESPACE}
-log_warning "Deprecated, use cp4ba-config-tune tool."
+
+#if [[ "${CP4BA_INST_LOMBARDI_CUSTOM_XML_USE_PATCH_MODE}" = "true" ]]; then
+  configureGenAI ${CP4BA_INST_NAMESPACE}
+#fi
+
+#log_warning "Deprecated, use cp4ba-config-tune tool."
