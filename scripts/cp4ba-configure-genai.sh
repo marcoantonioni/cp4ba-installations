@@ -218,7 +218,7 @@ _createGenAiConfiguration () {
 
       if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
 
-        if [[ "${CP4BA_INST_BAS_GENAI_ENABLED}" = "true" ]]; then
+        if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
           waitForBawStatefulSetReady "bastudio" "deployment"
           log_info "${_CLR_GREEN}Patching BAS section in CR '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}${_CLR_GREEN}'${_CLR_NC}"
 
@@ -229,8 +229,8 @@ _createGenAiConfiguration () {
           echo '	<!-- Enable GenAI -->' >> ${_WX_GENAI_TMP}
           echo '	<server>' >> ${_WX_GENAI_TMP}
           echo '		<gen-ai merge="mergeChildren">' >> ${_WX_GENAI_TMP}
-          echo '			<provider-url>'${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}'</provider-url>' >> ${_WX_GENAI_TMP}
-          echo '			<project-id>'${CP4BA_INST_BAS_GENAI_WX_PRJ_ID}'</project-id>' >> ${_WX_GENAI_TMP}
+          echo '			<provider-url>'${CP4BA_INST_GENAI_WX_URL_PROVIDER}'</provider-url>' >> ${_WX_GENAI_TMP}
+          echo '			<project-id>'${CP4BA_INST_GENAI_WX_PRJ_ID}'</project-id>' >> ${_WX_GENAI_TMP}
           echo '			<auth-alias>workplace_watsonx.ai_auth_alias</auth-alias>' >> ${_WX_GENAI_TMP}
           echo '			<read-timeout merge="replace">120</read-timeout>' >> ${_WX_GENAI_TMP}
           echo '		</gen-ai>' >> ${_WX_GENAI_TMP}
@@ -250,7 +250,7 @@ _createGenAiConfiguration () {
           _WX_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-wx-genai-authdata-$USER-$RANDOM"
 
           echo '<server>' >> ${_WX_GENAI_TMP}
-          echo '    <authData id="workplace_watsonx.ai_auth_alias" user="ANY_USER_ID_IS_FINE" password="'${CP4BA_INST_BAS_GENAI_WX_APIKEY}'" />' >> ${_WX_GENAI_TMP}
+          echo '    <authData id="workplace_watsonx.ai_auth_alias" user="ANY_USER_ID_IS_FINE" password="'${CP4BA_INST_GENAI_WX_APIKEY}'" />' >> ${_WX_GENAI_TMP}
           echo '</server>' >> ${_WX_GENAI_TMP}
 
           oc delete secret -n $1 custom-config-assistant-authdata-bas

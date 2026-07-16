@@ -562,9 +562,9 @@ fi
   log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
-    --from-literal=WATSONX_API_KEY="${CP4BA_INST_BAS_GENAI_WX_APIKEY}" \
-    --from-literal=WATSONX_PROJECT_ID="${CP4BA_INST_BAS_GENAI_WX_PRJ_ID}" \
-    --from-literal=WATSONX_URL="${CP4BA_INST_BAS_GENAI_WX_URL_PROVIDER}" 2> /dev/null 1> /dev/null
+    --from-literal=WATSONX_API_KEY="${CP4BA_INST_GENAI_WX_APIKEY}" \
+    --from-literal=WATSONX_PROJECT_ID="${CP4BA_INST_GENAI_WX_PRJ_ID}" \
+    --from-literal=WATSONX_URL="${CP4BA_INST_GENAI_WX_URL_PROVIDER}" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
     log_error "${_CLR_RED}Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_RED}' NOT created (verify 'watsonx api key / proj id / url' for secret) !!!${_CLR_NC}"
