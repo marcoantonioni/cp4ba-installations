@@ -607,12 +607,7 @@ spec:
         limits:          
           cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
           memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
-    bastudio_custom_xml: |-
-      <properties>
-        <authoring-environment>
-          <authoring-agent-endpoint merge="replace">${CP4BA_INST_CPD_CONSOLE_FQDN_FULL}/agent</authoring-agent-endpoint>
-        </authoring-environment>
-      </properties>
+    bastudio_custom_xml: ${CP4BA_INST_BAS_CUSTOM_XML}
 
   # Business Automation Workflow Authoring
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-authoring

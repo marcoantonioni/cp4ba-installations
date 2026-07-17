@@ -656,6 +656,10 @@ _setDefaultValuesIfNotDefined () {
     export CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME="*.watson.appdomain.cloud"
     log_warning "[optional] Value for CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME is not set, default to '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}' value"
   fi
+
+  if [[ -z "${CP4BA_INST_BAS_CUSTOM_XML}" ]]; then
+    export CP4BA_INST_BAS_CUSTOM_XML="<properties></properties>"
+  fi
 }
 
 #-------------------------------
