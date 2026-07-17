@@ -657,8 +657,11 @@ _setDefaultValuesIfNotDefined () {
     log_warning "[optional] Value for CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME is not set, default to '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}' value"
   fi
 
-  if [[ -z "${CP4BA_INST_BAS_CUSTOM_XML}" ]]; then
-    export CP4BA_INST_BAS_CUSTOM_XML="<properties></properties>"
+  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
+    if [[ -z "${CP4BA_INST_BAS_CUSTOM_XML}" ]]; then
+      export CP4BA_INST_BAS_CUSTOM_XML="<properties></properties>"
+      log_warning "[optional] Value for CP4BA_INST_BAS_CUSTOM_XML is not set, default to '${CP4BA_INST_BAS_CUSTOM_XML}' value"
+    fi
   fi
 }
 
