@@ -141,6 +141,9 @@ _setDefaultValuesIfNotDefined () {
     export CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED=false
   fi
 
+  if [[ -z "${CP4BA_INST_CPD_CONSOLE_FQDN_FULL}" ]]; then
+    export CP4BA_INST_CPD_CONSOLE_FQDN_FULL="https://"
+  fi
 }
 
 

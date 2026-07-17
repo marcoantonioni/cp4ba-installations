@@ -10,6 +10,7 @@
 
 #### Authoring envs
 
+last test: 20260717
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -18,6 +19,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+last test: 20260717
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -26,6 +28,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+last test: 
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -34,6 +37,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-ae.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+last test: 
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -42,6 +46,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-wfps-pfs-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+last test: 20260717
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -53,6 +58,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-genai.properties
 
 #### Runtime envs
 
+last test: 
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -61,6 +67,7 @@ CONFIG_FILE=${_PTC}/env1-runtime-baw-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+last test: 
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -69,6 +76,7 @@ CONFIG_FILE=${_PTC}/env1-runtime-os-bai-pfs.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+last test: 
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -84,6 +92,7 @@ CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw-bai-nocpeinit.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw-bai.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw.properties
+./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw-genai.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-wfps-pfs-bai.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-runtime-baw-bai.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-runtime-opensearch-foundation.properties

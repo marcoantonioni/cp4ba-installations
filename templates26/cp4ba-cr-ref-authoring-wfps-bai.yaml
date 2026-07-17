@@ -232,15 +232,15 @@ spec:
   workflow_authoring_configuration:
     ## storage configuration
     storage:
-      use_dynamic_provisioning: ${CP4BA_INST_BAWAUTHORING_STORAGE_DYNAMIC_PROVISIONING}
-      size_for_filestore: "${CP4BA_INST_BAWAUTHORING_STORAGE_SIZE}"
+      use_dynamic_provisioning: ${CP4BA_INST_BAW_STORAGE_DYNAMIC_PROVISIONING}
+      size_for_filestore: "${CP4BA_INST_BAW_STORAGE_SIZE}"
 
     ## customize environment settings
     environment_config:
       ## Whether to show the Intelligent Task Prioritization service toggle button in the web user interface to allow the user to enable or disable this service.
-      show_task_prioritization_service_toggle: ${CP4BA_INST_BAWAUTHORING_TASK_PRIORITIZATION_SERVICE_TOGGLE}
+      show_task_prioritization_service_toggle: ${CP4BA_INST_BAW_TASK_PRIORITIZATION_SERVICE_TOGGLE}
       ## Whether to display the Intelligent Task Prioritization service toggle button. If this parameter is set to true, the previous parameter is ignored.
-      always_run_task_prioritization_service: ${CP4BA_INST_BAWAUTHORING_ALWAYS_RUN_TASK_PRIORITIZATION_SERVICE}
+      always_run_task_prioritization_service: ${CP4BA_INST_BAW_ALWAYS_RUN_TASK_PRIORITIZATION_SERVICE}
 
       # GenAI watsonx domain, content security policy
       content_security_policy_additional_connect_src:
