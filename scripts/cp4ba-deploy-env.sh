@@ -754,7 +754,6 @@ deployEnvironment () {
 
   log_msg "==============================================================${_CLR_NC}"
   log_info "${_CLR_GREEN}Deploy the environment${_CLR_NC}"
-  export CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
 
   generateCR
 
@@ -1156,6 +1155,9 @@ startDeployEnv () {
   setTemporaryFolder
   checkPrereqTools
   checkPrereqVars
+
+  export CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
+  export CP4BA_INST_CPD_CONSOLE_FQDN_FULL="https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX}"
 
   _setDefaultValuesIfNotDefined
   checkEnvVarsForCR

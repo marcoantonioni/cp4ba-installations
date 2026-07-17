@@ -959,15 +959,17 @@ createSecrets () {
       fi
 
       # WF Assistant
-      _APIKEY="CP4BA_INST_BAW_"$i"_GENAI_WX_APIKEY"
-      _PRJID="CP4BA_INST_BAW_"$i"_GENAI_WX_PRJ_ID"
-      _URLPRVD="CP4BA_INST_BAW_"$i"_GENAI_WX_URL_PROVIDER"
-      _WX_APIKEY=$(echo "${!_APIKEY}" | base64)
-      _WX_PRJID=$(echo "${!_PRJID}" | base64)
-      _WX_URL=$(echo "${!_URLPRVD}" | base64)
+      if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
+      
+        #_APIKEY="CP4BA_INST_BAW_"$i"_GENAI_WX_APIKEY"
+        #_PRJID="CP4BA_INST_BAW_"$i"_GENAI_WX_PRJ_ID"
+        #_URLPRVD="CP4BA_INST_BAW_"$i"_GENAI_WX_URL_PROVIDER"
+        #_WX_APIKEY=$(echo "${!_APIKEY}" | base64)
+        #_WX_PRJID=$(echo "${!_PRJID}" | base64)
+        #_WX_URL=$(echo "${!_URLPRVD}" | base64)
 
-      createSecretWFAssistantBAW "${_WX_APIKEY}" "${_WX_PRJID}" "${_WX_URL}" 
-
+        createSecretWFAssistantBAW "${CP4BA_INST_GENAI_WX_APIKEY}" "${CP4BA_INST_GENAI_WX_PRJ_ID}" "${CP4BA_INST_GENAI_WX_URL_PROVIDER}" 
+      fi
     fi
     ((i = i + 1))
   done  

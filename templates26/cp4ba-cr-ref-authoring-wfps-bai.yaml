@@ -222,6 +222,12 @@ spec:
         limits:          
           cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
           memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
+    bastudio_custom_xml: |-
+      <properties>
+        <authoring-environment>
+          <authoring-agent-endpoint merge="replace">${CP4BA_INST_CPD_CONSOLE_FQDN_FULL}/agent</authoring-agent-endpoint>
+        </authoring-environment>
+      </properties>
 
   workflow_authoring_configuration:
     ## storage configuration
