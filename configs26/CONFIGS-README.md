@@ -88,6 +88,9 @@ CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
 #### Configuration Validation
 
 ##### v26
+
+last validation: 20260717
+```bash
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw-bai-ae.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw-bai-nocpeinit.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-authoring-baw-bai.properties
@@ -97,9 +100,12 @@ CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-runtime-baw-bai.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-runtime-opensearch-foundation.properties
 ./cp4ba-validate-configurations.sh -c ../configs26/env1-runtime-os-bai-pfs.properties
+```
 
 ##### v25.0.1
 
+last validation: 20260717
+```bash
 ./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw-bai-onedb-ext.properties
 ./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw-bai-onedb-int-1000.properties
 ./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-authoring-baw-bai-onedb-int.properties
@@ -125,8 +131,12 @@ CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
 ./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-wfps-pfs-bai.properties
 ./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-wfps-pfs.properties
 ./cp4ba-validate-configurations.sh -c ../configs25.0.1/env1-runtime-wfps.properties
+```
 
 ##### v25.0.0
+
+last validation: 20260717
+```bash
 ./cp4ba-validate-configurations.sh -c ../configs25/env1-baw2.properties
 ./cp4ba-validate-configurations.sh -c ../configs25/env1-baw-double.properties
 ./cp4ba-validate-configurations.sh -c ../configs25/env1-baw.properties
@@ -134,6 +144,7 @@ CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
 ./cp4ba-validate-configurations.sh -c ../configs25/env1-demo-wfps-pfs-baw.properties
 ./cp4ba-validate-configurations.sh -c ../configs25/env1-starter-all-but-adp.properties
 ./cp4ba-validate-configurations.sh -c ../configs25/env1-starter-only-baw.properties
+```
 
 ### v25
 
