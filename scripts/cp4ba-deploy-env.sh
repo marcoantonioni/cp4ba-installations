@@ -649,9 +649,13 @@ _setDefaultValuesIfNotDefined () {
 
   if [[ -z "${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}" ]]; then
     export CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED=false
-    log_warning "Value for CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED is not set, default to 'false' value"
+    log_warning "[optional] Value for CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED is not set, default to 'false' value"
   fi
 
+  if [[ -z "${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}" ]]; then
+    export CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME="*.watson.appdomain.cloud"
+    log_warning "[optional] Value for CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME is not set, default to '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}' value"
+  fi
 }
 
 #-------------------------------

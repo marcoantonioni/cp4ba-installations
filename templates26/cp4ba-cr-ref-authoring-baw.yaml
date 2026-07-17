@@ -19,7 +19,7 @@
 ## 
 ## patterns: foundation,baw_authoring
 ##
-## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.1?topic=parameters-business-automation-workflow-authoring
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-workflow-authoring
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
@@ -331,7 +331,7 @@ spec:
 
 
   # IBM FileNet Content Manager initialize configuration
-  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.1?topic=parameters-initialization
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-initialization
   initialize_configuration:
     ic_ldap_creation:
       ic_ldap_admin_user_name:
@@ -531,7 +531,7 @@ spec:
 
 #  ## BAI
 #  bai_configuration:
-#    # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.1?topic=baip-event-processing-parameters
+#    # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=baip-event-processing-parameters
 #    
 #    # bai_secret: custom-bai-secret
 #
@@ -580,7 +580,7 @@ spec:
       retrain_model_schedule: "${CP4BA_INST_BAML_RETRAIN_MODEL_SCHEDULE}"
 
   # IBM Business Automation Workflow Authoring configuration
-  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.1?topic=parameters-business-automation-studio
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-studio
   bastudio_configuration:
     admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
     database:
@@ -606,7 +606,7 @@ spec:
           memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
 
   # Business Automation Workflow Authoring
-  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.1?topic=parameters-business-automation-workflow-authoring
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-workflow-authoring
   workflow_authoring_configuration:
 
     ## The configurations for content integration for attachment in process
@@ -669,6 +669,14 @@ spec:
       show_task_prioritization_service_toggle: ${CP4BA_INST_BAWAUTHORING_TASK_PRIORITIZATION_SERVICE_TOGGLE}
       ## Whether to display the Intelligent Task Prioritization service toggle button. If this parameter is set to true, the previous parameter is ignored.
       always_run_task_prioritization_service: ${CP4BA_INST_BAWAUTHORING_ALWAYS_RUN_TASK_PRIORITIZATION_SERVICE}
+
+      # GenAI watsonx domain, content security policy
+      content_security_policy_additional_connect_src:
+        - '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}'
+      content_security_policy_additional_font_src:
+        - '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}'
+      content_security_policy_additional_script_src:
+        - '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}'
 
       # csrf:
       #   ## Acceptable values in the Origin header field. The value of this property must be a comma-separated list of prefixes in the format protocol://host:port, e.g "https://example.com, http://example2.com:8080".
@@ -781,7 +789,7 @@ spec:
         enable_graph_iql: ${CP4BA_INST_GRAPHQL}
 
   # BAN
-  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.1?topic=parameters-business-automation-navigator
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-navigator
   navigator_configuration:
     ## Navigator secret that contains user credentials for LDAP and database
     ban_secret_name: ibm-ban-secret

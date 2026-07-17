@@ -673,6 +673,14 @@ spec:
       ## Whether to display the Intelligent Task Prioritization service toggle button. If this parameter is set to true, the previous parameter is ignored.
       always_run_task_prioritization_service: ${CP4BA_INST_BAWAUTHORING_ALWAYS_RUN_TASK_PRIORITIZATION_SERVICE}
 
+      # GenAI watsonx domain, content security policy
+      content_security_policy_additional_connect_src:
+        - '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}'
+      content_security_policy_additional_font_src:
+        - '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}'
+      content_security_policy_additional_script_src:
+        - '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}'
+
       # csrf:
       #   ## Acceptable values in the Origin header field. The value of this property must be a comma-separated list of prefixes in the format protocol://host:port, e.g "https://example.com, http://example2.com:8080".
       #   origin_allowlist:

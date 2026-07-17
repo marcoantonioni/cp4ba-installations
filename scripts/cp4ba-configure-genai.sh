@@ -478,8 +478,5 @@ log_info "${_CLR_GREEN}Configuring GenAI in namespace '${_CLR_YELLOW}${CP4BA_INS
 
 setTemporaryFolder
 
-#if [[ "${CP4BA_INST_LOMBARDI_CUSTOM_XML_USE_PATCH_MODE}" = "true" ]]; then
-  configureGenAI ${CP4BA_INST_NAMESPACE}
-#fi
-
-#log_warning "Deprecated, use cp4ba-config-tune tool."
+# configureGenAI ${CP4BA_INST_NAMESPACE}
+log_warning "Deprecated, use cp4ba-config-tune tool."

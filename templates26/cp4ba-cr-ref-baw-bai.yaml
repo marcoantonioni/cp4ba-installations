@@ -531,6 +531,20 @@ spec:
           nature: '*'
           version: '*'
 
+      environment_config:
+        ## Whether to show the Intelligent Task Prioritization service toggle button in the web user interface to allow the user to enable or disable this service.
+        show_task_prioritization_service_toggle: ${CP4BA_INST_BAWAUTHORING_TASK_PRIORITIZATION_SERVICE_TOGGLE}
+        ## Whether to display the Intelligent Task Prioritization service toggle button. If this parameter is set to true, the previous parameter is ignored.
+        always_run_task_prioritization_service: ${CP4BA_INST_BAWAUTHORING_ALWAYS_RUN_TASK_PRIORITIZATION_SERVICE}
+
+        # GenAI watsonx domain, content security policy
+        content_security_policy_additional_connect_src:
+          - '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}'
+        content_security_policy_additional_font_src:
+          - '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}'
+        content_security_policy_additional_script_src:
+          - '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}'
+
   workflow_assistant_configuration:
     run_authoring_agent: ${CP4BA_RUN_AUTHORING_AGENT}
     run_workplace_agent: ${CP4BA_RUN_WORKPLACE_AGENT}
