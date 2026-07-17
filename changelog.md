@@ -1,10 +1,20 @@
 
 # Change Log
 
-## [1.6.8] - 2026-07-14
+## [1.6.9] - 2026-07-17
 
 ### Added
 
+### Changed
+
+GenAI configuration (properties, templates, scripts)
+
+### Fixed
+
+
+## [1.6.8] - 2026-07-14
+
+### Added
 
 ### Changed
 
