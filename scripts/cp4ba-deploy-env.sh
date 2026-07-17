@@ -683,6 +683,20 @@ generateCR () {
     _NULL_VALUES=$(cat ${_INST_ENV_FULL_PATH} | grep ": null" | wc -l)
 
     if [ $_MISSED_PLACEHOLDERS -gt 0 ]; then
+      # may be we have some \${...} from CP4BA_INST_BAS_CUSTOM_XML or other vars that must be valued art runtime
+      _INST_ENV_FULL_PATH2="${CP4BA_INST_OUTPUT_FOLDER}/cp4ba-${CP4BA_INST_CR_NAME}-${CP4BA_INST_ENV}-2.yaml"
+      envsubst < ${_INST_ENV_FULL_PATH} > ${_INST_ENV_FULL_PATH2}
+      if [[ $? -ne 0 ]]; then
+        log_error "${_CLR_RED}[✗] Error, CP4BA CR not generated.${_CLR_NC}"
+        exit 1
+      else
+        cp ${_INST_ENV_FULL_PATH2} ${_INST_ENV_FULL_PATH}
+        rm ${_INST_ENV_FULL_PATH2}
+        _MISSED_PLACEHOLDERS=$(cat ${_INST_ENV_FULL_PATH} | sed 's/#.*//g' | grep "\${" | wc -l)
+      fi
+    fi
+
+    if [ $_MISSED_PLACEHOLDERS -gt 0 ]; then
       log_error "${_CLR_RED}[✗] Error, $_MISSED_PLACEHOLDERS missed placeholder '\${...}' in '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
     fi
     if [ $_MISSED_OPTIONALS -gt 0 ]; then
