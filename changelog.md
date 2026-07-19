@@ -1,6 +1,18 @@
 
 # Change Log
 
+## [1.6.10] - 2026-07-19
+
+### Added
+
+### Changed
+
+GenAI configuration for workplace and authoring assistants in 
+cp4ba-config-tune/templates-custom-xml/lombardi-custom-xml-template-sample-genai-agent
+
+### Fixed
+
+
 ## [1.6.9] - 2026-07-17
 
 ### Added
