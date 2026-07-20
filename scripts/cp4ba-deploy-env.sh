@@ -615,14 +615,14 @@ deployPFS () {
 #-------------------------------
 postInstallationSteps () {
 
-  # Configure GenAI
-  if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
-    ${_SCRIPT_DIR}/cp4ba-configure-genai.sh -c ${_CFG}
-    if [[ $? -ne 0 ]]; then
-      log_error "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
-      exit 1
-    fi
-  fi
+  # DEPRECATED Configure GenAI
+  # if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
+  #   ${_SCRIPT_DIR}/cp4ba-configure-genai.sh -c ${_CFG}
+  #   if [[ $? -ne 0 ]]; then
+  #     log_error "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
+  #     exit 1
+  #   fi
+  # fi
 
   # Configure BAIWorkforce
   if [[ "${CP4BA_INST_BAI_BPC_WORKFORCE}" = "true" ]]; then

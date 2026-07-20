@@ -1,6 +1,18 @@
 
 # Change Log
 
+
+## [1.6.11] - 2026-07-20
+
+### Added
+
+### Changed
+
+Removed deprecated tool 'cp4ba-configure-genai.sh' from main deployment.
+
+### Fixed
+
+
 ## [1.6.10] - 2026-07-19
 
 ### Added

@@ -10,7 +10,7 @@
 
 #### Authoring envs
 
-last test: 20260717
+last test: 20260720
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -19,7 +19,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
-last test: 20260717
+last test: 20260720
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -28,7 +28,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
-last test: 20260717
+last test: 20260720
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -37,7 +37,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-ae.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
-last test: 
+last test: 20260720
 ```bash
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
@@ -52,6 +52,15 @@ _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
 CONFIG_FILE=${_PTC}/env1-authoring-baw-genai.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+```
+
+last test: 20260720
+```bash
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
+_VV=26.0.0
+_KK=26.0.0
+CONFIG_FILE=${_PTC}/env1-authoring-baw-pfs-genai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
