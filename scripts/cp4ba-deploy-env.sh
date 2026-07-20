@@ -80,12 +80,14 @@ if [[ -z "${_CFG}" ]]; then
   exit 1
 fi
 
-if [[ ! -z "${_LDAP}" ]]; then
-  if [[ ! -f "${_LDAP}" ]]; then
-    echo "[✗] Error, LDAP configuration file not found: "${_LDAP}
-    exit 1
+if [[ "${_WAIT_ONLY}" = "false" ]]; then
+  if [[ ! -z "${_LDAP}" ]]; then
+    if [[ ! -f "${_LDAP}" ]]; then
+      echo "[✗] Error, LDAP configuration file not found: "${_LDAP}
+      exit 1
+    fi
+    source ${_LDAP}
   fi
-  source ${_LDAP}
 fi
 
 if [[ ! -f "${_CFG}" ]]; then
@@ -93,7 +95,7 @@ if [[ ! -f "${_CFG}" ]]; then
   exit 1
 fi
 
-source "${_CFG}"
+source "${_CFG}" 2>/dev/null 1>/dev/null
 
 #----------------------------------------------------
 _SCRIPT_PATH="${BASH_SOURCE}"
@@ -615,24 +617,28 @@ deployPFS () {
 #-------------------------------
 postInstallationSteps () {
 
-  # DEPRECATED Configure GenAI
-  # if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
-  #   ${_SCRIPT_DIR}/cp4ba-configure-genai.sh -c ${_CFG}
-  #   if [[ $? -ne 0 ]]; then
-  #     log_error "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
-  #     exit 1
-  #   fi
-  # fi
+  if [[ "${_WAIT_ONLY}" = "false" ]]; then
 
-  # Configure BAIWorkforce
-  if [[ "${CP4BA_INST_BAI_BPC_WORKFORCE}" = "true" ]]; then
-    ${_SCRIPT_DIR}/cp4ba-configure-bai-workforce.sh -c ${_CFG}
-    if [[ $? -ne 0 ]]; then
-      log_error "${_CLR_RED}[✗] Error, BAIWorkforce not configured.${_CLR_NC}"
-      exit 1
+    # DEPRECATED Configure GenAI
+    # if [[ "${CP4BA_INST_GENAI_ENABLED}" = "true" ]]; then
+    #   ${_SCRIPT_DIR}/cp4ba-configure-genai.sh -c ${_CFG}
+    #   if [[ $? -ne 0 ]]; then
+    #     log_error "${_CLR_RED}[✗] Error, GenAI not configured.${_CLR_NC}"
+    #     exit 1
+    #   fi
+    # fi
+
+
+    # Configure BAIWorkforce
+    if [[ "${CP4BA_INST_BAI_BPC_WORKFORCE}" = "true" ]]; then
+      ${_SCRIPT_DIR}/cp4ba-configure-bai-workforce.sh -c ${_CFG}
+      if [[ $? -ne 0 ]]; then
+        log_error "${_CLR_RED}[✗] Error, BAIWorkforce not configured.${_CLR_NC}"
+        exit 1
+      fi
     fi
-  fi
 
+  fi
 }
 
 _setDefaultValuesIfNotDefined () {
