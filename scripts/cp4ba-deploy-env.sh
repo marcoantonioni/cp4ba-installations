@@ -659,8 +659,12 @@ _setDefaultValuesIfNotDefined () {
 
   if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
     if [[ -z "${CP4BA_INST_BAS_CUSTOM_XML}" ]]; then
-      export CP4BA_INST_BAS_CUSTOM_XML="<properties></properties>"
+      export CP4BA_INST_BAS_CUSTOM_XML=""
       log_warning "[optional] Value for CP4BA_INST_BAS_CUSTOM_XML is not set, default to '${CP4BA_INST_BAS_CUSTOM_XML}' value"
+    fi
+    if [[ -z "${CP4BA_INST_BAS_TLS_CERTS}" ]]; then
+      export CP4BA_INST_BAS_TLS_CERTS=""
+      log_warning "[optional] Value for CP4BA_INST_BAS_TLS_CERTS is not set, default to '${CP4BA_INST_BAS_TLS_CERTS}' value"
     fi
   fi
 }
@@ -1148,6 +1152,11 @@ waitDeploymentReadiness () {
   fi
 }
 
+_SKIP_UNDEFINED_VARS=(
+  "CP4BA_INST_OPT_COMPONENTS" 
+  "CP4BA_INST_BAS_CUSTOM_XML"
+)
+
 checkUndefinedVariables () {
   _TMP_VAR_NAMES="${_INST_TMP_FOLDER}/cp4ba-undef-vars-$USER-$RANDOM"
 
@@ -1156,7 +1165,7 @@ checkUndefinedVariables () {
   _LIST_VARS=$(cat ${_TMP_VAR_NAMES})
   for _VAR_NAME in ${_LIST_VARS}
   do
-    if [[ "${_VAR_NAME}" != "CP4BA_INST_OPT_COMPONENTS" ]]; then
+    if [[ ! (${_SKIP_UNDEFINED_VARS[@]} =~ $_VAR_NAME) ]]; then
       _VAR_VALUE=${!_VAR_NAME}
       if [[ "$_VAR_VALUE" = "" ]]; then
         log_error "Variable '$_VAR_NAME' not set."
@@ -1180,10 +1189,11 @@ startDeployEnv () {
   export CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX=$(oc cluster-info | sed 's/.*https:\/\/api.//g' | sed 's/:.*//g' | head -n1)
   export CP4BA_INST_CPD_CONSOLE_FQDN_FULL="https://${CP4BA_INST_CPD_CONSOLE_PREFIX}.${CP4BA_INST_CPD_CONSOLE_FQDN_SUFFIX}"
 
-  _setDefaultValuesIfNotDefined
-  checkEnvVarsForCR
-
-  checkUndefinedVariables
+  if [[ "${_WAIT_ONLY}" = "false" ]]; then
+    _setDefaultValuesIfNotDefined
+    checkEnvVarsForCR
+    checkUndefinedVariables
+  fi
 
   if [[ "${_GENERATE_ONLY}" = "true" ]]; then
     generateCR

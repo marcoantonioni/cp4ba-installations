@@ -169,12 +169,17 @@ verifyConfigurationVariables () {
 
   _TMP_VAR_NAMES="${_INST_TMP_FOLDER}/cp4ba-undef-vars-$USER-$RANDOM"
 
+  _SKIP_UNDEFINED_VARS=(
+    "CP4BA_INST_OPT_COMPONENTS" 
+    "CP4BA_INST_BAS_CUSTOM_XML"
+  )
+
   _ERRORS=0
   cat ../${CP4BA_INST_CR_TEMPLATE} | grep "\${" | awk '{$1=$1};1' | sed '/^#/d' | sed 's/^.*\(\${.*\}\).*$/\1/' | sort | uniq | sed 's/\${//g' | sed 's/\}//g' > ${_TMP_VAR_NAMES}
   _LIST_VARS=$(cat ${_TMP_VAR_NAMES})
   for _VAR_NAME in ${_LIST_VARS}
   do
-    if [[ "${_VAR_NAME}" != "CP4BA_INST_OPT_COMPONENTS" ]]; then
+    if [[ ! (${_SKIP_UNDEFINED_VARS[@]} =~ $_VAR_NAME) ]]; then
       _VAR_VALUE=${!_VAR_NAME}
       if [[ "$_VAR_VALUE" = "" ]]; then
         log_error "Variable '$_VAR_NAME' not set."

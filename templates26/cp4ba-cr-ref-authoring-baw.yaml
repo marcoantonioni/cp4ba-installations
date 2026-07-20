@@ -598,7 +598,7 @@ spec:
         port: "${CP4BA_INST_BAS_1_DB_PORT}"
         type: ${CP4BA_INST_DB_SERVER_TYPE}
     tls:
-      tlsTrustList: []
+      tlsTrustList: [${CP4BA_INST_BAS_TLS_CERTS}]
     resources:
       bastudio:
         limits:          
