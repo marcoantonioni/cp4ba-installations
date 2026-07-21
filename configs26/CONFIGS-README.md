@@ -21,11 +21,13 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw.properties
 
 last test: 20260720
 ```bash
+# !!!
+export CP4BA_INST_GIT_TOKEN="your-token"
+
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
 CONFIG_FILE=${_PTC}/env1-authoring-baw-cicd.properties
-export CP4BA_INST_GIT_TOKEN="your-token"
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
@@ -58,6 +60,12 @@ CONFIG_FILE=${_PTC}/env1-authoring-wfps-pfs-bai.properties
 
 last test: 20260717
 ```bash
+
+# !!!
+export CP4BA_INST_GENAI_ENABLED="${CP4BA_INST_GENAI_ENABLED:-}"
+export CP4BA_INST_GENAI_WX_APIKEY="...."
+export CP4BA_INST_GENAI_WX_PRJ_ID="...."
+
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0

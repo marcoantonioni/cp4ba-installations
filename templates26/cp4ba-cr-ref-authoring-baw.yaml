@@ -604,7 +604,7 @@ spec:
         limits:          
           cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
           memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
-    bastudio_custom_xml: '${CP4BA_INST_BAS_CUSTOM_XML}'
+    # bastudio_custom_xml: '${CP4BA_INST_BAS_CUSTOM_XML}'
 
   # Business Automation Workflow Authoring
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-workflow-authoring
