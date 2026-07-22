@@ -2,6 +2,18 @@
 # Change Log
 
 
+## [1.6.12] - 2026-07-22
+
+### Added
+
+Added scripts for customizable operations (shell scripts you can code to your liking) for PreInstallation, PreDeployment, PostDeployment, and PostInstallation phases.
+
+To abort the entire procedure from a custom script, use "exit 1".
+
+### Changed
+
+### Fixed
+
 ## [1.6.11] - 2026-07-20
 
 ### Added
