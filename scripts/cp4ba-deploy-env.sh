@@ -1192,6 +1192,10 @@ startDeployEnv () {
 
   # custom pre-deployment
   ${_SCRIPT_DIR}/cp4ba-customPreDeployment.sh -c ${_CFG}
+  if [[ $? -gt 0 ]]; then
+    log_error "!!! Installation halted in custom PreDeployment phase."
+    exit 1
+  fi
 
   checkPrereqTools
   checkPrereqVars
@@ -1256,6 +1260,10 @@ startDeployEnv () {
 
   # custom post-deployment
   ${_SCRIPT_DIR}/cp4ba-customPostDeployment.sh -c ${_CFG}
+  if [[ $? -gt 0 ]]; then
+    log_error "!!! Installation halted in custom PostDeployment phase."
+    exit 1
+  fi
 
 }
 
