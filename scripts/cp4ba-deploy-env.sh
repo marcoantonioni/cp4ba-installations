@@ -1189,6 +1189,10 @@ checkUndefinedVariables () {
 
 startDeployEnv () {
   setTemporaryFolder
+
+  # custom pre-deployment
+  ${_SCRIPT_DIR}/cp4ba-customPreDeployment.sh -c ${_CFG}
+
   checkPrereqTools
   checkPrereqVars
 
@@ -1249,6 +1253,9 @@ startDeployEnv () {
     log_error "${_CLR_RED}[✗] Error, namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_RED}' doesn't exists. ${_CLR_NC}"
     exit 1
   fi
+
+  # custom post-deployment
+  ${_SCRIPT_DIR}/cp4ba-customPostDeployment.sh -c ${_CFG}
 
 }
 

@@ -463,6 +463,9 @@ oneShotInstallation () {
     _TRACE_PARAM="-t"
   fi
 
+  # custom pre-installation
+  ${_SCRIPT_DIR}/cp4ba-customPreInstallation.sh -c ${_CFG}
+
 
   initialChecks
 
@@ -566,6 +569,12 @@ oneShotInstallation () {
     fi
 
   fi
+  log_msg "${_CLR_NC}"
+
+  # custom post-installation
+  ${_SCRIPT_DIR}/cp4ba-customPostInstallation.sh -c ${_CFG}
+
+  log_msg "${_CLR_NC}"
 }
 
 onExit () {
