@@ -465,7 +465,10 @@ oneShotInstallation () {
 
   # custom pre-installation
   ${_SCRIPT_DIR}/cp4ba-customPreInstallation.sh -c ${_CFG}
-
+  if [[ $? -gt 0 ]]; then
+    log_info "Installation stopped in custom PreInstallation phase."
+    exit 1
+  fi
 
   initialChecks
 
