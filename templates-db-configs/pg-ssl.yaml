@@ -54,7 +54,7 @@ spec:
             defaultMode: 0640
         - name: secret-vol
           secret:
-            secretName: ${_PG_SECRET}
+            secretName: ${CP4BA_INST_DB_POSTGRES_SECRET_NAME}
             defaultMode: 0640
         - name: postgres-storage
           persistentVolumeClaim:

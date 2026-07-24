@@ -134,7 +134,6 @@ _generateSQL () {
     log_warning "Set default credentials for 'CP4BA_INST_DB_ADSDES_USER'${_CLR_NC}"
   fi
 
-
   # _DB_BASE_PATH may contain / chars so use # in 'sed' line
   cat ${_DB_TEMPLATE} | sed 's/§§dbPrefix§§/'"${CP4BA_INST_ENV_FOR_DB_PREFIX}"'/g' \
     | sed 's/-\{2,\}/@@savecomment@@/g' \
