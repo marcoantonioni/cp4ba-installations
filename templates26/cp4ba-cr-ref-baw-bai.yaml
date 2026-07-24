@@ -287,9 +287,9 @@ spec:
           oc_cpe_obj_store_workflow_region_number: ${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NUM}
           oc_cpe_obj_store_workflow_region_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_REGION_NAME}"
           oc_cpe_obj_store_workflow_date_time_mask: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_DT_MASK}"
-          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
-          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
-          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_ENV_FOR_DB_PREFIX}_${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"          
+          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
+          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
+          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"          
           oc_cpe_obj_store_workflow_admin_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_config_group: "${CP4BA_INST_PAKBA_ADMIN_GROUP}"
           oc_cpe_obj_store_workflow_pe_conn_point_name: "${CP4BA_INST_CPE_OBJSTORAGE_BAWINS1TOS_PE_CONN_POINT_NAME}"

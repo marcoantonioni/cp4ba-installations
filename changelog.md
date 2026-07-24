@@ -2,6 +2,23 @@
 # Change Log
 
 
+## [1.6.13] - 2026-07-24
+
+### Added
+
+
+### Changed
+
+### Fixed
+
+Corrected wrong concatenation naming for CP4BA_INST_DB_TOS_SCHEMA_ variables tablespaces section. 
+
+          oc_cpe_obj_store_workflow_data_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_DATA}"
+
+          oc_cpe_obj_store_workflow_index_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_INDEX}"
+          
+          oc_cpe_obj_store_workflow_blob_tbl_space: "${CP4BA_INST_DB_TOS_SCHEMA_BLOB}"          
+
 ## [1.6.12] - 2026-07-22
 
 ### Added
