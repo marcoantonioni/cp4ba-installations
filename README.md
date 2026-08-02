@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-07-24</i> (see changelog.md for details)
+<i>Last update: 2026-08-02</i> (see changelog.md for details)
 
 As of June 26 2026, the 'main' branch contains artifacts compatible with v26.
 

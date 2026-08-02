@@ -669,7 +669,7 @@ _setDefaultValuesIfNotDefined () {
       log_warning "[optional] Value for CP4BA_INST_BAS_CUSTOM_XML is not set, default to '${CP4BA_INST_BAS_CUSTOM_XML}' value"
     fi
     if [[ -z "${CP4BA_INST_BAS_TLS_CERTS}" ]]; then
-      export CP4BA_INST_BAS_TLS_CERTS=""
+      export CP4BA_INST_BAS_TLS_CERTS="${CP4BA_INST_GIT_TLS_SECRET_NAME}"
       log_warning "[optional] Value for CP4BA_INST_BAS_TLS_CERTS is not set, default to '${CP4BA_INST_BAS_TLS_CERTS}' value"
     fi
   fi

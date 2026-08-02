@@ -2,6 +2,17 @@
 # Change Log
 
 
+## [1.6.14] - 2026-08-02
+
+### Added
+
+### Changed
+
+TLS secret names for authoring environment, defaulted to github.com
+
+### Fixed
+
+
 ## [1.6.13] - 2026-07-24
 
 ### Added
