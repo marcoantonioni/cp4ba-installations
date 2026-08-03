@@ -115,3 +115,5 @@ log_msg "=============================================================="
 log_info "PreDeployment custom operations for '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 
 # add your custom code here
+
+log_msg "=============================================================="

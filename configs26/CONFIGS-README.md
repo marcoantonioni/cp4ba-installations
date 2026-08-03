@@ -75,6 +75,10 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-genai.properties
 
 last test: 20260720
 ```bash
+export CP4BA_INST_GENAI_ENABLED="true"
+export CP4BA_INST_GENAI_WX_APIKEY="...."
+export CP4BA_INST_GENAI_WX_PRJ_ID="...."
+
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
