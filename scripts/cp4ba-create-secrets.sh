@@ -929,7 +929,7 @@ createSecrets () {
       if [[ -z "${CP4BA_INST_SECRET_FNCM}" || "${CP4BA_INST_SECRET_FNCM}" = "true" ]]; then
         createSecretFNCM
       else
-        log_warning "${_CLR_GREEN}Skipping creatong of secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_GREEN}', found CP4BA_INST_SECRET_FNCM = 'false'. Remember to create/set manually your own 'ibm-fncm-secret' secret values."
+        log_warning "${_CLR_GREEN}Skipping creation of secret '${_CLR_YELLOW}ibm-fncm-secret${_CLR_GREEN}', found CP4BA_INST_SECRET_FNCM = 'false'. Remember to create/set manually your own 'ibm-fncm-secret' secret values."
       fi
     else
       createSecretFNCMBpmOnly
