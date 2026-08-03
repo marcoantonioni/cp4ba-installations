@@ -643,6 +643,11 @@ postInstallationSteps () {
 
 _setDefaultValuesIfNotDefined () {
 
+  if [[ "${CP4BA_INST_BAW_BPM_ONLY}" = "true" ]]; then
+    export CP4BA_INST_BAW_BPM_ONLY="false"
+    log_warning "The variable CP4BA_INST_BAW_BPM_ONLY is deprecated, now defaulted to 'false'"
+  fi
+
   if [[ -z "${CP4BA_INST_FNCM_LICENSE_TYPE}" ]]; then
     export CP4BA_INST_FNCM_LICENSE_TYPE="production"
     log_warning "Value for CP4BA_INST_FNCM_LICENSE_TYPE is not set, default to 'production' value"

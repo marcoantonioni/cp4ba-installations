@@ -524,7 +524,7 @@ GenAI "production" configuration will arrive as soon as possible.
 see section 'BAStudio GenAI configuration' in .properties file
 ```
 # BAStudio GenAI configuration
-export CP4BA_INST_GENAI_ENABLED="${CP4BA_INST_GENAI_ENABLED:-}"
+export CP4BA_INST_GENAI_ENABLED="${CP4BA_INST_GENAI_ENABLED:-false}"
 export CP4BA_INST_GENAI_WX_AUTH_SECRET="watsonx-ai-secret"
 # set your values here or set following env vars in shell before run main script 
 # export _WX_USERID=, export _WX_APIKEY=, export _WX_PRJ_ID=, export _WX_URL_PROVIDER=
