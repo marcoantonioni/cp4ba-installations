@@ -1166,6 +1166,7 @@ waitDeploymentReadiness () {
 _SKIP_UNDEFINED_VARS=(
   "CP4BA_INST_OPT_COMPONENTS" 
   "CP4BA_INST_BAS_CUSTOM_XML"
+  "CP4BA_INST_BAS_TLS_CERTS"
 )
 
 checkUndefinedVariables () {
