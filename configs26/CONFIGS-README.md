@@ -62,7 +62,7 @@ last test: 20260717
 ```bash
 
 # !!!
-export CP4BA_INST_GENAI_ENABLED="${CP4BA_INST_GENAI_ENABLED:-false}"
+export CP4BA_INST_GENAI_ENABLED="true"
 export CP4BA_INST_GENAI_WX_APIKEY="...."
 export CP4BA_INST_GENAI_WX_PRJ_ID="...."
 

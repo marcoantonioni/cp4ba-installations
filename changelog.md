@@ -2,6 +2,17 @@
 # Change Log
 
 
+## [1.6.15] - 2026-08-03
+
+### Added
+
+### Changed
+
+GenAI default variables in .properties (all set can be injected as env vars in shell overridding .properties empty values)
+
+### Fixed
+
+
 ## [1.6.14] - 2026-08-02
 
 ### Added
