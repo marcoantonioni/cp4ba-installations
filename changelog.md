@@ -1,6 +1,18 @@
 
 # Change Log
 
+## [1.6.16] - 2026-08-06
+
+Tested all configurations with v26-IF001
+
+### Added
+
+### Changed
+
+Clean .properties for v26.
+
+### Fixed
+
 
 ## [1.6.15] - 2026-08-03
 

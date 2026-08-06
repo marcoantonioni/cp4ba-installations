@@ -8,52 +8,64 @@
 
 ### v26
 
-#### Authoring envs
-
-last test: 20260720
-```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
+#### Base
 _VV=26.0.0
 _KK=26.0.0
+
+#### IF001
+_VV=26.0.1
+_KK=26.0.0-IF001
+
+#### Base version overridding template values
+export CP4BA_BASE_VER="${CP4BA_BASE_VER:-26.0.0}"
+export CP4BA_INST_APPVER="${CP4BA_BASE_VER}"
+
+#### Authoring envs
+
+last test: 20260806
+```bash
+_VV=26.0.0
+_KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-authoring-baw.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
-last test: 20260720
+last test: 20260806
 ```bash
 # !!!
 export CP4BA_INST_GIT_TOKEN="your-token"
 
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-authoring-baw-cicd.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
-last test: 20260720
+last test: 20260806
 ```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-authoring-baw-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
-last test: 20260720
+last test: 20260806
 ```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-ae.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
 last test: 20260720
 ```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-authoring-wfps-pfs-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
@@ -66,9 +78,9 @@ export CP4BA_INST_GENAI_ENABLED="true"
 export CP4BA_INST_GENAI_WX_APIKEY="...."
 export CP4BA_INST_GENAI_WX_PRJ_ID="...."
 
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-authoring-baw-genai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
@@ -79,9 +91,9 @@ export CP4BA_INST_GENAI_ENABLED="true"
 export CP4BA_INST_GENAI_WX_APIKEY="...."
 export CP4BA_INST_GENAI_WX_PRJ_ID="...."
 
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-authoring-baw-pfs-genai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
@@ -91,27 +103,27 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-pfs-genai.properties
 
 last test: 20260717
 ```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-runtime-baw-bai.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
 last test: 20260717
 ```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-runtime-os-bai-pfs.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
 last test: 20260717
 ```bash
-_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 _VV=26.0.0
 _KK=26.0.0
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
