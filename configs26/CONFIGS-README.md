@@ -61,7 +61,7 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-ae.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
-last test: 20260720
+last test: 20260806
 ```bash
 _VV=26.0.0
 _KK=26.0.0
