@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.0] - 2026-08-14
+
+### Added
+
+ADS Designer+Runtime deployment
+
+### Changed
+
+### Fixed
+
+
 ## [1.6.16] - 2026-08-06
 
 Tested all configurations with v26-IF001

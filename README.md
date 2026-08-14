@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-08-06</i> (see changelog.md for details)
+<i>Last update: 2026-08-14</i> (see changelog.md for details)
 
 As of June 26 2026, the 'main' branch contains artifacts compatible with v26.
 
@@ -661,6 +661,7 @@ The variables must be set accordingly (see following examples).
 2. A DBMS defined in a different namespace built using this tool.
 In this case, the external DBMS can be created with the following steps:
 
+
 ### Configuration example 1
 Create self signed certificates for external db (database pod in different namespace). 
 The self signed certificates will be used in step 3.
@@ -671,13 +672,19 @@ export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="true"
 export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="/tmp/cp4ba-pg-tls-certs"
 ```
 
+Create certificates
+
+```
+./cp4ba-create-certificates.sh -c $CONFIG_FILE -t $CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER$
+```
+
 Step 1. Install dbms and keep self signed certificates (automatically creates namespace if not exists)
 ```
 CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs25.0.1/env1-extdb-authoring-wfps.properties
 ./cp4ba-install-db.sh -c ${CONFIG_FILE}
 
 
-# if .properties not configured for ext db force using
+# if .properties not configured for ext db force using (db in same namespace)
 CONFIG_FILE=/home/$USER/cp4ba-projects/cp4ba-installations/configs26/env1-authoring-baw-bai.properties
 ./cp4ba-create-external-db-certificates.sh -c $CONFIG_FILE
 ./cp4ba-install-db.sh -c ${CONFIG_FILE}

@@ -442,7 +442,6 @@ installAndVerifyCasePkgMgr () {
 }
 
 initialChecks () {
-  log_msg "=============================================================="
   log_msg "Initial checks"
 
   checkPrereqTools

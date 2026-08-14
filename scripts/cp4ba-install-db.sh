@@ -421,7 +421,8 @@ _deployPostgresSSL () {
 }
 
 _deployDBCluster () {
-  if [[ -z "${CP4BA_INST_DB_USE_EDB}" ]] || [[ "${CP4BA_INST_DB_USE_EDB}" = "true" ]]; then
+  #if [[ -z "${CP4BA_INST_DB_USE_EDB}" ]] || [[ "${CP4BA_INST_DB_USE_EDB}" = "true" ]]; then
+  if [[ "${CP4BA_INST_DB_USE_EDB}" = "true" ]]; then
     # To be refactored for TLS
     _deployDBClusterEDB "$1" "$2"
   else
@@ -455,6 +456,7 @@ deployDBCluster() {
 # $1: inst db
 # $2: CR name
 # $3: namespace
+  #if [[ "$1" = "true" ]] && [[ "${CP4BA_INST_DB_NAMESPACE}" != "${CP4BA_INST_NAMESPACE}" ]]; then
   if [[ "$1" = "true" ]]; then
     log_info "${_CLR_GREEN}Deploying DB Cluster '${_CLR_YELLOW}$2${_CLR_GREEN}' in namespace '${_CLR_YELLOW}$3${_CLR_GREEN}'${_CLR_NC}"
     _deployDBCluster "$2" "$3" "$4" "$5"
@@ -566,9 +568,11 @@ deployDBClusters() {
   _IDX_END=$CP4BA_INST_DB_INSTANCES
   while [[ $i -le $_IDX_END ]]
   do
+  
     _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
     _INST_DB_CR_NAME_SSL="CP4BA_INST_DB_"$i"_CR_NAME_SSL"
     _INST_DB_SERVER_NAME_SSL="CP4BA_INST_DB_"$i"_SERVER_NAME_SSL"
+
     if [[ ! -z "${!_INST_DB_CR_NAME}" ]]; then
       deployDBCluster ${CP4BA_INST_DB} ${!_INST_DB_CR_NAME} $1 ${!_INST_DB_CR_NAME_SSL} ${!_INST_DB_SERVER_NAME_SSL}
     else

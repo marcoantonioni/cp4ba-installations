@@ -163,85 +163,85 @@ createSecretFNCM () {
   # 20260706 to avoid error on secret creation if any non defined value
   if [[ -z "${CP4BA_INST_PAKBA_ADMIN_USER}" ]]; then
     export CP4BA_INST_PAKBA_ADMIN_USER="cp4admin"
-    log_warning "Set default credentials/label for 'CP4BA_INST_PAKBA_ADMIN_USER'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_PAKBA_ADMIN_USER'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_PAKBA_ADMIN_PWD}" ]]; then
     export CP4BA_INST_PAKBA_ADMIN_PWD="dem0s"
-    log_warning "Set default credentials/label for 'CP4BA_INST_PAKBA_ADMIN_PWD'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_PAKBA_ADMIN_PWD'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_PAKBA_PASSW_LTPA}" ]]; then
     export CP4BA_INST_PAKBA_PASSW_LTPA="passw0rd"
-    log_warning "Set default credentials/label for 'CP4BA_INST_PAKBA_PASSW_LTPA'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_PAKBA_PASSW_LTPA'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" ]]; then
     export CP4BA_INST_PAKBA_PASSW_KEYSTORE="passw0rd"
-    log_warning "Set default credentials/label for 'CP4BA_INST_PAKBA_PASSW_KEYSTORE'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_PAKBA_PASSW_KEYSTORE'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_GCD_LBL}" || -z "${CP4BA_INST_DB_GCD_USER}" || -z "${CP4BA_INST_DB_GCD_PWD}" ]]; then
     export CP4BA_INST_DB_GCD_LBL="gcd"
     export CP4BA_INST_DB_GCD_USER="gcd"
     export CP4BA_INST_DB_GCD_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_GCD_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_GCD_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_BAWDOCS_LBL}" || -z "${CP4BA_INST_DB_BAWDOCS_USER}" || -z "${CP4BA_INST_DB_BAWDOCS_PWD}" ]]; then
     export CP4BA_INST_DB_BAWDOCS_LBL="docs"
     export CP4BA_INST_DB_BAWDOCS_USER="bawdocs"
     export CP4BA_INST_DB_BAWDOCS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_BAWDOCS_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_BAWDOCS_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_BAWDOS_LBL}" || -z "${CP4BA_INST_DB_BAWDOS_USER}" || -z "${CP4BA_INST_DB_BAWDOS_PWD}" ]]; then
     export CP4BA_INST_DB_BAWDOS_LBL="dos"
     export CP4BA_INST_DB_BAWDOS_USER="bawdos"
     export CP4BA_INST_DB_BAWDOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_BAWDOS_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_BAWDOS_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_BAWTOS_LBL}" || -z "${CP4BA_INST_DB_BAWTOS_USER}" || -z "${CP4BA_INST_DB_BAWTOS_PWD}" ]]; then
     export CP4BA_INST_DB_BAWTOS_LBL="tos"
     export CP4BA_INST_DB_BAWTOS_USER="bawtos"
     export CP4BA_INST_DB_BAWTOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_BAWTOS_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_BAWTOS_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_OS_LBL}" || -z "${CP4BA_INST_DB_OS_USER}" || -z "${CP4BA_INST_DB_OS_PWD}" ]]; then
     export CP4BA_INST_DB_OS_LBL="os"
     export CP4BA_INST_DB_OS_USER="os"
     export CP4BA_INST_DB_OS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_OS_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_OS_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_CONTENT_LBL}" || -z "${CP4BA_INST_DB_CONTENT_USER}" || -z "${CP4BA_INST_DB_CONTENT_PWD}" ]]; then
     export CP4BA_INST_DB_CONTENT_LBL="content"
     export CP4BA_INST_DB_CONTENT_USER="content"
     export CP4BA_INST_DB_CONTENT_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_CONTENT_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_CONTENT_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_CHOS_LBL}" || -z "${CP4BA_INST_DB_CHOS_USER}" || -z "${CP4BA_INST_DB_CHOS_PWD}" ]]; then
     export CP4BA_INST_DB_CHOS_LBL="chos"
     export CP4BA_INST_DB_CHOS_USER="chos"
     export CP4BA_INST_DB_CHOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_CHOS_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_CHOS_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_AE_LBL}" || -z "${CP4BA_INST_DB_AE_USER}" || -z "${CP4BA_INST_DB_AE_PWD}" ]]; then
     export CP4BA_INST_DB_AE_LBL="ae"
     export CP4BA_INST_DB_AE_USER="ae"
     export CP4BA_INST_DB_AE_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_AE_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_AE_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_AEOS_LBL}" || -z "${CP4BA_INST_DB_AEOS_USER}" || -z "${CP4BA_INST_DB_AEOS_PWD}" ]]; then
     export CP4BA_INST_DB_AEOS_LBL="aeos"
     export CP4BA_INST_DB_AEOS_USER="${CP4BA_INST_DB_AE_USER}"
     export CP4BA_INST_DB_AEOS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_AEOS_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_AEOS_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_PBK_LBL}" || -z "${CP4BA_INST_DB_APP_USER}" || -z "${CP4BA_INST_DB_APP_PWD}" ]]; then
     export CP4BA_INST_DB_PBK_LBL="pbk"
     export CP4BA_INST_DB_APP_USER="app"
     export CP4BA_INST_DB_APP_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_PBK_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_PBK_(*)'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_AWS_LBL}" || -z "${CP4BA_INST_DB_AWS_USER}" || -z "${CP4BA_INST_DB_AWS_PWD}" ]]; then
     export CP4BA_INST_DB_AWS_LBL="aws"
     export CP4BA_INST_DB_AWS_USER="aws"
     export CP4BA_INST_DB_AWS_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials/label for 'CP4BA_INST_DB_AWS_(*)'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials/label for 'CP4BA_INST_DB_AWS_(*)'${_CLR_NC}"
   fi
 
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-fncm-secret 2> /dev/null 1> /dev/null  
@@ -537,7 +537,7 @@ createSecretBAS () {
 # $1 username
 # $2 password
 
-if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
+if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"ads_designer"* ]]; then
   log_debug "Secret '${_CLR_YELLOW}${CP4BA_INST_CR_NAME}-bas-admin-secret${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${CP4BA_INST_CR_NAME}-bas-admin-secret 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${CP4BA_INST_CR_NAME}-bas-admin-secret \
@@ -574,9 +574,101 @@ fi
 
 #-------------------------------
 createSecretADS () {
-  log_debug "Secret '${_CLR_YELLOW}ibm-dba-ads-runtime-secret${_CLR_NC}'"
-  oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-runtime-secret 2> /dev/null 1> /dev/null
-  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-dba-ads-runtime-secret \
+
+  if [[ -z "${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_DESIGNER}" ]]; then
+    export CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_DESIGNER="ibm-ads-designer-database"
+    log_warning "${_CLR_GREEN}Value for CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_DESIGNER is not set, default to '${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_DESIGNER}' value"
+  fi
+  if [[ -z "${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_RUNTIME}" ]]; then
+    export CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_RUNTIME="ibm-ads-runtime-database"
+    log_warning "${_CLR_GREEN}Value for CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_RUNTIME is not set, default to '${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_RUNTIME}' value"
+  fi
+
+  # v26 
+  _SECRET_NAME="playback-server-admin-secret"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=AE_DATABASE_USER="${CP4BA_INST_DB_PBK_USER}" \
+    --from-literal=AE_DATABASE_PWD="${CP4BA_INST_DB_PBK_PWD}" \
+    --from-literal=REDIS_PASSWORD="${CP4BA_INST_ADS_REDIS_PWD}" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
+  oc label secret ${_SECRET_NAME} db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${_SECRET_NAME} db-name=${CP4BA_INST_APP_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+
+  # v26 
+  _SECRET_NAME="${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_DESIGNER}"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=username="${CP4BA_INST_DB_ADSDES_USER}" \
+    --from-literal=password="${CP4BA_INST_DB_ADSDES_PWD}" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
+  oc label secret ${_SECRET_NAME} db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${_SECRET_NAME} db-name=${CP4BA_INST_ADS_DESIGNER_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+
+  # v26 
+  _SECRET_NAME="${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_RUNTIME}"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=username="${CP4BA_INST_DB_ADSRT_USER}" \
+    --from-literal=password="${CP4BA_INST_DB_ADSRT_PWD}" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
+  oc label secret ${_SECRET_NAME} db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${_SECRET_NAME} db-name=${CP4BA_INST_ADS_RUNTIME_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+
+  # v26
+  _ADS_GENAI_TMP="${_INST_TMP_FOLDER}/cp4ba-ads-gen-ai-$USER-$RANDOM"
+
+cat <<EOF > ${_ADS_GENAI_TMP}
+{ 
+  "name": "${CP4BA_INST_ADS_GENAI_NAME}",
+  "type": "${CP4BA_INST_ADS_GENAI_TYPE}",
+  "description": "${CP4BA_INST_ADS_GENAI_DESC}",
+  "updateTime": 0,
+  "version": "${CP4BA_INST_ADS_GENAI_VERSION}",
+  "authInfo": {
+    "authType": "${CP4BA_INST_ADS_GENAI_AUTH_TYPE}",
+    "apiKey": "${CP4BA_INST_ADS_GENAI_APIKEY}",
+    "authUrl": "${CP4BA_INST_ADS_GENAI_AUTH_URL}",
+    "providerAdditionalInfo": {
+        "providerType": "${CP4BA_INST_ADS_GENAI_PROVIDER_TYPE}",
+        "mlUrl": "${CP4BA_INST_ADS_GENAI_ML_URL}",
+        "projectId": "${CP4BA_INST_ADS_GENAI_PRJ_ID}"
+    }  
+}
+EOF
+
+  # v26 
+  _SECRET_NAME="ads-genai-secret"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-file=genAI="${_ADS_GENAI_TMP}" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
+
+  rm ${_ADS_GENAI_TMP}
+
+  _SECRET_NAME="ibm-dba-ads-runtime-secret"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=asraManagerUsername="${CP4BA_INST_ADS_SECRETS_ASRA_MGR_USER}" \
     --from-literal=asraManagerPassword="${CP4BA_INST_ADS_SECRETS_ASRA_MGR_PASS}" \
     --from-literal=decisionServiceUsername="${CP4BA_INST_ADS_SECRETS_DRS_USER}" \
@@ -591,20 +683,18 @@ createSecretADS () {
     --from-literal=sslKeystorePassword="averymuchlongpasswordtobecompliantwithfips" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
-    log_error "${_CLR_RED}Secret ibm-dba-ads-runtime-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
 
-  log_debug "Secret '${_CLR_YELLOW}ibm-dba-ads-mongo-secret${_CLR_NC}'"
-  oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-mongo-secret 2> /dev/null 1> /dev/null
-  if [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_USER}" ]] && [[ ! -z "${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" ]]; then
-    oc delete secret -n ${CP4BA_INST_NAMESPACE} ibm-dba-ads-mongo-secret 2> /dev/null 1> /dev/null
-    oc create secret -n ${CP4BA_INST_NAMESPACE} generic ibm-dba-ads-mongo-secret \
-      --from-literal=mongoUser="${CP4BA_INST_ADS_SECRETS_MONGO_USER}" \
-      --from-literal=mongoPassword="${CP4BA_INST_ADS_SECRETS_MONGO_PASS}" 2> /dev/null 1> /dev/null
-    if [[ $? -gt 0 ]]; then
-      _ERROR=1
-      log_error "${_CLR_RED}Secret ibm-dba-ads-mongo-secret NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
-    fi
+  _SECRET_NAME="ibm-dba-ads-designer-secret"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=encryptionKeys="{\"activeKey\":\"key1\",\"secretKeyList\":[{\"secretKeyId\":\"key1\",\"value\":\"123344566745435\"},{\"secretKeyId\":\"key2\",\"value\":\"987766544365675\"}]}" \
+    --from-literal=sslKeystorePassword="averymuchlongpasswordtobecompliantwithfips" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
 
 }

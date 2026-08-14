@@ -1,0 +1,236 @@
+###############################################################################
+##
+##Licensed Materials - Property of IBM
+##
+##(C) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+##
+##US Government Users Restricted Rights - Use, duplication or
+##disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+##
+###############################################################################
+##
+##============================================================================================
+## DISCLAIMER
+## These configurations are not indicated or intended to be valid for production environments.
+## The purpose is purely educational.
+##============================================================================================
+##
+## DEPLOYMENT CONTENTS
+## 
+## patterns: foundation,baw_authoring
+##
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-decision-designer
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-decision-runtime
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-shared-by-decision-designer-decision-runtime
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=foundation-application-engine
+###############################################################################
+apiVersion: icp4a.ibm.com/v1
+kind: ICP4ACluster
+metadata:
+  name: ${CP4BA_INST_CR_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+  labels:
+    app.kubernetes.io/instance: ibm-dba
+    app.kubernetes.io/managed-by: ibm-dba
+    app.kubernetes.io/name: ibm-dba
+    release: "${CP4BA_BASE_VER}"
+    cp4ba.ibm.com/backup-type: mandatory
+
+  annotations:
+    kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
+spec:
+
+  appVersion: "${CP4BA_BASE_VER}"
+  ibm_license: accept
+
+  shared_configuration:
+    sc_deployment_license: "${CP4BA_INST_LICENSE_TYPE}"
+    sc_deployment_context: "CP4A"
+    sc_image_repository: cp.icr.io
+    root_ca_secret: icp4a-root-ca
+    sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
+    sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
+    sc_deployment_type: "Production"
+    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
+    sc_deployment_profile_size: "${CP4BA_INST_DEPL_PROFILE_SIZE}"
+    sc_ingress_enable: false
+    trusted_certificate_list: []
+    storage_configuration:
+      sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
+    sc_iam:
+      default_admin_username: "${CP4BA_INST_IAM_ADMIN_USER}"
+    enable_fips: false
+    sc_egress_configuration:
+      sc_restricted_internet_access: false
+    encryption_key_secret: ibm-iaws-shared-key-secret
+    image_pull_secrets:
+      - ibm-entitlement-key
+    no_log: false
+    show_sensitive_log: true
+    sc_is_multiple_az: false
+    sc_generate_sample_network_policies: false
+    sc_drivers_url: ''
+
+  ldap_configuration:
+    lc_selected_ldap_type: "Custom"
+    lc_ldap_server: "${CP4BA_INST_LDAP_HOST}"
+    lc_ldap_port: "${CP4BA_INST_LDAP_PORT}"
+    lc_bind_secret: "${CP4BA_INST_LDAP_SECRET}"
+    lc_ldap_base_dn: "${CP4BA_INST_LDAP_BASE_DOMAIN}"
+    lc_ldap_ssl_enabled: false
+    lc_ldap_ssl_secret_name: ""
+    lc_ldap_user_name_attribute: "*:cn"
+    lc_ldap_user_display_name_attr: "cn"
+    lc_ldap_group_base_dn: "${CP4BA_INST_LDAP_BASE_DOMAIN}"
+    lc_ldap_group_name_attribute: "*:cn"
+    lc_ldap_group_display_name_attr: "cn"
+    lc_ldap_group_membership_search_filter: "(&(cn=%v)(objectclass=groupOfNames))"
+    lc_ldap_group_member_id_map: "memberof:member"
+    lc_ldap_recursive_search: true
+    lc_enable_pagination: false
+    lc_pagination_size: 4500     
+    custom:
+      lc_user_filter: "(&(cn=%v)(objectclass=person))"
+      lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
+
+    scim_configuration_iam:
+      user_unique_id_attribute: "uid"
+      user_name_attribute: "cn"
+      user_principal_name_attribute: "cn"
+      user_display_name_attribute: "cn"
+      user_given_name_attribute: "cn"
+      user_family_name_attribute: "sn"
+      user_full_name_attribute: "cn"
+      user_external_id_attribute: "dn"
+      user_emails_attribute: "mail"
+      user_created_attribute: "createTimestamp"
+      user_lastmodified_attribute: "modifyTimestamp"
+      user_phonenumbers:
+      - value: "mobile"
+        type: "mobile"
+      - value: "telephoneNumber"
+        type: "work"
+      user_object_class_attribute: "organizationalPerson"
+      user_groups_attribute: "member"
+      group_unique_id_attribute: "cn"
+      group_name_attribute: "cn"
+      group_principal_name_attribute: "cn"
+      group_display_name_attribute: "cn"
+      group_external_id_attribute: "dn"
+      group_created_attribute: "createTimestamp"
+      group_lastmodified_attribute: "modifyTimestamp"
+      group_object_class_attribute: "groupOfNames"
+      group_members_attribute: "member"
+
+  datasource_configuration:
+    dc_ads_designer_datasource:
+      current_schema: "${CP4BA_INST_DB_ADSDES_USER}"
+      database_name: "${CP4BA_INST_ADS_DESIGNER_DB_NAME}"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      dc_use_postgres: false
+      ssl_enabled: false
+      database_instance_secret: "${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_DESIGNER}"
+
+    dc_ads_runtime_datasource:
+      current_schema: "${CP4BA_INST_DB_ADSRT_USER}"
+      database_name: "${CP4BA_INST_ADS_RUNTIME_DB_NAME}"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      dc_use_postgres: false
+      ssl_enabled: false
+      database_instance_secret: "${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_RUNTIME}"
+
+    dc_icn_datasource:
+      database_name: "${CP4BA_INST_ICN_DB_NAME}"
+      dc_database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+      dc_common_icn_datasource_name: "ECMClientDS"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_ssl_secret_name: ""
+      dc_hadr_validation_timeout: 15
+      dc_hadr_standby_servername: ""
+      dc_hadr_standby_port: ""
+      dc_hadr_retry_interval_for_client_reroute: 15
+      dc_hadr_max_retries_for_client_reroute: 3
+
+  ads_configuration:
+    credentials_service:
+      resources:
+        limits:
+          ephemeral_storage: 1Gi
+
+    # Designer
+    decision_designer:
+      enabled: true
+
+      # ??? verificare
+      # Config maps containing certificates to trust.
+      # git_servers_certs:
+      # ml_providers_certs:
+      # other_trusted_certs:
+
+    # Runtime
+    decision_runtime:
+      autoscaling:
+        enabled: false
+      enabled: true
+
+      # Authentication mode can be "zen", basic" or "none". Default mode is "zen" if not specified.
+      authentication_mode: "zen"
+
+      archive_storage_type: "fs"
+
+##        # Event emitter, needs Insight Engine (BAI).
+##        event_emitter:
+##          enabled: true  # default true, optional. Will be ignored if BAI is not installed.
+##  #        kafka_topic:  # default "ads-decision-execution-common-data", optional.
+##  #        kafka_properties_config_map_name: # default null, see KC for content. Optional.
+##  #        elasticsearch_index:  # default "ads-decision-execution-common-data", optional. See KC for elasticsearch indexes names criteria.
+##  #        allow_missing_events : # default true, optional.
+##  #        queue_capacity:  # default 50000, optional.
+##  #        dequeur_threads: # default null,  as startup time, optional.
+
+    decision_runtime_service:
+      autoscaling:
+        enabled: false
+      tls:
+        allow_self_signed: true
+    genai_secret_name: ads-genai-secret
+    parsing_service:
+      resources:
+        limits:
+          ephemeral_storage: 1Gi
+
+  # IBM Business Automation Workflow Authoring configuration
+  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-studio
+  bastudio_configuration:
+    admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
+    database:
+      host: ${CP4BA_INST_DB_1_SERVER_NAME}
+      name: ${CP4BA_INST_BAS_1_DB_BAW_NAME}
+      port: "${CP4BA_INST_BAS_1_DB_PORT}"
+      type: ${CP4BA_INST_DB_SERVER_TYPE}
+      cm_min_pool_size: ${CP4BA_INST_DB_MIN_POOL_SIZE}
+      cm_max_pool_size: ${CP4BA_INST_DB_MAX_POOL_SIZE}
+    playback_server:
+      admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
+      database:
+        host: ${CP4BA_INST_DB_1_SERVER_NAME}
+        name: ${CP4BA_INST_BAS_1_DB_PBK_NAME}
+        port: "${CP4BA_INST_BAS_1_DB_PORT}"
+        type: ${CP4BA_INST_DB_SERVER_TYPE}
+    tls:
+      tlsTrustList: [${CP4BA_INST_BAS_TLS_CERTS}]
+    resources:
+      bastudio:
+        limits:          
+          cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
+          memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
+    # bastudio_custom_xml: '${CP4BA_INST_BAS_CUSTOM_XML}'

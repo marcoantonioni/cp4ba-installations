@@ -121,17 +121,17 @@ _generateSQL () {
   if [[ -z "${CP4BA_INST_DB_ODM_USER}" || -z "${CP4BA_INST_DB_ODM_PWD}" ]]; then
     export CP4BA_INST_DB_ODM_USER="odm"
     export CP4BA_INST_DB_ODM_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials for 'CP4BA_INST_DB_ODM_USER'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials for 'CP4BA_INST_DB_ODM_USER'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_ADSRT_USER}" || -z "${CP4BA_INST_DB_ADSRT_PWD}" ]]; then
     export CP4BA_INST_DB_ADSRT_USER="adsrt"
     export CP4BA_INST_DB_ADSRT_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials for 'CP4BA_INST_DB_ADSRT_USER'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials for 'CP4BA_INST_DB_ADSRT_USER'${_CLR_NC}"
   fi
   if [[ -z "${CP4BA_INST_DB_ADSDES_USER}" || -z "${CP4BA_INST_DB_ADSDES_PWD}" ]]; then
     export CP4BA_INST_DB_ADSDES_USER="adsdes"
     export CP4BA_INST_DB_ADSDES_PWD="${CP4BA_INST_PAKBA_ADMIN_USER}"
-    log_warning "Set default credentials for 'CP4BA_INST_DB_ADSDES_USER'${_CLR_NC}"
+    log_warning "${_CLR_GREEN}Set default credentials for 'CP4BA_INST_DB_ADSDES_USER'${_CLR_NC}"
   fi
 
   # _DB_BASE_PATH may contain / chars so use # in 'sed' line
@@ -394,7 +394,7 @@ log_msg "==============================================================${_CLR_NC
 
 if [[ "${CP4BA_INST_DB}" = "true" ]] || [[ "${_FORCE}" == "true" ]]; then
   if [[ "${_GENERATE_SQL_ONLY}" = "false" ]]; then
-    log_info "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers${_CLR_NC}"
+    log_info "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
     #if [[ "${CP4BA_INST_DB}" = "false" ]] || [[ "${_FORCE}" == "true" ]]; then
     #  log_info "${_CLR_GREEN}Using external dbms '${_CLR_YELLOW}${CP4BA_INST_DB_1_SERVER_NAME}${_CLR_GREEN}'"
     #fi

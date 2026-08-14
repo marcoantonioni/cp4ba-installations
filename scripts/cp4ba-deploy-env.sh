@@ -524,7 +524,6 @@ installAndCreateDb () {
 
 
 #-------------------------------
-#-------------------------------
 deployPreEnv () {
   if [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     if [[ ! -z "${_LDAP}" ]]; then
@@ -554,7 +553,7 @@ deployPreEnv () {
 
 deployPostEnv () {
   
-  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
+  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"ads_designer"* ]]; then
     $_SCRIPT_DIR/../../cp4ba-config-tune/scripts/cp4ba-create-custom-xml-secrets.sh -c ${_CFG}
     if [[ $? -ne 0 ]]; then
       log_error "${_CLR_RED}[✗] Error, custom xml secrets not configured.${_CLR_NC}"
@@ -650,32 +649,32 @@ _setDefaultValuesIfNotDefined () {
 
   if [[ -z "${CP4BA_INST_FNCM_LICENSE_TYPE}" ]]; then
     export CP4BA_INST_FNCM_LICENSE_TYPE="production"
-    log_warning "Value for CP4BA_INST_FNCM_LICENSE_TYPE is not set, default to 'production' value"
+    log_warning "${_CLR_GREEN}Value for CP4BA_INST_FNCM_LICENSE_TYPE is not set, default to 'production' value"
   fi
 
   if [[ -z "${CP4BA_INST_BAW_LICENSE_TYPE}" ]]; then
     export CP4BA_INST_BAW_LICENSE_TYPE="production"
-    log_warning "Value for CP4BA_INST_BAW_LICENSE_TYPE is not set, default to 'production' value"
+    log_warning "${_CLR_GREEN}Value for CP4BA_INST_BAW_LICENSE_TYPE is not set, default to 'production' value"
   fi
 
   if [[ -z "${CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED}" ]]; then
     export CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED=false
-    log_warning "[optional] Value for CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED is not set, default to 'false' value"
+    log_warning "${_CLR_GREEN}[optional] Value for CP4BA_INST_BAI_OBJECTSTORE_CONTENT_EVENT_ENABLED is not set, default to 'false' value"
   fi
 
   if [[ -z "${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}" ]]; then
     export CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME="*.watson.appdomain.cloud"
-    log_warning "[optional] Value for CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME is not set, default to '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}' value"
+    log_warning "${_CLR_GREEN}[optional] Value for CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME is not set, default to '${CP4BA_INST_GENAI_WX_CONTENT_SEC_POLICY_DOMAIN_NAME}' value"
   fi
 
-  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
+  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"ads_designer"* ]]; then
     if [[ -z "${CP4BA_INST_BAS_CUSTOM_XML}" ]]; then
       export CP4BA_INST_BAS_CUSTOM_XML=""
-      log_warning "[optional] Value for CP4BA_INST_BAS_CUSTOM_XML is not set, default to '${CP4BA_INST_BAS_CUSTOM_XML}' value"
+      log_warning "${_CLR_GREEN}[optional] Value for CP4BA_INST_BAS_CUSTOM_XML is not set, default to '${CP4BA_INST_BAS_CUSTOM_XML}' value"
     fi
     if [[ -z "${CP4BA_INST_BAS_TLS_CERTS}" ]]; then
       export CP4BA_INST_BAS_TLS_CERTS="${CP4BA_INST_GIT_TLS_SECRET_NAME}"
-      log_warning "[optional] Value for CP4BA_INST_BAS_TLS_CERTS is not set, default to '${CP4BA_INST_BAS_TLS_CERTS}' value"
+      log_warning "${_CLR_GREEN}[optional] Value for CP4BA_INST_BAS_TLS_CERTS is not set, default to '${CP4BA_INST_BAS_TLS_CERTS}' value"
     fi
   fi
 }
@@ -763,7 +762,7 @@ checkEnvVarsForCR () {
     log_warning "${_CLR_GREEN}CP4BA_INST_DB_MIN_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_DB_MIN_POOL_SIZE}${_CLR_GREEN}'"
   fi
 
-  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]]; then
+  if [[ ${CP4BA_INST_OPT_COMPONENTS} == *"baw_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"wfps_authoring"* ]] || [[ ${CP4BA_INST_OPT_COMPONENTS} == *"ads_designer"* ]]; then
     if [[ -z "${CP4BA_INST_BAS_1_MAX_POOL_SIZE}" ]]; then
       export CP4BA_INST_BAS_1_MAX_POOL_SIZE="${CP4BA_INST_DB_MAX_POOL_SIZE}"
       log_warning "${_CLR_GREEN}CP4BA_INST_BAS_1_MAX_POOL_SIZE not defined in properties file, set default to '${_CLR_YELLOW}${CP4BA_INST_BAS_1_MAX_POOL_SIZE}${_CLR_GREEN}'"
@@ -1278,7 +1277,6 @@ startDeployEnv () {
 log_msg "=============================================================="
 log_info "Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
 log_info "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
-
 
 startDeployEnv
 exit 0
