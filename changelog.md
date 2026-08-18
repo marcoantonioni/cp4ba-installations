@@ -1,6 +1,24 @@
 
 # Change Log
 
+## [1.7.1] - 2026-08-18
+
+### Added
+
+ADS Designer+Runtime+BAI deployment
+
+ADS Runtime deployment
+
+ADS Runtime+BAI deployment
+
+### Changed
+
+Create database tools
+
+### Fixed
+
+Minor errors in ADS .sql files (duplicate user/role statement)
+
 ## [1.7.0] - 2026-08-14
 
 ### Added

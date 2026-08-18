@@ -665,7 +665,7 @@ EOF
 
   rm ${_ADS_GENAI_TMP}
 
-  _SECRET_NAME="ibm-dba-ads-runtime-secret"
+  _SECRET_NAME="${CP4BA_INST_ADS_SECRET_RUNTIME}"
   log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
@@ -686,7 +686,7 @@ EOF
     log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
 
-  _SECRET_NAME="ibm-dba-ads-designer-secret"
+  _SECRET_NAME="${CP4BA_INST_ADS_SECRET_DESIGNER}"
   log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \

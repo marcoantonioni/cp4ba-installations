@@ -127,15 +127,15 @@ spec:
       group_members_attribute: "member"
 
   datasource_configuration:
-    dc_ads_designer_datasource:
-      current_schema: "${CP4BA_INST_DB_ADSDES_USER}"
-      database_name: "${CP4BA_INST_ADS_DESIGNER_DB_NAME}"
-      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-      database_type: ${CP4BA_INST_DB_SERVER_TYPE}
-      dc_use_postgres: false
-      ssl_enabled: false
-      database_instance_secret: "${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_DESIGNER}"
+    ##  dc_ads_designer_datasource:
+    ##    current_schema: "${CP4BA_INST_DB_ADSDES_USER}"
+    ##    database_name: "${CP4BA_INST_ADS_DESIGNER_DB_NAME}"
+    ##    database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+    ##    database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+    ##    database_type: ${CP4BA_INST_DB_SERVER_TYPE}
+    ##    dc_use_postgres: false
+    ##    ssl_enabled: false
+    ##    database_instance_secret: "${CP4BA_INST_ADS_SECRET_DB_CREDENTIALS_DESIGNER}"
 
     dc_ads_runtime_datasource:
       current_schema: "${CP4BA_INST_DB_ADSRT_USER}"
@@ -172,15 +172,7 @@ spec:
 
     # Designer
     decision_designer:
-      enabled: true
-      admin_secret_name: "${CP4BA_INST_ADS_SECRET_DESIGNER}"
-      deployment_profile_size: "${CP4BA_INST_ADS_DEPLOYMENT_DESIGNER_PROFILE_SIZE}"
-
-      # ??? verificare
-      # Config maps containing certificates to trust.
-      # git_servers_certs:
-      # ml_providers_certs:
-      # other_trusted_certs:
+      enabled: false
 
     # Runtime
     decision_runtime:
@@ -194,7 +186,6 @@ spec:
       autoscaling:
         enabled: ${CP4BA_INST_ADS_RUNTIME_AUTOSCALING}
 
-      # MUST be true for authoring environment
       enabled: true
 
       # Authentication mode can be "zen", basic" or "none". Default mode is "zen" if not specified.
@@ -292,29 +283,32 @@ spec:
     # run_service:
     # parsing_service:
 
-  # IBM Business Automation Workflow Authoring configuration
-  # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-studio
-  bastudio_configuration:
-    admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
-    database:
-      host: ${CP4BA_INST_DB_1_SERVER_NAME}
-      name: ${CP4BA_INST_BAS_1_DB_BAW_NAME}
-      port: "${CP4BA_INST_BAS_1_DB_PORT}"
-      type: ${CP4BA_INST_DB_SERVER_TYPE}
-      cm_min_pool_size: ${CP4BA_INST_DB_MIN_POOL_SIZE}
-      cm_max_pool_size: ${CP4BA_INST_DB_MAX_POOL_SIZE}
-    playback_server:
-      admin_user: "${CP4BA_INST_PAKBA_ADMIN_USER}"
-      database:
-        host: ${CP4BA_INST_DB_1_SERVER_NAME}
-        name: ${CP4BA_INST_BAS_1_DB_PBK_NAME}
-        port: "${CP4BA_INST_BAS_1_DB_PORT}"
-        type: ${CP4BA_INST_DB_SERVER_TYPE}
-    tls:
-      tlsTrustList: [${CP4BA_INST_BAS_TLS_CERTS}]
-    resources:
-      bastudio:
-        limits:          
-          cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
-          memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
-    # bastudio_custom_xml: '${CP4BA_INST_BAS_CUSTOM_XML}'
+  ## BAI
+  bai_configuration:
+    # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=baip-event-processing-parameters
+
+    settings:
+      egress: ${CP4BA_INST_BAI_EGRESS}
+
+    business_performance_center:
+      install: ${CP4BA_INST_BAI_ENABLE}
+      all_users_access: ${CP4BA_INST_BAI_BPC_ALLUSER}
+
+    bpmn:
+      install: false
+    bawadv:
+      install: false
+    content:
+      install: false
+    event_forwarder:
+      install: false
+    flink:
+      create_route: ${CP4BA_INST_BAI_FLINK_ROUTE}
+    icm:
+      install: false
+    navigator:
+      install: false
+    ads:
+      install: ${CP4BA_INST_BAI_ADS}
+    odm:
+      install: ${CP4BA_INST_BAI_ODM}

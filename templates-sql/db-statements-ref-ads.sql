@@ -38,6 +38,18 @@ GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_baw_1 TO §§dbBAWowner§§;
 CREATE SCHEMA IF NOT EXISTS §§dbBAWowner§§ AUTHORIZATION §§dbBAWowner§§;
 GRANT ALL ON SCHEMA §§dbBAWowner§§ TO §§dbBAWowner§§;
 
+/* 
+Db ICN 
+*/
+CREATE ROLE §§dbICNowner§§ PASSWORD '§§dbICNowner_password§§' CREATEDB CREATEROLE INHERIT LOGIN;
+CREATE DATABASE §§dbPrefix§§_icn OWNER §§dbICNowner§§ ENCODING UTF8;
+GRANT ALL PRIVILEGES ON DATABASE §§dbPrefix§§_icn TO §§dbICNowner§§;
+\c §§dbPrefix§§_icn;
+CREATE SCHEMA IF NOT EXISTS §§dbICNowner§§ AUTHORIZATION §§dbICNowner§§;
+GRANT ALL ON SCHEMA §§dbICNowner§§ TO §§dbICNowner§§;
+CREATE TABLESPACE §§dbPrefix§§_icndb_tbs OWNER §§dbICNowner§§ LOCATION '§§dbBasePath§§/tbs/icn';
+GRANT CREATE ON TABLESPACE §§dbPrefix§§_icndb_tbs TO §§dbICNowner§§; 
+
 /*
 Db AE (database for runtime application engine)
 */
@@ -50,7 +62,7 @@ GRANT ALL ON SCHEMA §§dbAEowner§§ TO §§dbAEowner§§;
 /*
 Db AEOS
 */
-CREATE ROLE §§dbAEowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbAEowner_password§§';
+-- CREATE ROLE §§dbAEowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbAEowner_password§§';
 CREATE TABLESPACE §§dbPrefix§§_aeos_tbs OWNER §§dbAEowner§§ LOCATION '/§§dbBasePath§§/tbs/aeos';
 GRANT CREATE ON TABLESPACE §§dbPrefix§§_aeos_tbs TO §§dbAEowner§§;  
 CREATE DATABASE §§dbPrefix§§_aeos OWNER §§dbAEowner§§ TABLESPACE §§dbPrefix§§_aeos_tbs template template0 encoding UTF8 ;

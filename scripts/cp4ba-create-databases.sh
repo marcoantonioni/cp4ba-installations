@@ -337,6 +337,7 @@ _createDatabases () {
 
 }
 
+# TO BE REFACTORED ...
 # MUST BE aligned with wfps-deploy.sh (to be refactored for single source...)
 createDatabases () {
 # $1: prefix key
@@ -350,7 +351,7 @@ createDatabases () {
   _IDX_END=${CP4BA_INST_DB_INSTANCES}
   while [[ $i -le $_IDX_END ]]
   do
-    _INST_ITEM="$1_$i"
+    ##TBR _INST_ITEM="$1_$i"
     _INST_DB_CR_NAME="CP4BA_INST_DB_"$i"_CR_NAME"
     _INST_DB_CR_NAME_SSL="CP4BA_INST_DB_"$i"_CR_NAME_SSL"
     _INST_DB_TEMPLATE="CP4BA_INST_DB_"$i"_TEMPLATE"
@@ -361,8 +362,8 @@ createDatabases () {
       exit 1
     fi
     
-    if [[ "${!_INST_ITEM}" = "true" ]]; then
-      log_info "Installing '${_CLR_YELLOW}${_INST_ITEM}${_CLR_NC}' "
+    ##TBR if [[ "${!_INST_ITEM}" = "true" ]]; then
+      ##TBR log_info "Installing '${_CLR_YELLOW}${_INST_ITEM}${_CLR_NC}' "
       if [[ ! -z "${!_INST_DB_CR_NAME}" ]] && [[ ! -z "${!_INST_DB_TEMPLATE}" ]]; then
 
         if [[ -z "${CP4BA_INST_DB_ONLY_SSL}" ]]; then
@@ -383,15 +384,14 @@ createDatabases () {
         log_msg ""
         exit 1
       fi
-    else
-      log_debug "${_CLR_GREEN}'${_CLR_YELLOW}${_INST_ITEM}${_CLR_GREEN}' for db '${_CLR_YELLOW}${!_INST_DB_CR_NAME}${_CLR_GREEN}' is disabled, skipping configuration."
-    fi
+    ##TBR else
+    ##TBR   log_debug "${_CLR_GREEN}'${_CLR_YELLOW}${_INST_ITEM}${_CLR_GREEN}' for db '${_CLR_YELLOW}${!_INST_DB_CR_NAME}${_CLR_GREEN}' is disabled, skipping configuration."
+    ##TBR fi
     ((i = i + 1))
   done  
 }
 
 log_msg "==============================================================${_CLR_NC}"
-
 if [[ "${CP4BA_INST_DB}" = "true" ]] || [[ "${_FORCE}" == "true" ]]; then
   if [[ "${_GENERATE_SQL_ONLY}" = "false" ]]; then
     log_info "${_CLR_GREEN}Creating databases for '${_CLR_YELLOW}${CP4BA_INST_DB_INSTANCES}${_CLR_GREEN}' db servers in namespace '${_CLR_YELLOW}${CP4BA_INST_SUPPORT_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
@@ -399,14 +399,17 @@ if [[ "${CP4BA_INST_DB}" = "true" ]] || [[ "${_FORCE}" == "true" ]]; then
     #  log_info "${_CLR_GREEN}Using external dbms '${_CLR_YELLOW}${CP4BA_INST_DB_1_SERVER_NAME}${_CLR_GREEN}'"
     #fi
   fi
-  createDatabases "CP4BA_INST_DB_ZENBTSIM_EXT"
-  createDatabases "CP4BA_INST_BAS"
-  createDatabases "CP4BA_INST_BAW"
-  createDatabases "CP4BA_INST_CONTENT"
-  createDatabases "CP4BA_INST_ICN"
-  createDatabases "CP4BA_INST_DB_WFPS_EXT"
-  createDatabases "CP4BA_INST_CUSTOMDB"
+  ##TBR createDatabases "CP4BA_INST_DB_ZENBTSIM_EXT"
+  ##TBR createDatabases "CP4BA_INST_BAS"
+  ##TBR createDatabases "CP4BA_INST_BAW"
+  ##TBR createDatabases "CP4BA_INST_CONTENT"
+  ##TBR createDatabases "CP4BA_INST_ICN"
+  ##TBR createDatabases "CP4BA_INST_DB_WFPS_EXT"
+  ##TBR createDatabases "CP4BA_INST_CUSTOMDB"
+  ##TBR createDatabases "CP4BA_INST_ADS"
   
+  createDatabases ""
+
   if [[ "${CP4BA_INST_DB_CUSTOM}" = "true" ]]; then
     _createDatabases ${CP4BA_INST_DB_CUSTOM_CR_NAME_SSL} ${CP4BA_INST_DB_CUSTOM_TEMPLATE} ${CP4BA_INST_DB_CUSTOM_SUFFIX}
   fi

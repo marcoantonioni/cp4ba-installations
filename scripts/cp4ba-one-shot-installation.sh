@@ -21,6 +21,7 @@ _OK=0
 _ERR_PKG_MGR=0
 _TRACE=0
 _SKIP_OPERATORS=false
+_USE_ANYWAY_VERSIONS_FROM_PARAMS=false
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -80,7 +81,7 @@ usage () {
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:p:s:v:k:d:mtxo flag
+while getopts c:p:s:v:k:d:mtxou flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
@@ -92,6 +93,7 @@ do
         t) _TEST_CFG=true;;
         x) _TRACE=1;;
         o) _SKIP_OPERATORS=true;;
+        u) _USE_ANYWAY_VERSIONS_FROM_PARAMS=true;;
         \?) # Invalid option
             echo "Invalid option: "${flag}
             usage
@@ -356,8 +358,15 @@ installAndVerifyCasePkgMgr () {
     if [[ ! -z "${_CPAK_MGR_K8CERT_VER}" ]]; then
       _USE_KVER=" -k ${_CPAK_MGR_K8CERT_VER}"
     fi
+
+    _USE_AVFP=""
+      if [[ "${_USE_ANYWAY_VERSIONS_FROM_PARAMS}" = "true" ]]; then
+      _USE_VER=" -v ${_CPAK_MGR_VER}"
+      _USE_KVER=" -k ${_CPAK_MGR_K8CERT_VER}"
+      _USE_AVFP=" -u"
+    fi
     
-    ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -d ${_CPAK_MGR_FOLDER} ${_USE_VER} ${_USE_KVER}
+    ${CP4BA_INST_CMGR_TOOLS_FOLDER}/cp4ba-casemgr-install.sh -d ${_CPAK_MGR_FOLDER} ${_USE_VER} ${_USE_KVER} ${_USE_AVFP}
     if [[ $? -gt 0 ]]; then
       _ERR_PKG_MGR=1
     else

@@ -17,7 +17,7 @@
 ##
 ## DEPLOYMENT CONTENTS
 ## 
-## patterns: foundation,baw_authoring
+## patterns: foundation,baw_authoring,bai
 ##
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-decision-designer
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-decision-runtime
@@ -318,3 +318,33 @@ spec:
           cpu: '${CP4BA_INST_BAS_1_LIMITS_CPU}'
           memory: ${CP4BA_INST_BAS_1_LIMITS_MEMORY}
     # bastudio_custom_xml: '${CP4BA_INST_BAS_CUSTOM_XML}'
+
+  ## BAI
+  bai_configuration:
+    # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=baip-event-processing-parameters
+
+    settings:
+      egress: ${CP4BA_INST_BAI_EGRESS}
+
+    business_performance_center:
+      install: ${CP4BA_INST_BAI_ENABLE}
+      all_users_access: ${CP4BA_INST_BAI_BPC_ALLUSER}
+
+    bpmn:
+      install: false
+    bawadv:
+      install: false
+    content:
+      install: false
+    event_forwarder:
+      install: false
+    flink:
+      create_route: ${CP4BA_INST_BAI_FLINK_ROUTE}
+    icm:
+      install: false
+    navigator:
+      install: false
+    ads:
+      install: ${CP4BA_INST_BAI_ADS}
+    odm:
+      install: ${CP4BA_INST_BAI_ODM}

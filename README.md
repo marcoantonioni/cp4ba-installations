@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-08-14</i> (see changelog.md for details)
+<i>Last update: 2026-08-18</i> (see changelog.md for details)
 
 As of June 26 2026, the 'main' branch contains artifacts compatible with v26.
 
@@ -33,6 +33,14 @@ The scripts available in the CP4BA Case Manager package are extremely powerful a
 The main objective of this repository is the further simplification and automation of the activities required by the official manuals.
 
 I hope it can help you and make CP4BA adoption even easier for novices.
+
+The main capabilities/components present as of the last update date:
+
+- BAW
+- BAI
+- WfPS
+- PFS
+- ADS
 
 [Installation Guide detailed documentation](https://github.com/marcoantonioni/cp4ba-documentation)
 
@@ -427,6 +435,12 @@ CONFIG_FILE=../configs/env1-baw.properties
 # Bug in https://github.com/IBM/cloud-pak/blob/master/repo/case/ibm-cp-automation/index.yaml
 # incorrect mapping for tag '25.1.0' mapping a 'appVersion: 25.1.0' unexistent 25.1.0.zip file.
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v 25.1.0 -k 25.0.1
+
+# use package already present on your bastion in folder defined by -d parameter 
+# example for version 26.0.1, sub folder ibm-cp-automation-26.0.1 must be present
+_VV=26.0.1
+_KK=26.0.0-IF001
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK} -d /tmp/cmgr26-marco -u
 
 ```
 
