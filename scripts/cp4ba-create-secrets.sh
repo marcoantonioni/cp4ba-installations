@@ -572,6 +572,49 @@ fi
 
 }
 
+
+#-------------------------------
+createSecretODM () {
+
+  if [[ -z "${CP4BA_INST_ODM_SECRET_DB_CREDENTIALS}" ]]; then
+    export CP4BA_INST_ODM_SECRET_DB_CREDENTIALS="ibm-odm-db-secret"
+    log_warning "${_CLR_GREEN}Value for CP4BA_INST_ODM_SECRET_DB_CREDENTIALS is not set, default to '${CP4BA_INST_ODM_SECRET_DB_CREDENTIALS}' value"
+  fi
+
+  _SECRET_NAME="${CP4BA_INST_ODM_SECRET_DB_CREDENTIALS}"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=db-user="${CP4BA_INST_DB_ODM_USER}" \
+    --from-literal=db-password="${CP4BA_INST_DB_ODM_PWD}" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
+  oc label secret ${_SECRET_NAME} db-server=${CP4BA_INST_DB_1_SERVICE} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${_SECRET_NAME} db-name=${CP4BA_INST_ADS_DESIGNER_DB_NAME} -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+
+
+  if [[ -z "${CP4BA_INST_ODM_SECRET_KEYSTORE}" ]]; then
+    export CP4BA_INST_ODM_SECRET_KEYSTORE="ibm-odm-keystore-secret"
+    log_warning "${_CLR_GREEN}Value for CP4BA_INST_ODM_SECRET_KEYSTORE is not set, default to '${CP4BA_INST_ODM_SECRET_KEYSTORE}' value"
+  fi
+
+  _SECRET_NAME="${CP4BA_INST_ODM_SECRET_KEYSTORE}"
+  log_debug "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
+  oc delete secret -n ${CP4BA_INST_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_NAMESPACE} generic ${_SECRET_NAME} \
+    --from-literal=keystorePassword="${CP4BA_INST_PAKBA_PASSW_KEYSTORE}" 2> /dev/null 1> /dev/null
+  if [[ $? -gt 0 ]]; then
+    _ERROR=1
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+  fi
+  oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_NAMESPACE} 2> /dev/null 1> /dev/null
+
+
+}
+
 #-------------------------------
 createSecretADS () {
 
@@ -1030,6 +1073,11 @@ createSecrets () {
   if [[ "${CP4BA_INST_ADS_SECRETS_CREATE}" = "true" ]]; then
     createSecretADS
     createConfigMapADS
+  fi
+
+  # ODM
+  if [[ "${CP4BA_INST_ODM_SECRETS_CREATE}" = "true" ]]; then
+    createSecretODM
   fi
 
   i=1

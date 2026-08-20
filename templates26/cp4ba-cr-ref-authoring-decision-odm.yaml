@@ -1,0 +1,314 @@
+###############################################################################
+##
+##Licensed Materials - Property of IBM
+##
+##(C) Copyright IBM Corp. 2022, 2023. All Rights Reserved.
+##
+##US Government Users Restricted Rights - Use, duplication or
+##disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+##
+###############################################################################
+##
+##============================================================================================
+## DISCLAIMER
+## These configurations are not indicated or intended to be valid for production environments.
+## The purpose is purely educational.
+##============================================================================================
+##
+## DEPLOYMENT CONTENTS
+## 
+## patterns: foundation,baw_authoring
+##
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=resource-configuring-operational-decision-manager
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-operational-decision-manager
+###############################################################################
+apiVersion: icp4a.ibm.com/v1
+kind: ICP4ACluster
+metadata:
+  name: ${CP4BA_INST_CR_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+  labels:
+    app.kubernetes.io/instance: ibm-dba
+    app.kubernetes.io/managed-by: ibm-dba
+    app.kubernetes.io/name: ibm-dba
+    release: "${CP4BA_BASE_VER}"
+    cp4ba.ibm.com/backup-type: mandatory
+
+  annotations:
+    kubernetes.io/description: "${CP4BA_INST_DESCRIPTION}"
+spec:
+
+  appVersion: "${CP4BA_BASE_VER}"
+  ibm_license: accept
+
+  shared_configuration:
+    sc_deployment_license: "${CP4BA_INST_LICENSE_TYPE}"
+    sc_deployment_context: "CP4A"
+    sc_image_repository: cp.icr.io
+    root_ca_secret: icp4a-root-ca
+    sc_deployment_patterns: "${CP4BA_INST_DEPL_PATTERNS}"
+    sc_optional_components: "${CP4BA_INST_OPT_COMPONENTS}"
+    sc_deployment_type: "Production"
+    sc_deployment_platform: "${CP4BA_INST_PLATFORM}"
+    sc_deployment_profile_size: "${CP4BA_INST_DEPL_PROFILE_SIZE}"
+    sc_ingress_enable: false
+    trusted_certificate_list: []
+    storage_configuration:
+      sc_dynamic_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_slow_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_medium_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_fast_file_storage_classname: "${CP4BA_INST_SC_FILE}"
+      sc_block_storage_classname: "${CP4BA_INST_SC_BLOCK}"
+    sc_iam:
+      default_admin_username: "${CP4BA_INST_IAM_ADMIN_USER}"
+    enable_fips: false
+    sc_egress_configuration:
+      sc_restricted_internet_access: false
+    encryption_key_secret: ibm-iaws-shared-key-secret
+    image_pull_secrets:
+      - ibm-entitlement-key
+    no_log: false
+    show_sensitive_log: true
+    sc_is_multiple_az: false
+    sc_generate_sample_network_policies: false
+    sc_drivers_url: ''
+
+  ldap_configuration:
+    lc_selected_ldap_type: "Custom"
+    lc_ldap_server: "${CP4BA_INST_LDAP_HOST}"
+    lc_ldap_port: "${CP4BA_INST_LDAP_PORT}"
+    lc_bind_secret: "${CP4BA_INST_LDAP_SECRET}"
+    lc_ldap_base_dn: "${CP4BA_INST_LDAP_BASE_DOMAIN}"
+    lc_ldap_ssl_enabled: false
+    lc_ldap_ssl_secret_name: ""
+    lc_ldap_user_name_attribute: "*:cn"
+    lc_ldap_user_display_name_attr: "cn"
+    lc_ldap_group_base_dn: "${CP4BA_INST_LDAP_BASE_DOMAIN}"
+    lc_ldap_group_name_attribute: "*:cn"
+    lc_ldap_group_display_name_attr: "cn"
+    lc_ldap_group_membership_search_filter: "(&(cn=%v)(objectclass=groupOfNames))"
+    lc_ldap_group_member_id_map: "memberof:member"
+    lc_ldap_recursive_search: true
+    lc_enable_pagination: false
+    lc_pagination_size: 4500     
+    custom:
+      lc_user_filter: "(&(cn=%v)(objectclass=person))"
+      lc_group_filter: "(&(cn=%v)(objectclass=groupOfNames))"
+
+    scim_configuration_iam:
+      user_unique_id_attribute: "uid"
+      user_name_attribute: "cn"
+      user_principal_name_attribute: "cn"
+      user_display_name_attribute: "cn"
+      user_given_name_attribute: "cn"
+      user_family_name_attribute: "sn"
+      user_full_name_attribute: "cn"
+      user_external_id_attribute: "dn"
+      user_emails_attribute: "mail"
+      user_created_attribute: "createTimestamp"
+      user_lastmodified_attribute: "modifyTimestamp"
+      user_phonenumbers:
+      - value: "mobile"
+        type: "mobile"
+      - value: "telephoneNumber"
+        type: "work"
+      user_object_class_attribute: "organizationalPerson"
+      user_groups_attribute: "member"
+      group_unique_id_attribute: "cn"
+      group_name_attribute: "cn"
+      group_principal_name_attribute: "cn"
+      group_display_name_attribute: "cn"
+      group_external_id_attribute: "dn"
+      group_created_attribute: "createTimestamp"
+      group_lastmodified_attribute: "modifyTimestamp"
+      group_object_class_attribute: "groupOfNames"
+      group_members_attribute: "member"
+
+  datasource_configuration:
+
+    ## Provide the common database configuration for Decision Center and Decision Server
+    dc_odm_datasource:
+      dc_database_type: "${CP4BA_INST_DB_SERVER_TYPE}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      dc_common_database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      dc_common_database_name: "${CP4BA_INST_ODM_DB_NAME}"
+      dc_common_database_instance_secret: "${CP4BA_INST_ODM_SECRET_DB_CREDENTIALS}"
+      dc_common_ssl_enabled: false
+      dc_ssl_secret_name: ""
+      dc_use_postgres: false
+
+    ## Provide the Decision Center database configuration
+    dc_odm_decisioncenter_datasource:
+      database_type: "${CP4BA_INST_DB_SERVER_TYPE}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_name: "${CP4BA_INST_ODM_DB_NAME}"
+      database_instance_secret: "${CP4BA_INST_ODM_SECRET_DB_CREDENTIALS}"
+      ssl_enabled: false
+      ssl_secret_name: ""
+      dc_use_postgres: false
+
+    ## Provide the Decision Server database configuration
+    dc_odm_decisionserver_datasource:
+      database_type: "${CP4BA_INST_DB_SERVER_TYPE}"
+      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
+      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
+      database_name: "${CP4BA_INST_ODM_DB_NAME}"
+      database_instance_secret: "${CP4BA_INST_ODM_SECRET_DB_CREDENTIALS}"
+      ssl_enabled: false
+      ssl_secret_name: ""
+      dc_use_postgres: false
+
+  ########################################################################
+  ########     IBM Operational Decision Manager Configuration     ########
+  ########################################################################
+  odm_configuration:
+
+    # Allow to activate more trace for ODM in the Operator pod.
+    debug: ${CP4BA_INST_ODM_DEBUG}
+
+    deployment_profile_size: "${CP4BA_INST_ODM_DEPLOYMENT_PROFILE_SIZE}"
+
+    version: ${CP4BA_BASE_VER}
+
+    audit_logging:
+      enabled: ${CP4BA_INST_ODM_AUDIT_LOG}
+      rolling_max_files: ${CP4BA_INST_ODM_AUDIT_LOG_MAX_FILES}
+      rolling_max_size: '${CP4BA_INST_ODM_AUDIT_LOG_MAX_SIZE}'
+
+    image:
+      pullPolicy: IfNotPresent
+      repository: cp.icr.io/cp/cp4a/odm
+
+    ## Dedicated Cloud Pak parameter
+    dba:
+      passwordSecretRef: ${CP4BA_INST_ODM_SECRET_KEYSTORE}
+      
+    ## Decision Server Runtime parameters
+    decisionServerRuntime:
+      enabled: ${CP4BA_INST_ODM_DEC_SRV_RUNTIME_ENABLED}
+      replicaCount: ${CP4BA_INST_ODM_DEC_SRV_RUNTIME_REPLICAS}
+      resources:
+        requests:
+          cpu: ${CP4BA_INST_ODM_DEC_SRV_RUNTIME_REQUESTS_CPU}
+          memory: ${CP4BA_INST_ODM_DEC_SRV_RUNTIME_REQUESTS_MEM}
+          ephemeral-storage: ${CP4BA_INST_ODM_DEC_SRV_RUNTIME_REQUESTS_STORAGE}
+        limits:
+          cpu: ${CP4BA_INST_ODM_DEC_SRV_RUNTIME_LIMITS_CPU}
+          memory: ${CP4BA_INST_ODM_DEC_SRV_RUNTIME_LIMITS_MEM}
+          ephemeral-storage: ${CP4BA_INST_ODM_DEC_SRV_RUNTIME_LIMITS_STORAGE}
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+        targetAverageCpuUtilization: 300
+        targetAverageMemoryUtilization: 600
+      networkPolicy:
+        egress:
+        ingress:
+      rolling_update:
+        max_unavailable: '25%'
+        max_surge: 1
+      tolerations: []
+
+    ## Decision Server Console parameters
+    decisionServerConsole:
+      resources:
+        requests:
+          cpu: ${CP4BA_INST_ODM_DEC_SRV_CONSOLE_REQUESTS_CPU}
+          memory: ${CP4BA_INST_ODM_DEC_SRV_CONSOLE_REQUESTS_MEM}
+          ephemeral-storage: ${CP4BA_INST_ODM_DEC_SRV_CONSOLE_REQUESTS_STORAGE}
+        limits:
+          cpu: ${CP4BA_INST_ODM_DEC_SRV_CONSOLE_LIMITS_CPU}
+          memory: ${CP4BA_INST_ODM_DEC_SRV_CONSOLE_LIMITS_MEM}
+          ephemeral-storage: ${CP4BA_INST_ODM_DEC_SRV_CONSOLE_LIMITS_STORAGE}
+      rolling_update:
+        max_unavailable: '25%'
+        max_surge: 1
+      tolerations: []
+
+    ## Decision Center parameters
+    decisionCenter:
+      enabled: ${CP4BA_INST_ODM_DEC_CENTER_ENABLED}
+      persistenceLocale: ${CP4BA_INST_ODM_DEC_CENTER_PERSISTENCE_LOCALE}
+      replicaCount: ${CP4BA_INST_ODM_DEC_CENTER_REPLICAS}
+      disableAllAuthenticatedUser: ${CP4BA_INST_ODM_DEC_CENTER_DISABLE_ALL_AUTHENTICATED}
+      resources:
+        requests:
+          cpu: ${CP4BA_INST_ODM_DEC_CENTER_REQUESTS_CPU}
+          memory: ${CP4BA_INST_ODM_DEC_CENTER_REQUESTS_MEM}
+          ephemeral-storage: ${CP4BA_INST_ODM_DEC_CENTER_REQUESTS_STORAGE}
+        limits:
+          cpu: ${CP4BA_INST_ODM_DEC_CENTER_LIMITS_CPU}
+          memory: ${CP4BA_INST_ODM_DEC_CENTER_LIMITS_MEM}
+          ephemeral-storage: ${CP4BA_INST_ODM_DEC_CENTER_LIMITS_STORAGE}
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+        targetAverageCpuUtilization: 300
+        targetAverageMemoryUtilization: 150
+      networkPolicy:
+        egress:
+        ingress:
+      rolling_update:
+        max_unavailable: '25%'
+        max_surge: 1
+      tolerations: []
+
+    ## Decision Runner parameters
+    decisionRunner:
+      enabled: ${CP4BA_INST_ODM_DEC_RUNNER_ENABLED}
+      replicaCount: ${CP4BA_INST_ODM_DEC_RUNNER_REPLICAS}
+      resources:
+        requests:
+          cpu: ${CP4BA_INST_ODM_DEC_RUNNER_REQUESTS_CPU}
+          memory: ${CP4BA_INST_ODM_DEC_RUNNER_REQUESTS_MEM}
+          ephemeral-storage: ${CP4BA_INST_ODM_DEC_RUNNER_REQUESTS_STORAGE}
+        limits:
+          cpu: ${CP4BA_INST_ODM_DEC_RUNNER_LIMITS_CPU}
+          memory: ${CP4BA_INST_ODM_DEC_RUNNER_LIMITS_MEM}
+          ephemeral-storage: ${CP4BA_INST_ODM_DEC_RUNNER_LIMITS_STORAGE}
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+        targetAverageCpuUtilization: 300
+        targetAverageMemoryUtilization: 150
+      networkPolicy:
+        egress:
+        ingress:
+      rolling_update:
+        max_unavailable: '25%'
+        max_surge: 1
+      tolerations: []
+
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      failureThreshold: 45
+      timeoutSeconds: 5
+
+    livenessProbe:
+      initialDelaySeconds: 300
+      periodSeconds: 30
+      failureThreshold: 4
+      timeoutSeconds: 5
+
+    startupProbe:
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      failureThreshold: 30
+      timeoutSeconds: 5
+
+    customization:
+      trusted_certificate_list:
+      bai_kafka_topic:
+
+    networkPolicy:
+      enabled: true
+      egress:
+      ingress:
+
+    # Enable SCIM datasource in Decision Center allowing to import group and users.
+    show_scim_connection: ${CP4BA_INST_ODM_ENABLE_SCIM_DEC_CENTER}
