@@ -1202,7 +1202,7 @@ startDeployEnv () {
     exit 1
   fi
 
-  log_msg "=============================================================="
+  # log_msg "=============================================================="
   log_msg "Initial checks for deployment"
   checkPrereqTools
   checkPrereqVars
