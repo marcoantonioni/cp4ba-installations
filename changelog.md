@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.2] - 2026-08-20
+
+### Added
+
+ODM Authoring deployment
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.1] - 2026-08-18
 
 ### Added
