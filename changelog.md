@@ -1,6 +1,19 @@
 
 # Change Log
 
+## [1.7.2] - 2026-08-21
+
+### Added
+
+ODM Authoring+BAI deployment
+ODM Runtime deployment
+ODM Runtime+BAI deployment
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.2] - 2026-08-20
 
 ### Added

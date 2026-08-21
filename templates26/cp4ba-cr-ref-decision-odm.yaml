@@ -137,17 +137,6 @@ spec:
       dc_ssl_secret_name: ""
       dc_use_postgres: false
 
-    ## Provide the Decision Center database configuration
-    dc_odm_decisioncenter_datasource:
-      database_type: "${CP4BA_INST_DB_SERVER_TYPE}"
-      database_servername: "${CP4BA_INST_DB_1_SERVER_NAME}"
-      database_port: "${CP4BA_INST_DB_SERVER_PORT}"
-      database_name: "${CP4BA_INST_ODM_DB_NAME}"
-      database_instance_secret: "${CP4BA_INST_ODM_SECRET_DB_CREDENTIALS}"
-      ssl_enabled: false
-      ssl_secret_name: ""
-      dc_use_postgres: false
-
     ## Provide the Decision Server database configuration
     dc_odm_decisionserver_datasource:
       database_type: "${CP4BA_INST_DB_SERVER_TYPE}"
@@ -220,62 +209,6 @@ spec:
           cpu: ${CP4BA_INST_ODM_DEC_SRV_CONSOLE_LIMITS_CPU}
           memory: ${CP4BA_INST_ODM_DEC_SRV_CONSOLE_LIMITS_MEM}
           # ephemeral-storage: ${CP4BA_INST_ODM_DEC_SRV_CONSOLE_LIMITS_STORAGE}
-      rolling_update:
-        max_unavailable: '25%'
-        max_surge: 1
-      tolerations: []
-
-    ## Decision Center parameters
-    decisionCenter:
-      enabled: ${CP4BA_INST_ODM_DEC_CENTER_ENABLED}
-      persistenceLocale: ${CP4BA_INST_ODM_DEC_CENTER_PERSISTENCE_LOCALE}
-      replicaCount: ${CP4BA_INST_ODM_DEC_CENTER_REPLICAS}
-      disableAllAuthenticatedUser: ${CP4BA_INST_ODM_DEC_CENTER_DISABLE_ALL_AUTHENTICATED}
-      resources:
-        requests:
-          cpu: ${CP4BA_INST_ODM_DEC_CENTER_REQUESTS_CPU}
-          memory: ${CP4BA_INST_ODM_DEC_CENTER_REQUESTS_MEM}
-          # ephemeral-storage: ${CP4BA_INST_ODM_DEC_CENTER_REQUESTS_STORAGE}
-        limits:
-          cpu: ${CP4BA_INST_ODM_DEC_CENTER_LIMITS_CPU}
-          memory: ${CP4BA_INST_ODM_DEC_CENTER_LIMITS_MEM}
-          # ephemeral-storage: ${CP4BA_INST_ODM_DEC_CENTER_LIMITS_STORAGE}
-      autoscaling:
-        enabled: false
-        minReplicas: 1
-        maxReplicas: 3
-        targetAverageCpuUtilization: 300
-        targetAverageMemoryUtilization: 150
-      networkPolicy:
-        egress:
-        ingress:
-      rolling_update:
-        max_unavailable: '25%'
-        max_surge: 1
-      tolerations: []
-
-    ## Decision Runner parameters
-    decisionRunner:
-      enabled: ${CP4BA_INST_ODM_DEC_RUNNER_ENABLED}
-      replicaCount: ${CP4BA_INST_ODM_DEC_RUNNER_REPLICAS}
-      resources:
-        requests:
-          cpu: ${CP4BA_INST_ODM_DEC_RUNNER_REQUESTS_CPU}
-          memory: ${CP4BA_INST_ODM_DEC_RUNNER_REQUESTS_MEM}
-          # ephemeral-storage: ${CP4BA_INST_ODM_DEC_RUNNER_REQUESTS_STORAGE}
-        limits:
-          cpu: ${CP4BA_INST_ODM_DEC_RUNNER_LIMITS_CPU}
-          memory: ${CP4BA_INST_ODM_DEC_RUNNER_LIMITS_MEM}
-          # ephemeral-storage: ${CP4BA_INST_ODM_DEC_RUNNER_LIMITS_STORAGE}
-      autoscaling:
-        enabled: false
-        minReplicas: 1
-        maxReplicas: 3
-        targetAverageCpuUtilization: 300
-        targetAverageMemoryUtilization: 150
-      networkPolicy:
-        egress:
-        ingress:
       rolling_update:
         max_unavailable: '25%'
         max_surge: 1
