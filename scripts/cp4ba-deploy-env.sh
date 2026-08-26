@@ -520,8 +520,256 @@ installAndCreateDb () {
     fi
   fi
 
+  if [[ "${CP4BA_INST_DB_RPA}" = "true" ]]; then
+    ${_SCRIPT_DIR}/cp4ba-install-rpa-db.sh -c ${_CFG}
+    if [[ $? -ne 0 ]]; then
+      log_error "${_CLR_RED}[✗] Error, RPA DB not installed.${_CLR_NC}"
+      exit 1
+    fi
+    
+  fi
+
 }
 
+
+#-------------------------------
+# RPA
+
+deployMsSqlToolsPod() {
+  log_info "${_CLR_GREEN}Deploying '${_CLR_YELLOW}MsSql Tools${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"  
+  
+  oc delete pod -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_RPA_SQLTOOLS_POD_NAME} 2>/dev/null 1>/dev/null
+
+cat <<EOF | oc create -f - 2>/dev/null 1>/dev/null
+kind: Pod
+apiVersion: v1
+metadata:
+  name: ${CP4BA_INST_DB_RPA_SQLTOOLS_POD_NAME}
+  namespace: ${CP4BA_INST_SUPPORT_NAMESPACE}
+  labels:
+    app: mssql-tools
+spec:
+  containers:
+    - name: mssql-tools
+      image: 'mcr.microsoft.com/mssql-tools'
+      command: [ "/bin/bash", "-c", "sleep infinity" ]
+EOF
+
+  while [ true ]
+  do
+      PHASE=$(oc get pod -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_RPA_SQLTOOLS_POD_NAME} -o jsonpath='{.status.phase}')
+      if [ "${PHASE}" = "Running" ]; then
+          break
+      else
+          sleep 1
+      fi
+  done
+
+}
+
+createRpaDatabases() {
+  
+  log_info "${_CLR_GREEN}Execute SQL statements for RPA databases '${_CLR_YELLOW}automation, knowledge, wordnet, address, audit${_CLR_GREEN}'${_CLR_NC}"  
+
+  # execute sql statements
+  _KO=0
+  _retry=0
+  while [[ $_retry -le 10 ]]
+  do
+    _sqlResult=0
+
+    oc rsh -n ${CP4BA_INST_SUPPORT_NAMESPACE} ${CP4BA_INST_DB_RPA_SQLTOOLS_POD_NAME} "${CP4BA_INST_DB_RPA_SQLTOOLS_FULL_PATH}" -C -S ${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_SUPPORT_NAMESPACE}.svc.cluster.local -U sa -P ${CP4BA_INST_RPA_DB_PWD} -Q "create database [automation]; create database [knowledge]; create database [wordnet]; create database [address]; create database [audit];" 2>/dev/null 1>/dev/null
+
+    _sqlResult=$?
+      
+    if [ $_sqlResult -gt 0 ]; then
+      _KO=1
+      log_warning "${_CLR_GREEN}Cannot execute SQL statements for RPA databases, retry...${_CLR_NC}" 
+      sleep 5
+    else
+      _KO=0
+      log_info "${_CLR_GREEN}The SQL statements for RPA databases were executed successfully.${_CLR_NC}" 
+      break  
+    fi
+    ((_retry = _retry + 1))
+  done        
+
+  if [[ $_KO -eq 1 ]]; then
+    log_msg ""
+    log_error "${_CLR_RED}[✗] RPA DBs NOT configured, check status of deployment '${_CLR_YELLOW}${CP4BA_INST_RPA_DB_DEPLOYMENT_NAME}${_CLR_RED}'${_CLR_NC}"
+    log_error ">>> ${_CLR_RED}\x1b[5mERROR\x1b[25m${_CLR_NC} <<< RPA DB configuration terminated in error."
+    log_msg ""
+    exit 1
+  fi
+
+}
+
+createMQCatalogAndSubscription () {
+
+oc delete CatalogSource -n ${CP4BA_INST_NAMESPACE} ibmmq-operator-catalogsource 2>/dev/null 1>/dev/null
+oc delete subs -n ${CP4BA_INST_NAMESPACE} ibm-mq 2>/dev/null 1>/dev/null
+
+cat <<EOF | oc create -f - 2>/dev/null 1>/dev/null
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: ibmmq-operator-catalogsource
+  namespace: ${CP4BA_INST_NAMESPACE}
+spec:
+  displayName: IBM MQ
+  image: ${CP4BA_INST_RPA_MQ_OPERATOR_IMAGE}
+  publisher: IBM
+  sourceType: grpc
+  updateStrategy:
+    registryPoll:
+      interval: 45m
+EOF
+      
+cat <<EOF | oc create -f - 2>/dev/null 1>/dev/null
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: ibm-mq
+  namespace: ${CP4BA_INST_NAMESPACE}
+spec:
+  channel: ${CP4BA_INST_RPA_MQ_CHANNEL}
+  installPlanApproval: Automatic
+  name: ibm-mq 
+  source: ibmmq-operator-catalogsource
+  sourceNamespace: ${CP4BA_INST_NAMESPACE}
+EOF
+
+}
+
+
+createRpaCatalogAndSubscription () {
+
+oc delete CatalogSource -n ${CP4BA_INST_NAMESPACE} ibm-robotic-process-automation-catalog 2>/dev/null 1>/dev/null
+oc delete subs -n ${CP4BA_INST_NAMESPACE} rpa-subscription 2>/dev/null 1>/dev/null
+
+cat <<EOF | oc create -f - 2>/dev/null 1>/dev/null
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: ibm-robotic-process-automation-catalog
+  namespace: ${CP4BA_INST_NAMESPACE}
+spec:
+  displayName: IBM Robotic Process Automation Catalog
+  publisher: IBM
+  sourceType: grpc
+  image: ${CP4BA_INST_RPA_OPERATOR_IMAGE}
+  updateStrategy:
+    registryPoll:
+      interval: 45m
+EOF
+
+cat <<EOF | oc create -f - 2>/dev/null 1>/dev/null
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: rpa-subscription
+  namespace: ${CP4BA_INST_NAMESPACE}
+spec:
+  name: ibm-automation-rpa
+  channel: ${CP4BA_INST_RPA_CHANNEL_VER}
+  startingCSV: ${CP4BA_INST_RPA_STARTING_CSV}
+  sourceNamespace: ${CP4BA_INST_NAMESPACE}
+  installPlanApproval: Automatic
+  source: ibm-robotic-process-automation-catalog
+EOF
+
+}
+
+createRpaSecrets() {
+
+   # db secret
+  oc create secret generic rpa-db -n ${CP4BA_INST_NAMESPACE} \
+    --from-literal=AddressContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_ADDRESS}" \
+    --from-literal=AutomationContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_AUTOMATION}" \
+    --from-literal=KnowledgeBase="${CP4BA_INST_RPA_DB_CONN_PARAMS_KNOWLEDGE}" \
+    --from-literal=WordnetContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_WORDNET}" \
+    --from-literal=AuditContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_AUDIT}" 2>/dev/null 1>/dev/null
+
+  # tenant owner
+  oc create secret generic rpa-first-tenant-owner -n ${CP4BA_INST_NAMESPACE} \
+    --from-literal=name=${CP4BA_INST_RPA_TENANT_OWNER_NAME} \
+    --from-literal=email=${CP4BA_INST_RPA_TENANT_OWNER_EMAIL} 2>/dev/null 1>/dev/null
+
+  # smtp secret
+  oc create secret generic rpa-smtp -n ${CP4BA_INST_NAMESPACE} \
+    --from-literal=username=${CP4BA_INST_RPA_SMTP_USER} \
+    --from-literal=password=${CP4BA_INST_RPA_SMTP_PASSWORD} 2>/dev/null 1>/dev/null
+
+}
+
+createRpaCR () {
+
+  log_info "${_CLR_GREEN}Create RPA CR '${_CLR_YELLOW}${CP4BA_INST_RPA_INSTANCE_NAME}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"  
+
+cat <<EOF | oc create -f - 2>/dev/null 1>/dev/null
+apiVersion: rpa.automation.ibm.com/v1
+kind: RoboticProcessAutomation
+metadata:
+  name: ${CP4BA_INST_RPA_INSTANCE_NAME}
+  namespace: ${CP4BA_INST_NAMESPACE}
+spec:
+  license:
+    accept: true
+    includeSWCUpload: true
+  createRoutes: true
+  webDriverUpdates:
+    enabled: true
+  systemQueueProvider:
+    highAvailability: false
+  ui:
+    replicas: 1
+  hotStorageCleanup:
+    enabled: true
+  version: ${CP4BA_INST_RPA_VERSION}
+  iam:
+    route: cpd
+
+  zen:
+    managed: false
+
+  fileStorageClass: ${CP4BA_INST_SC_FILE}
+  blockStorageClass: ${CP4BA_INST_SC_BLOCK}
+
+  sizeMapping:
+    watson-nlp:
+      replicas: 1
+
+  api:
+    replicas: 1
+
+    databaseConnectionSecretName: rpa-db
+
+    firstTenant:
+      name: ${CP4BA_INST_RPA_TENANT_NAME}
+      ownerSecretName: rpa-first-tenant-owner
+    smtp:
+      port: 587
+      server: mail.cp4ba-collateral.svc.cluster.local
+      userSecretName: rpa-smtp
+
+  antivirus:
+    replicas: 1
+  tls: {}
+  audit:
+    forwardingEnabled: true
+  ocr:
+    replicas: 1
+EOF
+
+}
+
+deployRPAResources () {
+  createRpaSecrets
+  deployMsSqlToolsPod
+  createRpaDatabases
+
+  createRpaCR
+}
 
 #-------------------------------
 deployPreEnv () {
@@ -581,6 +829,7 @@ deployPostEnv () {
     done
 
   fi
+
 }
 
 #-------------------------------
@@ -614,6 +863,15 @@ deployPFS () {
 }
 
 #-------------------------------
+
+preInstallationSteps () {
+  if [[ "${CP4BA_INST_DB_RPA}" = "true" ]]; then
+    createMQCatalogAndSubscription
+    createRpaCatalogAndSubscription
+    
+  fi
+}
+
 postInstallationSteps () {
 
   if [[ "${_WAIT_ONLY}" = "false" ]]; then
@@ -635,6 +893,13 @@ postInstallationSteps () {
         log_error "${_CLR_RED}[✗] Error, BAIWorkforce not configured.${_CLR_NC}"
         exit 1
       fi
+    fi
+
+    if [[ "${CP4BA_INST_DB_RPA}" = "true" ]]; then
+      log_msg "=============================================================="
+      log_info "${_CLR_GREEN}Deploying '${_CLR_YELLOW}RPA resources${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}${_CLR_GREEN}'${_CLR_NC}"
+      deployRPAResources
+      
     fi
 
   fi
@@ -677,6 +942,7 @@ _setDefaultValuesIfNotDefined () {
       log_warning "${_CLR_GREEN}[optional] Value for CP4BA_INST_BAS_TLS_CERTS is not set, default to '${CP4BA_INST_BAS_TLS_CERTS}' value"
     fi
   fi
+
 }
 
 #-------------------------------
@@ -1248,6 +1514,7 @@ startDeployEnv () {
     
     mkdir -p ${CP4BA_INST_OUTPUT_FOLDER}
     if [[ "${_WAIT_ONLY}" = "false" ]]; then
+      preInstallationSteps
       deployPreEnv
       deployEnvironment
       deployPostEnv
@@ -1279,4 +1546,5 @@ log_info "Deploying CP4BA environment '${_CLR_YELLOW}${CP4BA_INST_ENV}${_CLR_GRE
 log_info "${_CLR_GREEN}Tag '${_CLR_YELLOW}appVersion${_CLR_GREEN}' is '${_CLR_YELLOW}${CP4BA_INST_APPVER}${_CLR_GREEN}'${_CLR_NC}"
 
 startDeployEnv
+
 exit 0

@@ -216,8 +216,12 @@ executeClusterAdminSetup () {
     _error=$?
     _counter=$((_counter + 1))
     if [ $_error -ne 0 ]; then
-      log_warning "${_CLR_GREEN}Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}'${_CLR_GREEN}, try again [$_counter/$CP4BA_INST_CLUSTERADMIN_RETRIES]..."
-      sleep 1
+      if [ $_counter -le $CP4BA_INST_CLUSTERADMIN_RETRIES ]; then
+        log_warning "${_CLR_GREEN}Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}'${_CLR_GREEN}, try again [$_counter/$CP4BA_INST_CLUSTERADMIN_RETRIES]..."
+        sleep 1
+      else
+        log_error "Timeout waiting CP4BA Operators readiness in namespace '${_CLR_YELLOW}${CP4BA_INST_NAMESPACE}'${_CLR_GREEN}."
+      fi
     else
       _done=1
       break

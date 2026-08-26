@@ -1,12 +1,27 @@
 
 # Change Log
 
+## [1.7.3] - 2026-08-26
+
+### Added
+
+RPA Runtime deployment
+
+BAW Authoring+BAI+AE+ADS deployment
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.2] - 2026-08-21
 
 ### Added
 
 ODM Authoring+BAI deployment
+
 ODM Runtime deployment
+
 ODM Runtime+BAI deployment
 
 ### Changed

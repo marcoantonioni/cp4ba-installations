@@ -558,11 +558,14 @@ waitForClustersPostgresCRD () {
 deployDBClusters() {
 # $1: namespace
 
+  if [[ "${CP4BA_INST_DB_RPA}" = "true" ]]; then
+    deployRPAMsSqlServer
+  fi
+
+
   if [[ -z "${CP4BA_INST_DB_USE_EDB}" ]] || [[ "${CP4BA_INST_DB_USE_EDB}" = "true" ]]; then
     waitForClustersPostgresCRD
   fi
-
-  # setupCertificatesAndSecrets
 
   i=1
   _IDX_END=$CP4BA_INST_DB_INSTANCES
