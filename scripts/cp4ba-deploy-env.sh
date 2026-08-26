@@ -682,7 +682,7 @@ EOF
 
 createRpaSecrets() {
 
-   # db secret
+  # db secret
   oc create secret generic rpa-db -n ${CP4BA_INST_NAMESPACE} \
     --from-literal=AddressContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_ADDRESS}" \
     --from-literal=AutomationContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_AUTOMATION}" \
