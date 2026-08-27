@@ -220,36 +220,34 @@ CREATE SCHEMA IF NOT EXISTS §§dbODMowner§§ AUTHORIZATION §§dbODMowner§§;
 GRANT ALL ON SCHEMA §§dbODMowner§§ TO §§dbODMowner§§;
 
 /*
-Db ADS Runtime
+ADS Designer
 */
-CREATE ROLE §§dbADSRTowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbADSRTowner_password§§';
-CREATE TABLESPACE §§dbPrefix§§_adsruntimedb_tbs OWNER §§dbADSRTowner§§ LOCATION '§§dbBasePath§§/tbs/adsruntimedb';
-GRANT CREATE ON TABLESPACE §§dbPrefix§§_adsruntimedb_tbs TO §§dbADSRTowner§§;
-CREATE DATABASE §§dbPrefix§§_adsruntimedb OWNER §§dbADSRTowner§§ TABLESPACE §§dbPrefix§§_adsruntimedb_tbs template template0 encoding UTF8 ;
-\c §§dbPrefix§§_adsruntimedb;
-CREATE SCHEMA IF NOT EXISTS ads AUTHORIZATION §§dbADSRTowner§§;
-GRANT ALL ON SCHEMA ads TO §§dbADSRTowner§§;
-SET ROLE §§dbADSRTowner§§;
-ALTER DATABASE §§dbPrefix§§_adsruntimedb SET search_path TO §§dbADSRTowner§§;
-SET ROLE postgres;
-/* # revoke connect ON DATABASE §§dbPrefix§§_adsruntimedb from public;
-*/
-
-/*
-Db ADS Designer
-*/
+-- create user ads
 CREATE ROLE §§dbADSDESowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbADSDESowner_password§§';
-create tablespace §§dbPrefix§§_adsdesignerdb_tbs owner §§dbADSDESowner§§ location '§§dbBasePath§§/tbs/adsdesignerdb';
-grant create on tablespace §§dbPrefix§§_adsdesignerdb_tbs to §§dbADSDESowner§§;
-create database §§dbPrefix§§_adsdesignerdb owner §§dbADSDESowner§§ tablespace §§dbPrefix§§_adsdesignerdb_tbs template template0 encoding UTF8 ;
+create database §§dbPrefix§§_adsdesignerdb owner §§dbADSDESowner§§ template template0 encoding UTF8 ;
 \c §§dbPrefix§§_adsdesignerdb;
-CREATE SCHEMA IF NOT EXISTS ads AUTHORIZATION §§dbADSDESowner§§;
-GRANT ALL ON schema ads to §§dbADSDESowner§§;
+CREATE SCHEMA IF NOT EXISTS §§dbADSDESowner§§ AUTHORIZATION §§dbADSDESowner§§;
+GRANT ALL ON schema §§dbADSDESowner§§ to §§dbADSDESowner§§;
 SET ROLE §§dbADSDESowner§§;
 ALTER DATABASE §§dbPrefix§§_adsdesignerdb SET search_path TO §§dbADSDESowner§§;
-SET ROLE postgres;
-/* # revoke connect on database §§dbPrefix§§_adsdesignerdb from public;
+-- revoke connect on database §§dbPrefix§§_adsdesignerdb from public;
+set ROLE postgres;
+
+
+/*
+ADS Runtime
 */
+-- create user ads
+CREATE ROLE §§dbADSRTowner§§ WITH INHERIT LOGIN ENCRYPTED PASSWORD '§§dbADSRTowner_password§§';
+create database §§dbPrefix§§_adsruntimedb owner §§dbADSRTowner§§ template template0 encoding UTF8 ;
+\c §§dbPrefix§§_adsruntimedb;
+CREATE SCHEMA IF NOT EXISTS §§dbADSRTowner§§ AUTHORIZATION §§dbADSRTowner§§;
+GRANT ALL ON schema §§dbADSRTowner§§ to §§dbADSRTowner§§;
+CREATE EXTENSION pgcrypto SCHEMA §§dbADSRTowner§§;
+SET ROLE §§dbADSRTowner§§;
+ALTER DATABASE §§dbPrefix§§_adsruntimedb SET search_path TO §§dbADSRTowner§§;
+-- revoke connect on database §§dbPrefix§§_adsruntimedb from public;
+set ROLE postgres;
 
 /*
 Db AE (database for runtime application engine)
