@@ -109,7 +109,7 @@ removeOldRPADb () {
 
 }
 
-createRPASecrets () {
+createRPADbSecrets () {
 
   if [[ -z "${CP4BA_INST_RPA_DB_SECRET_NAME}" ]]; then
     export CP4BA_INST_RPA_DB_SECRET_NAME="rpa-mssql"
@@ -245,7 +245,7 @@ deployRPAMsSqlServer () {
 
   removeOldRPADb
 
-  createRPASecrets
+  createRPADbSecrets
   createRPADatabase
   createRPAPVC
   createRPADatabaseServices  
