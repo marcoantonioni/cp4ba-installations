@@ -98,7 +98,7 @@ updateRotor () {
   TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
   TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
 
-  echo -e -n "( ${_CLR_YELLOW}${_ROTOR_CHAR}${_CLR_GREEN} ) waiting for CSV '${_CLR_YELLOW}$_CSV_NAME${_CLR_GREEN}' installation to complete, elapsed time [${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s]\033[0K\r"
+  echo -e -n "${_CLR_GREEN} (${_CLR_YELLOW} ${_ROTOR_CHAR} ${_CLR_GREEN}) waiting for CSV '${_CLR_YELLOW}$_CSV_NAME${_CLR_GREEN}' installation to complete, elapsed time [${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s]\033[0K\r"
 }
 
 waitCSVSucceeded () {
