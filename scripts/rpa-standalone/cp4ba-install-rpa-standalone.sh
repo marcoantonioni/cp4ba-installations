@@ -71,42 +71,11 @@ if [[ ! -f "./${_RPA_CFG}" ]]; then
   echo "Error config file '${_RPA_CFG}' not found !"
   echo "example:"
   echo "export _RPA_CFG=./env1-rpa1.properties"
-  echo "./cp4ba-install-rpa-standalone.sh"
+  echo "./$_me"
   exit 1
 fi
 
-source "./$_RPA_CFG"
-
-
-
-
-#----------------------------------------------------------------------
-# RPA section
-#----------------------------------------------------------------------
-
-export CP4BA_INST_RPA_SA="ibm-cp4ba-anyuid"
-
-# Storage
-export CP4BA_INST_RPA_PVC_NAME="mssql-data"
-export CP4BA_INST_RPA_PVC_SIZE="8Gi"
-
-# Deplyment & secret
-export CP4BA_INST_RPA_DB_SECRET_NAME="rpa-mssql"
-export CP4BA_INST_RPA_DB_USER="sa"
-export CP4BA_INST_RPA_DB_PWD="dem0s-dem0s"
-export CP4BA_INST_RPA_DB_DEPLOYMENT_NAME="rpa-mssql"
-export CP4BA_INST_RPA_DB_DEPLOYMENT_LABEL="${CP4BA_INST_RPA_DB_DEPLOYMENT_NAME}"
-export CP4BA_INST_RPA_DB_IMAGE="mcr.microsoft.com/mssql/server:2025-latest"
-
-# Services
-export CP4BA_INST_RPA_SERVICE_NODEPORT_NAME="rpa-mssql-service-node-port"
-export CP4BA_INST_RPA_SERVICE_NAME="rpa-mssql-service"
-export CP4BA_INST_RPA_NODE_PORT=31433
-export CP4BA_INST_RPA_DB_PORT=1433
-
-export CP4BA_INST_RPA_TENANT_OWNER_NAME="cpadmin"
-export CP4BA_INST_RPA_TENANT_OWNER_EMAIL="cpadmin@vuxprod.net"
-
+source "./${_RPA_CFG}"
 
 namespaceExist () {
 # ns name: $1
@@ -129,7 +98,7 @@ updateRotor () {
   TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
   TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
 
-  echo -e -n "[${_ROTOR_CHAR}] waiting for CSV '${_CLR_YELLOW}$_CSV_NAME${_CLR_GREEN}' installation to complete, elapsed time [${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s]\033[0K\r"
+  echo -e -n "( ${_CLR_YELLOW}${_ROTOR_CHAR}${_CLR_GREEN} ) waiting for CSV '${_CLR_YELLOW}$_CSV_NAME${_CLR_GREEN}' installation to complete, elapsed time [${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s]\033[0K\r"
 }
 
 waitCSVSucceeded () {
@@ -139,13 +108,15 @@ waitCSVSucceeded () {
   _CSV_START_SECONDS=$SECONDS
   while [ true ]
   do
-    _CSV_NAME_VERSION=$(oc get csv | grep "$_CSV_NAME" | awk '{print $1}')
+    _CSV_NAME_VERSION=$(oc get csv -n ${_RPA_NAMESPACE} | grep "$_CSV_NAME" | awk '{print $1}')
     if [[ ! -z "${_CSV_NAME_VERSION}" ]]; then
       while [ true ]
       do
           PHASE=$(oc get csv -n ${_RPA_NAMESPACE} $_CSV_NAME_VERSION -o jsonpath="{.status.phase}")
           if [ "${PHASE}" = "Succeeded" ]; then
-            echo ""
+            if [ $_seconds -gt 0 ]; then
+              echo ""
+            fi
             echo -e "CSV '${_CLR_YELLOW}$_CSV_NAME_VERSION${_CLR_GREEN}' installation completed."
             break
           else
@@ -622,16 +593,12 @@ EOF
 
 
 setupRpaResources () {
+  if [[ "${_RPA_MANAGED}" = "true" ]]; then
+    createServiceAccount
+    createOperatorGroup
+    installFoundationalServices
+  fi 
 
-  if [[ "${_RPA_MANAGED}" = "false" ]]; then
-    echo "verificare presenza zenservice"
-    # waitCSVSucceeded "ibm-iam-operator."
-    # waitCSVSucceeded "ibm-zen-operator."
-  fi
-
-  createServiceAccount
-  createOperatorGroup
-  installFoundationalServices
   installOperatorCatalog
   installMQOperator
   installRpaOperator
@@ -660,35 +627,83 @@ setupRpaResources () {
     fi
   done
 }
+
+checkRpaManagedMode () {
+  if [[ "${_RPA_MANAGED}" = "false" ]]; then
+    echo -e "Checking resources for unmanaged RPA deployment"
+    namespaceExist "${_RPA_NAMESPACE}"
+    if [ $? -eq 0 ]; then
+      echo -e "Error, namespace '${_CLR_YELLOW}${_RPA_NAMESPACE}${_CLR_GREEN}' not found."
+      echo -e "For unmanaged RPA deployment select a namespace with ZenService already installed."
+      exit 1
+    else
+      _zenServiceInstalled=$(oc get zenservices --no-headers -n ${_RPA_NAMESPACE} | wc -l)
+      if [ $_zenServiceInstalled -eq 1 ]; then
+
+        while [ true ]; do
+          _COMPLETION=$(oc get zenservices -n ${_RPA_NAMESPACE} iaf-zen-cpdservice -o jsonpath='{.status.progress}' | sed 's/"//g')
+          if [[ "$_COMPLETION" = "100%" ]]; then
+            echo -e "Zenservices resource configuration 100% completed"   
+            break
+          else
+            echo -e -n "Zenservices resource configuration $_COMPLETION completed, wait...\033[0K\r"      
+            sleep 5
+          fi
+        done
+
+      else
+        echo -e "Error, namespace '${_CLR_YELLOW}${_RPA_NAMESPACE}${_CLR_GREEN}' found but no ZenService installed."
+        echo -e "For unmanaged RPA deployment select a namespace with ZenService already installed."
+        exit 1
+      fi
+    fi
+  fi
+
+}
+
+waitInstallationCompleted () {
+  NOW_SECONDS=$SECONDS
+  ELAPSED_SECONDS=$(( $NOW_SECONDS - $_DENV_START_SECONDS ))
+  TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+  TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
+  TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
+
+  echo -e "IBM RPA installation completed in ${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s."
+
+  _CPD_URL="https://"$(oc get route -n ${_RPA_NAMESPACE} cpd -o jsonpath="{.spec.host}")
+  echo -e "RPA environment URL: ${_CPD_URL}/rpa/ui"
+  echo -e "RPA tenant owner: ${CP4BA_INST_RPA_TENANT_OWNER_NAME}"
+  if [[ "${CP4BA_INST_RPA_TENANT_OWNER_NAME}" = "cpadmin" ]]; then
+    _CPADMIN_PWD=$(oc get secret -n ${_RPA_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
+    echo -e "RPA admin user credentials: cpadmin / ${_CPADMIN_PWD}"
+  fi
+
+}
+
 #-----------------------------------------
 installRpaStandalone () {
+
+  checkRpaManagedMode
+
   namespaceExist "ibm-licensing"
   if [ $? -eq 0 ]; then
     oc new-project "ibm-licensing" 2> /dev/null 1> /dev/null
     installLicensingOperator
   fi
 
-  namespaceExist "${_RPA_NAMESPACE}"
-  if [ $? -eq 0 ]; then
-    oc new-project "${_RPA_NAMESPACE}" 2> /dev/null 1> /dev/null
-    setupRpaResources
-
-    NOW_SECONDS=$SECONDS
-    ELAPSED_SECONDS=$(( $NOW_SECONDS - $_DENV_START_SECONDS ))
-    TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
-    TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
-    TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
-
-    echo -e "IBM RPA installation completed in ${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s."
-
-    _CPD_URL="https://"$(oc get route -n my-rpa-standalone cpd -o jsonpath="{.spec.host}")
-    _CPADMIN_PWD=$(oc get secret -n my-rpa-standalone platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
-    echo -e "RPA environment URL: ${_CPD_URL}"
-    echo -e "RPA admin user credentials: cpadmin / ${_CPADMIN_PWD}"
-
-  else
-    echo -e "Namespace '${_CLR_YELLOW}${_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
+  if [[ "${_RPA_MANAGED}" = "true" ]]; then
+    namespaceExist "${_RPA_NAMESPACE}"
+    if [ $? -eq 0 ]; then
+      oc new-project "${_RPA_NAMESPACE}" 2> /dev/null 1> /dev/null
+    else
+      echo -e "Namespace '${_CLR_YELLOW}${_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
+      exit 1
+    fi
   fi
+
+  setupRpaResources
+
+  waitInstallationCompleted
 
 }
 
