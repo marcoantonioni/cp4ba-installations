@@ -46,9 +46,24 @@ setTemporaryFolder () {
 
 usage () {
   echo ""
-  echo -e "${_CLR_GREEN}usage: $_me${_CLR_NC}"
+  echo -e "${_CLR_GREEN}usage: $_me$
+    -c full-path-to-config-file
+       (eg: '../configs/env1.properties'){_CLR_NC}"
 }
 
+#--------------------------------------------------------
+# read command line params
+while getopts c: flag
+do
+    case "${flag}" in
+        c) _CFG=${OPTARG};;
+    esac
+done
+
+if [[ -z "${_CFG}" ]]; then
+  usage
+  exit 1
+fi
 
 
 #----------------------------------------------------
@@ -67,15 +82,15 @@ _ROTOR_LEN=${#_ROTOR}
 _DENV_START_SECONDS=$SECONDS
 _CSV_START_SECONDS=0
 
-if [[ ! -f "./${_RPA_CFG}" ]]; then
-  echo "Error config file '${_RPA_CFG}' not found !"
+if [[ ! -f "${_CFG}" ]]; then
+  echo "Error config file '${_CFG}' not found !"
   echo "example:"
-  echo "export _RPA_CFG=./env1-rpa1.properties"
+  echo "export _CFG=./env1-rpa1.properties"
   echo "./$_me"
   exit 1
 fi
 
-source "./${_RPA_CFG}"
+source "${_CFG}" 2>/dev/null 1>/dev/null
 
 namespaceExist () {
 # ns name: $1
@@ -108,11 +123,11 @@ waitCSVSucceeded () {
   _CSV_START_SECONDS=$SECONDS
   while [ true ]
   do
-    _CSV_NAME_VERSION=$(oc get csv -n ${_RPA_NAMESPACE} | grep "$_CSV_NAME" | awk '{print $1}')
+    _CSV_NAME_VERSION=$(oc get csv -n ${CP4BA_INST_RPA_NAMESPACE} | grep "$_CSV_NAME" | awk '{print $1}')
     if [[ ! -z "${_CSV_NAME_VERSION}" ]]; then
       while [ true ]
       do
-          PHASE=$(oc get csv -n ${_RPA_NAMESPACE} $_CSV_NAME_VERSION -o jsonpath="{.status.phase}")
+          PHASE=$(oc get csv -n ${CP4BA_INST_RPA_NAMESPACE} $_CSV_NAME_VERSION -o jsonpath="{.status.phase}")
           if [ "${PHASE}" = "Succeeded" ]; then
             if [ $_seconds -gt 0 ]; then
               echo ""
@@ -136,8 +151,8 @@ waitCSVSucceeded () {
 }
 
 removeOldRPADb () {
-  oc delete deployment -n ${_RPA_NAMESPACE} ${CP4BA_INST_RPA_DB_DEPLOYMENT_NAME} 2> /dev/null 1> /dev/null
-  oc delete pvc -n ${_RPA_NAMESPACE} ${CP4BA_INST_RPA_PVC_NAME} 2> /dev/null 1> /dev/null
+  oc delete deployment -n ${CP4BA_INST_RPA_NAMESPACE} ${CP4BA_INST_RPA_DB_DEPLOYMENT_NAME} 2> /dev/null 1> /dev/null
+  oc delete pvc -n ${CP4BA_INST_RPA_NAMESPACE} ${CP4BA_INST_RPA_PVC_NAME} 2> /dev/null 1> /dev/null
 
 }
 
@@ -154,14 +169,14 @@ createRPADbSecrets () {
 
   _SECRET_NAME="${CP4BA_INST_RPA_DB_SECRET_NAME}"
   # echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
-  oc delete secret -n ${_RPA_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
-  oc create secret -n ${_RPA_NAMESPACE} generic ${_SECRET_NAME} \
+  oc delete secret -n ${CP4BA_INST_RPA_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
+  oc create secret -n ${CP4BA_INST_RPA_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=SA_PASSWORD="${CP4BA_INST_RPA_DB_PWD}" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
     echo -e  "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
-  oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
 
 }
 
@@ -172,7 +187,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: ${CP4BA_INST_RPA_PVC_NAME}
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   accessModes:
   - ReadWriteOnce
@@ -191,7 +206,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ${CP4BA_INST_RPA_DB_DEPLOYMENT_NAME}
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   selector:
     matchLabels:
@@ -238,15 +253,15 @@ EOF
 
 createRPADatabaseServices () {
 
-  oc delete service -n ${_RPA_NAMESPACE} ${CP4BA_INST_RPA_SERVICE_NODEPORT_NAME} 2> /dev/null 1> /dev/null
-  oc delete service -n ${_RPA_NAMESPACE} ${CP4BA_INST_RPA_SERVICE_NAME} 2> /dev/null 1> /dev/null
+  oc delete service -n ${CP4BA_INST_RPA_NAMESPACE} ${CP4BA_INST_RPA_SERVICE_NODEPORT_NAME} 2> /dev/null 1> /dev/null
+  oc delete service -n ${CP4BA_INST_RPA_NAMESPACE} ${CP4BA_INST_RPA_SERVICE_NAME} 2> /dev/null 1> /dev/null
 
 cat <<EOF | oc apply -f - 2> /dev/null 1> /dev/null
 apiVersion: v1
 kind: Service
 metadata:
   name: ${CP4BA_INST_RPA_SERVICE_NODEPORT_NAME}
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   selector:
     app: ${CP4BA_INST_RPA_DB_DEPLOYMENT_LABEL}
@@ -260,7 +275,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ${CP4BA_INST_RPA_SERVICE_NAME}
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   selector:
     app: ${CP4BA_INST_RPA_DB_DEPLOYMENT_LABEL}
@@ -313,7 +328,7 @@ spec:
   installPlanApproval: Automatic
   name: ibm-licensing-operator-app
   source: ibm-licensing-catalog
-  sourceNamespace: ${_RPA_NAMESPACE}
+  sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
 EOF
 
 }
@@ -326,35 +341,35 @@ createRpaSecrets () {
   --docker-server=cp.icr.io \
   --docker-username=cp \
   --docker-password="${CP4BA_AUTO_ENTITLEMENT_KEY}" \
-  --namespace=${_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  --namespace=${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
 
   # db secret
-  oc create secret generic rpa-db -n ${_RPA_NAMESPACE} \
-    --from-literal=AddressContext="${_RPA_DB_CONN_PARAMS_ADDRESS}" \
-    --from-literal=AutomationContext="${_RPA_DB_CONN_PARAMS_AUTOMATION}" \
-    --from-literal=KnowledgeBase="${_RPA_DB_CONN_PARAMS_KNOWLEDGE}" \
-    --from-literal=WordnetContext="${_RPA_DB_CONN_PARAMS_WORDNET}" \
-    --from-literal=AuditContext="${_RPA_DB_CONN_PARAMS_AUDIT}" 2> /dev/null 1> /dev/null
+  oc create secret generic rpa-db -n ${CP4BA_INST_RPA_NAMESPACE} \
+    --from-literal=AddressContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_ADDRESS}" \
+    --from-literal=AutomationContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_AUTOMATION}" \
+    --from-literal=KnowledgeBase="${CP4BA_INST_RPA_DB_CONN_PARAMS_KNOWLEDGE}" \
+    --from-literal=WordnetContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_WORDNET}" \
+    --from-literal=AuditContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_AUDIT}" 2> /dev/null 1> /dev/null
 
   # tenant owner
-  oc create secret generic rpa-first-tenant-owner -n ${_RPA_NAMESPACE} \
+  oc create secret generic rpa-first-tenant-owner -n ${CP4BA_INST_RPA_NAMESPACE} \
     --from-literal=name=${CP4BA_INST_RPA_TENANT_OWNER_NAME} \
     --from-literal=email=${CP4BA_INST_RPA_TENANT_OWNER_EMAIL} 2> /dev/null 1> /dev/null
 
   # smtp secret
-  oc create secret generic rpa-smtp -n ${_RPA_NAMESPACE} \
-    --from-literal=username=${_RPA_SMTP_USER} \
-    --from-literal=password=${_RPA_SMTP_PASSWORD} 2> /dev/null 1> /dev/null
+  oc create secret generic rpa-smtp -n ${CP4BA_INST_RPA_NAMESPACE} \
+    --from-literal=username=${CP4BA_INST_RPA_SMTP_USER} \
+    --from-literal=password=${CP4BA_INST_RPA_SMTP_PASSWORD} 2> /dev/null 1> /dev/null
 
   # redis secret https://www.ibm.com/docs/en/rpa/30.0.x?topic=platform-creating-rpa-secrets#creating-a-redis-password-secret
-  oc create secret generic rpa-redis-rpa -n ${_RPA_NAMESPACE} \
-    --from-literal=default_password=${_RPA_ADMIN_PWD} 2> /dev/null 1> /dev/null
+  oc create secret generic rpa-redis-rpa -n ${CP4BA_INST_RPA_NAMESPACE} \
+    --from-literal=default_password=${CP4BA_INST_RPA_ADMIN_PWD} 2> /dev/null 1> /dev/null
 
-  oc label secret rpa-redis-rpa app.kubernetes.io/component=rpa -n ${_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc label secret rpa-redis-rpa app.kubernetes.io/instance=rpa -n ${_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc label secret rpa-redis-rpa app.kubernetes.io/managed-by=ibm-rpa-operator -n ${_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc label secret rpa-redis-rpa app.kubernetes.io/name=redis -n ${_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc label secret rpa-redis-rpa rpa.automation.ibm.com/cr-name=rpa -n ${_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret rpa-redis-rpa app.kubernetes.io/component=rpa -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret rpa-redis-rpa app.kubernetes.io/instance=rpa -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret rpa-redis-rpa app.kubernetes.io/managed-by=ibm-rpa-operator -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret rpa-redis-rpa app.kubernetes.io/name=redis -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc label secret rpa-redis-rpa rpa.automation.ibm.com/cr-name=rpa -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
 
 }
 
@@ -365,12 +380,12 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: ibm-cp4ba-anyuid
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 imagePullSecrets:
 - name: 'ibm-entitlement-key'
 EOF
 
-oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
 
 }
 
@@ -381,10 +396,10 @@ apiVersion: operators.coreos.com/v1alpha2
 kind: OperatorGroup 
 metadata: 
   name: rpa-group
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec: 
   targetNamespaces: 
-  - ${_RPA_NAMESPACE}
+  - ${CP4BA_INST_RPA_NAMESPACE}
 EOF
 
 }
@@ -397,7 +412,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
     name: opencloud-operators
-    namespace: ${_RPA_NAMESPACE}
+    namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
     displayName: IBMCS Operators
     publisher: IBM
@@ -411,13 +426,13 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: ibm-common-service-operator
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   channel: v4.10
   installPlanApproval: Automatic
   name: ibm-common-service-operator
   source: opencloud-operators
-  sourceNamespace: ${_RPA_NAMESPACE}
+  sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
 EOF
 
 }
@@ -431,7 +446,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: ibm-operator-catalog
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   displayName: IBM Operator Catalog
   image: icr.io/cpopen/ibm-operator-catalog:latest
@@ -452,13 +467,13 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: ibm-mq
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   channel: $_MQ_CHANNEL
   installPlanApproval: Automatic
   name: ibm-mq 
   source: ibm-operator-catalog 
-  sourceNamespace: ${_RPA_NAMESPACE}
+  sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
 EOF
 
   waitCSVSucceeded "ibm-mq."
@@ -472,7 +487,7 @@ kind: Pod
 apiVersion: v1
 metadata:
   name: mssql-tools
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
   labels:
     app: mssql-tools
 spec:
@@ -484,7 +499,7 @@ EOF
 
   while [ true ]
   do
-    PHASE=$(oc get pod -n ${_RPA_NAMESPACE} mssql-tools -o jsonpath='{.status.phase}')
+    PHASE=$(oc get pod -n ${CP4BA_INST_RPA_NAMESPACE} mssql-tools -o jsonpath='{.status.phase}')
     if [ "${PHASE}" = "Running" ]; then
       #echo "${mssql-tools} Running"
       break
@@ -497,24 +512,24 @@ EOF
 }
 
 verifyDatabases () {
-  echo "Checking databases in server at FQDN: $_RPA_SERVICE_NAME.${_RPA_NAMESPACE}.svc.cluster.local"
+  echo "Checking databases in server at FQDN: ${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local"
 
-  oc rsh -n ${_RPA_NAMESPACE} mssql-tools "/opt/mssql-tools/bin/sqlcmd" -C -S "$_RPA_SERVICE_NAME.${_RPA_NAMESPACE}.svc.cluster.local" -U sa -P $_RPA_DB_PWD -Q "SELECT name, database_id, create_date FROM sys.databases;" | grep -E "automation|knowledge|wordnet|address|audit"
+  oc rsh -n ${CP4BA_INST_RPA_NAMESPACE} mssql-tools "/opt/mssql-tools/bin/sqlcmd" -C -S "${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local" -U sa -P ${CP4BA_INST_RPA_DB_PWD} -Q "SELECT name, database_id, create_date FROM sys.databases;" | grep -E "automation|knowledge|wordnet|address|audit"
 
   for dbName in automation knowledge wordnet address audit 
   do
     echo ">>> DB $dbName"
-    oc rsh -n ${_RPA_NAMESPACE} mssql-tools "/opt/mssql-tools/bin/sqlcmd" -C -S "$_RPA_SERVICE_NAME.${_RPA_NAMESPACE}.svc.cluster.local" -U sa -P $_RPA_DB_PWD -Q "use "$dbName"; select s.name As SchemaName, t.name As TableName From sys.schemas s Inner Join sys.tables t On s.schema_id = t.schema_id Order By SchemaName, TableName;"
+    oc rsh -n ${CP4BA_INST_RPA_NAMESPACE} mssql-tools "/opt/mssql-tools/bin/sqlcmd" -C -S "${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local" -U sa -P ${CP4BA_INST_RPA_DB_PWD} -Q "use "$dbName"; select s.name As SchemaName, t.name As TableName From sys.schemas s Inner Join sys.tables t On s.schema_id = t.schema_id Order By SchemaName, TableName;"
   done
 
 # /opt/mssql-tools18/bin/sqlcmd -C -U sa -P dem0s-dem0s -Q "use automation; select s.name As SchemaName, t.name As TableName From sys.schemas s Inner Join sys.tables t On s.schema_id = t.schema_id Order By SchemaName, TableName;"
 }
 
 createDatabases () {
-  echo -e "Creating databases in server at FQDN: ${_CLR_YELLOW}$_RPA_SERVICE_NAME.${_RPA_NAMESPACE}.svc.cluster.local${_CLR_NC}"
-  oc rsh -n ${_RPA_NAMESPACE} mssql-tools "/opt/mssql-tools/bin/sqlcmd" -C -S "$_RPA_SERVICE_NAME.${_RPA_NAMESPACE}.svc.cluster.local" -U sa -P $_RPA_DB_PWD -Q "create database [automation]; create database [knowledge]; create database [wordnet]; create database [address]; create database [audit];" 2> /dev/null 1> /dev/null
+  echo -e "Creating databases in server at FQDN: ${_CLR_YELLOW}${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local${_CLR_NC}"
+  oc rsh -n ${CP4BA_INST_RPA_NAMESPACE} mssql-tools "/opt/mssql-tools/bin/sqlcmd" -C -S "${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local" -U sa -P ${CP4BA_INST_RPA_DB_PWD} -Q "create database [automation]; create database [knowledge]; create database [wordnet]; create database [address]; create database [audit];" 2> /dev/null 1> /dev/null
 
-  if [[ "${_RPA_VERIFY_DB}" = "true" ]]; then
+  if [[ "${CP4BA_INST_RPA_VERIFY_DB}" = "true" ]]; then
     verifyDatabases
   fi
 
@@ -527,13 +542,13 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription 
 metadata: 
   name: rpa-subscription 
-  namespace: ${_RPA_NAMESPACE}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec: 
-  channel: $_RPA_CHANNEL
+  channel: ${CP4BA_INST_RPA_CHANNEL}
   installPlanApproval: Automatic 
   name: ibm-automation-rpa 
   source: ibm-operator-catalog
-  sourceNamespace: ${_RPA_NAMESPACE}
+  sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
 EOF
 
   waitCSVSucceeded "ibm-automation-rpa."
@@ -545,8 +560,8 @@ cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
 apiVersion: rpa.automation.ibm.com/v1
 kind: RoboticProcessAutomation
 metadata:
-  name: $_RPA_INSTANCE_NAME
-  namespace: ${_RPA_NAMESPACE}
+  name: ${_RPA_INSTANCE_NAME}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   license:
     accept: true
@@ -560,11 +575,11 @@ spec:
   #  replicas: 1
   #hotStorageCleanup:
   #  enabled: true
-  version: ${_RPA_VERSION}
+  version: ${CP4BA_INST_RPA_VERSION}
   iam:
     route: cpd
   zen:
-    managed: $_RPA_MANAGED
+    managed: ${CP4BA_INST_RPA_MANAGED}
   fileStorageClass: ${_SC_FILE}
   blockStorageClass: ${_SC_BLOCK}
   sizeMapping:
@@ -574,7 +589,7 @@ spec:
     #replicas: 1
     databaseConnectionSecretName: rpa-db
     firstTenant:
-      name: ${_RPA_TENANT_NAME}
+      name: ${CP4BA_INST_RPA_TENANT_NAME}
       ownerSecretName: rpa-first-tenant-owner
     smtp:
       port: 587
@@ -593,7 +608,7 @@ EOF
 
 
 setupRpaResources () {
-  if [[ "${_RPA_MANAGED}" = "true" ]]; then
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
     createServiceAccount
     createOperatorGroup
     installFoundationalServices
@@ -610,13 +625,13 @@ setupRpaResources () {
   createDatabases
   sleep 10
   createRpaCR
-  if [[ "${_RPA_MANAGED}" = "true" ]]; then
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
     waitCSVSucceeded "ibm-iam-operator."
     waitCSVSucceeded "ibm-zen-operator."
   fi
 
   while [ true ]; do
-    _COMPLETION=$(oc get RoboticProcessAutomation -n ${_RPA_NAMESPACE} rpa -o jsonpath='{.status.conditions[*]}' | jq 'select(.reason=="Progress")' | jq .message | sed 's/"//g')
+    _COMPLETION=$(oc get RoboticProcessAutomation -n ${CP4BA_INST_RPA_NAMESPACE} rpa -o jsonpath='{.status.conditions[*]}' | jq 'select(.reason=="Progress")' | jq .message | sed 's/"//g')
     if [[ "$_COMPLETION" = "100%" ]]; then
       echo ""
       echo -e "RPA resource configuration 100% completed"   
@@ -629,19 +644,19 @@ setupRpaResources () {
 }
 
 checkRpaManagedMode () {
-  if [[ "${_RPA_MANAGED}" = "false" ]]; then
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "false" ]]; then
     echo -e "Checking resources for unmanaged RPA deployment"
-    namespaceExist "${_RPA_NAMESPACE}"
+    namespaceExist "${CP4BA_INST_RPA_NAMESPACE}"
     if [ $? -eq 0 ]; then
-      echo -e "Error, namespace '${_CLR_YELLOW}${_RPA_NAMESPACE}${_CLR_GREEN}' not found."
+      echo -e "Error, namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' not found."
       echo -e "For unmanaged RPA deployment select a namespace with ZenService already installed."
       exit 1
     else
-      _zenServiceInstalled=$(oc get zenservices --no-headers -n ${_RPA_NAMESPACE} | wc -l)
+      _zenServiceInstalled=$(oc get zenservices --no-headers -n ${CP4BA_INST_RPA_NAMESPACE} | wc -l)
       if [ $_zenServiceInstalled -eq 1 ]; then
 
         while [ true ]; do
-          _COMPLETION=$(oc get zenservices -n ${_RPA_NAMESPACE} iaf-zen-cpdservice -o jsonpath='{.status.progress}' | sed 's/"//g')
+          _COMPLETION=$(oc get zenservices -n ${CP4BA_INST_RPA_NAMESPACE} iaf-zen-cpdservice -o jsonpath='{.status.progress}' | sed 's/"//g')
           if [[ "$_COMPLETION" = "100%" ]]; then
             echo -e "Zenservices resource configuration 100% completed"   
             break
@@ -652,7 +667,7 @@ checkRpaManagedMode () {
         done
 
       else
-        echo -e "Error, namespace '${_CLR_YELLOW}${_RPA_NAMESPACE}${_CLR_GREEN}' found but no ZenService installed."
+        echo -e "Error, namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' found but no ZenService installed."
         echo -e "For unmanaged RPA deployment select a namespace with ZenService already installed."
         exit 1
       fi
@@ -670,11 +685,11 @@ waitInstallationCompleted () {
 
   echo -e "IBM RPA installation completed in ${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s."
 
-  _CPD_URL="https://"$(oc get route -n ${_RPA_NAMESPACE} cpd -o jsonpath="{.spec.host}")
+  _CPD_URL="https://"$(oc get route -n ${CP4BA_INST_RPA_NAMESPACE} cpd -o jsonpath="{.spec.host}")
   echo -e "RPA environment URL: ${_CPD_URL}/rpa/ui"
   echo -e "RPA tenant owner: ${CP4BA_INST_RPA_TENANT_OWNER_NAME}"
   if [[ "${CP4BA_INST_RPA_TENANT_OWNER_NAME}" = "cpadmin" ]]; then
-    _CPADMIN_PWD=$(oc get secret -n ${_RPA_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
+    _CPADMIN_PWD=$(oc get secret -n ${CP4BA_INST_RPA_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
     echo -e "RPA admin user credentials: cpadmin / ${_CPADMIN_PWD}"
   fi
 
@@ -691,12 +706,12 @@ installRpaStandalone () {
     installLicensingOperator
   fi
 
-  if [[ "${_RPA_MANAGED}" = "true" ]]; then
-    namespaceExist "${_RPA_NAMESPACE}"
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
+    namespaceExist "${CP4BA_INST_RPA_NAMESPACE}"
     if [ $? -eq 0 ]; then
-      oc new-project "${_RPA_NAMESPACE}" 2> /dev/null 1> /dev/null
+      oc new-project "${CP4BA_INST_RPA_NAMESPACE}" 2> /dev/null 1> /dev/null
     else
-      echo -e "Namespace '${_CLR_YELLOW}${_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
+      echo -e "Namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
       exit 1
     fi
   fi
@@ -708,6 +723,6 @@ installRpaStandalone () {
 }
 
 echo "=============================================================="
-echo -e "${_CLR_GREEN}Deploying IBM RPA standalone resources (RPA version:${_CLR_YELLOW}${_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${_RPA_CHANNEL}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${_MQ_CHANNEL}${_CLR_GREEN}') [managed: ${_CLR_YELLOW}${_RPA_MANAGED}${_CLR_GREEN}] in namespace '${_CLR_YELLOW}${_RPA_NAMESPACE}${_CLR_GREEN}', please wait..."
+echo -e "${_CLR_GREEN}Deploying IBM RPA standalone resources (RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}') [managed: ${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}] in namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}', please wait..."
 
 installRpaStandalone
