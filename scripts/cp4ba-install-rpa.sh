@@ -580,8 +580,8 @@ spec:
     route: cpd
   zen:
     managed: ${CP4BA_INST_RPA_MANAGED}
-  fileStorageClass: ${_SC_FILE}
-  blockStorageClass: ${_SC_BLOCK}
+  fileStorageClass: ${CP4BA_INST_SC_FILE}
+  blockStorageClass: ${CP4BA_INST_SC_BLOCK}
   sizeMapping:
     watson-nlp:
       replicas: 1
