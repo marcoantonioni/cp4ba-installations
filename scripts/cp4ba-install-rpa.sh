@@ -469,7 +469,7 @@ metadata:
   name: ibm-mq
   namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
-  channel: $_MQ_CHANNEL
+  channel: ${CP4BA_INST_MQ_CHANNEL}
   installPlanApproval: Automatic
   name: ibm-mq 
   source: ibm-operator-catalog 
