@@ -560,7 +560,7 @@ cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
 apiVersion: rpa.automation.ibm.com/v1
 kind: RoboticProcessAutomation
 metadata:
-  name: ${_RPA_INSTANCE_NAME}
+  name: ${CP4BA_INST_RPA_INSTANCE_NAME}
   namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   license:
