@@ -33,13 +33,13 @@ setTemporaryFolder () {
     fi
 
     if [[ $_OK -lt 1 ]]; then
-      echo -e  "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
-      echo -e  "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] ERROR '${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' is not a valid temporary folder, check if it is a folder or if you have write permissions !${_CLR_NC}"
+      log_error "${_CLR_RED}'${_CLR_YELLOW}${CP4BA_INST_TMP_FOLDER}${_CLR_RED}' ${_ERR_MSG_FOLDER}${_ERR_MSG_PERMISSIONS}${_CLR_NC}"
       exit 1
     fi
     export _INST_TMP_FOLDER="${CP4BA_INST_TMP_FOLDER}"
   fi
-  echo -e  "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
+  log_info "${_CLR_GREEN}Running with temporary folder '${_CLR_YELLOW}${_INST_TMP_FOLDER}${_CLR_GREEN}'${_CLR_NC}"
 
 }
 
@@ -76,6 +76,35 @@ done
 _SCRIPT_PATH="$(readlink -f "${_SCRIPT_PATH}")"
 _SCRIPT_DIR="$(cd -P "$(dirname -- "${_SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
 
+#----------------------------------------------------
+if [[ ! -f "$_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh" ]]; then
+  echo "Error, log package not found !"
+  echo "Clone it alongside with other cp4ba-..."
+  echo "use the command: git clone https://github.com/marcoantonioni/cp4ba-logger"
+  exit 1
+fi
+source $_SCRIPT_DIR/../../cp4ba-logger/scripts/logger.sh
+if [[ -z "${CP4BA_LOGGING_ENABLED}" ]]; then 
+  export CP4BA_LOGGING_ENABLED=true
+fi
+if [[ -z "${CP4BA_LOG_LEVEL}" ]]; then 
+  export CP4BA_LOG_LEVEL="INFO"
+fi
+if [[ -z "${CP4BA_LOG_TO_CONSOLE}" ]]; then 
+  export CP4BA_LOG_TO_CONSOLE=true
+fi
+if [[ -z "${CP4BA_LOG_TO_FILE}" ]]; then 
+  export CP4BA_LOG_TO_FILE=false
+fi
+if [[ -z "${CP4BA_LOG_FILE}" ]]; then 
+  export CP4BA_LOG_FILE=""
+fi
+if [[ -z "${CP4BA_LOG_MAX_SIZE}" ]]; then 
+  export CP4BA_LOG_MAX_SIZE=$((10 * 1024 * 1024))
+fi
+if [[ -z "${CP4BA_LOG_BACKUP_COUNT}" ]]; then 
+  export CP4BA_LOG_BACKUP_COUNT=5
+fi
 
 _ROTOR="|/-\\|/-\\"
 _ROTOR_LEN=${#_ROTOR}
@@ -130,9 +159,9 @@ waitCSVSucceeded () {
           PHASE=$(oc get csv -n ${CP4BA_INST_RPA_NAMESPACE} $_CSV_NAME_VERSION -o jsonpath="{.status.phase}")
           if [ "${PHASE}" = "Succeeded" ]; then
             if [ $_seconds -gt 0 ]; then
-              echo ""
+              echo -e "\033[2K"
             fi
-            echo -e "CSV '${_CLR_YELLOW}$_CSV_NAME_VERSION${_CLR_GREEN}' installation completed."
+            log_info "${_CLR_GREEN}CSV '${_CLR_YELLOW}$_CSV_NAME_VERSION${_CLR_GREEN}' installation completed."
             break
           else
             updateRotor $_seconds $_CSV_NAME_VERSION
@@ -160,21 +189,20 @@ createRPADbSecrets () {
 
   if [[ -z "${CP4BA_INST_RPA_DB_SECRET_NAME}" ]]; then
     export CP4BA_INST_RPA_DB_SECRET_NAME="rpa-mssql"
-    echo -e  "${_CLR_GREEN}Value for CP4BA_INST_RPA_DB_SECRET_NAME is not set, default to '${CP4BA_INST_RPA_DB_SECRET_NAME}' value"
+    log_warning "${_CLR_GREEN}Value for CP4BA_INST_RPA_DB_SECRET_NAME is not set, default to '${CP4BA_INST_RPA_DB_SECRET_NAME}' value"
   fi
   if [[ -z "${CP4BA_INST_RPA_DB_PWD}" ]]; then
     export CP4BA_INST_RPA_DB_PWD="dem0s-dem0s"
-    echo -e  "${_CLR_GREEN}Value for CP4BA_INST_RPA_DB_PWD is not set, default to '${CP4BA_INST_RPA_DB_PWD}' value"
+    log_warning "${_CLR_GREEN}Value for CP4BA_INST_RPA_DB_PWD is not set, default to '${CP4BA_INST_RPA_DB_PWD}' value"
   fi
 
   _SECRET_NAME="${CP4BA_INST_RPA_DB_SECRET_NAME}"
-  # echo -e "Secret '${_CLR_YELLOW}${_SECRET_NAME}${_CLR_NC}'"
   oc delete secret -n ${CP4BA_INST_RPA_NAMESPACE} ${_SECRET_NAME} 2> /dev/null 1> /dev/null
   oc create secret -n ${CP4BA_INST_RPA_NAMESPACE} generic ${_SECRET_NAME} \
     --from-literal=SA_PASSWORD="${CP4BA_INST_RPA_DB_PWD}" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
-    echo -e  "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
   oc label secret ${_SECRET_NAME} cp4ba.ibm.com/backup-type=mandatory -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
 
@@ -288,7 +316,7 @@ EOF
 }
 
 deployRPAMsSqlServer () {
-  echo -e  "Installing MSSQL Server for RPA capability"
+  log_info "Installing MSSQL Server for RPA capability"
 
   removeOldRPADb
 
@@ -437,8 +465,6 @@ EOF
 
 }
 
-
-
 installOperatorCatalog () {
 
 cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
@@ -457,7 +483,6 @@ spec:
       interval: 45m
 EOF
 
-  waitCSVSucceeded "operand-deployment-lifecycle-manager"
 }
 
 installMQOperator () {
@@ -476,9 +501,31 @@ spec:
   sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
 EOF
 
-  waitCSVSucceeded "ibm-mq."
+  # commented fo speed up CSV installation
+  # waitCSVSucceeded "ibm-mq."
 
 }
+
+installRpaOperator () {
+
+cat <<EOF | oc apply -f - 2> /dev/null 1> /dev/null
+apiVersion: operators.coreos.com/v1alpha1 
+kind: Subscription 
+metadata: 
+  name: rpa-subscription 
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
+spec: 
+  channel: ${CP4BA_INST_RPA_CHANNEL}
+  installPlanApproval: Automatic 
+  name: ibm-automation-rpa 
+  source: ibm-operator-catalog
+  sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
+EOF
+
+  # commented fo speed up CSV installation
+  # waitCSVSucceeded "ibm-automation-rpa."
+}
+
 
 installMsSqlTools () {
 
@@ -526,32 +573,13 @@ verifyDatabases () {
 }
 
 createDatabases () {
-  echo -e "Creating databases in server at FQDN: ${_CLR_YELLOW}${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local${_CLR_NC}"
+  log_info "Creating databases in server at FQDN: ${_CLR_YELLOW}${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local${_CLR_NC}"
   oc rsh -n ${CP4BA_INST_RPA_NAMESPACE} mssql-tools "/opt/mssql-tools/bin/sqlcmd" -C -S "${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local" -U sa -P ${CP4BA_INST_RPA_DB_PWD} -Q "create database [automation]; create database [knowledge]; create database [wordnet]; create database [address]; create database [audit];" 2> /dev/null 1> /dev/null
 
   if [[ "${CP4BA_INST_RPA_VERIFY_DB}" = "true" ]]; then
     verifyDatabases
   fi
 
-}
-
-installRpaOperator () {
-
-cat <<EOF | oc apply -f - 2> /dev/null 1> /dev/null
-apiVersion: operators.coreos.com/v1alpha1 
-kind: Subscription 
-metadata: 
-  name: rpa-subscription 
-  namespace: ${CP4BA_INST_RPA_NAMESPACE}
-spec: 
-  channel: ${CP4BA_INST_RPA_CHANNEL}
-  installPlanApproval: Automatic 
-  name: ibm-automation-rpa 
-  source: ibm-operator-catalog
-  sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
-EOF
-
-  waitCSVSucceeded "ibm-automation-rpa."
 }
 
 createRpaCR () {
@@ -615,29 +643,43 @@ setupRpaResources () {
   fi 
 
   installOperatorCatalog
+  waitCSVSucceeded "operand-deployment-lifecycle-manager"
+
+  # install operators
   installMQOperator
   installRpaOperator
+
   createRpaSecrets
+
+  # install database
   deployRPAMsSqlServer
   sleep 10
   installMsSqlTools
   sleep 30
   createDatabases
   sleep 10
+
+  # wait operators readiness
+  waitCSVSucceeded "ibm-mq."
+  waitCSVSucceeded "ibm-automation-rpa."
+
+  # deploy RPA
   createRpaCR
+
   if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
     waitCSVSucceeded "ibm-iam-operator."
     waitCSVSucceeded "ibm-zen-operator."
   fi
 
+  # wait for RPA instance readiness
   while [ true ]; do
     _COMPLETION=$(oc get RoboticProcessAutomation -n ${CP4BA_INST_RPA_NAMESPACE} rpa -o jsonpath='{.status.conditions[*]}' | jq 'select(.reason=="Progress")' | jq .message | sed 's/"//g')
     if [[ "$_COMPLETION" = "100%" ]]; then
-      echo ""
-      echo -e "RPA resource configuration 100% completed"   
+      echo -e -n "\033[2K"
+      log_info "${_CLR_GREEN}RPA resource configuration 100% completed"   
       break
     else
-      echo -e -n "RPA resource configuration $_COMPLETION completed, wait...\033[0K\r"      
+      echo -e -n "${_CLR_GREEN}RPA resource configuration ${_CLR_YELLOW}${_COMPLETION}${_CLR_GREEN} completed, wait...\033[0K\r"      
       sleep 5
     fi
   done
@@ -645,11 +687,11 @@ setupRpaResources () {
 
 checkRpaManagedMode () {
   if [[ "${CP4BA_INST_RPA_MANAGED}" = "false" ]]; then
-    echo -e "Checking resources for unmanaged RPA deployment"
+    log_info "${_CLR_GREEN}Checking resources for unmanaged RPA deployment"
     namespaceExist "${CP4BA_INST_RPA_NAMESPACE}"
     if [ $? -eq 0 ]; then
-      echo -e "Error, namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' not found."
-      echo -e "For unmanaged RPA deployment select a namespace with ZenService already installed."
+      log_error "Error, namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' not found."
+      log_error "For unmanaged RPA deployment select a namespace with ZenService already installed."
       exit 1
     else
       _zenServiceInstalled=$(oc get zenservices --no-headers -n ${CP4BA_INST_RPA_NAMESPACE} | wc -l)
@@ -658,17 +700,18 @@ checkRpaManagedMode () {
         while [ true ]; do
           _COMPLETION=$(oc get zenservices -n ${CP4BA_INST_RPA_NAMESPACE} iaf-zen-cpdservice -o jsonpath='{.status.progress}' | sed 's/"//g')
           if [[ "$_COMPLETION" = "100%" ]]; then
-            echo -e "Zenservices resource configuration 100% completed"   
+            echo -e -n "\033[2K"
+            log_info "${_CLR_GREEN}Zenservices resource configuration ${_CLR_YELLOW}100%${_CLR_GREEN} completed"   
             break
           else
-            echo -e -n "Zenservices resource configuration $_COMPLETION completed, wait...\033[0K\r"      
+            echo -e -n "Zenservices resource configuration ${_CLR_YELLOW}${_COMPLETION}${_CLR_GREEN} completed, wait...\033[0K\r"      
             sleep 5
           fi
         done
 
       else
-        echo -e "Error, namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' found but no ZenService installed."
-        echo -e "For unmanaged RPA deployment select a namespace with ZenService already installed."
+        log_error "Error, namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' found but no ZenService installed."
+        log_error "For unmanaged RPA deployment select a namespace with ZenService already installed."
         exit 1
       fi
     fi
@@ -676,22 +719,28 @@ checkRpaManagedMode () {
 
 }
 
-waitInstallationCompleted () {
+showRPAInfos () {
+  _CPD_URL="https://"$(oc get route -n ${CP4BA_INST_RPA_NAMESPACE} cpd -o jsonpath="{.spec.host}")
+  log_info "${_CLR_GREEN}RPA Control Center URL: ${_CPD_URL}/rpa/ui"
+  log_info "${_CLR_GREEN}RPA API URL: ${_CPD_URL}/rpa/api"
+  log_info "${_CLR_GREEN}RPA tenant owner: ${CP4BA_INST_RPA_TENANT_OWNER_NAME}"
+  if [[ "${CP4BA_INST_RPA_TENANT_OWNER_NAME}" = "cpadmin" ]]; then
+    _CPADMIN_PWD=$(oc get secret -n ${CP4BA_INST_RPA_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
+    log_info "${_CLR_GREEN}RPA admin user credentials: cpadmin / ${_CPADMIN_PWD}"
+  fi
+
+}
+
+installationCompleted () {
   NOW_SECONDS=$SECONDS
   ELAPSED_SECONDS=$(( $NOW_SECONDS - $_DENV_START_SECONDS ))
   TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
   TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
   TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
 
-  echo -e "IBM RPA installation completed in ${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s."
+  log_info "${_CLR_GREEN}IBM RPA installation completed in ${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s."
 
-  _CPD_URL="https://"$(oc get route -n ${CP4BA_INST_RPA_NAMESPACE} cpd -o jsonpath="{.spec.host}")
-  echo -e "RPA environment URL: ${_CPD_URL}/rpa/ui"
-  echo -e "RPA tenant owner: ${CP4BA_INST_RPA_TENANT_OWNER_NAME}"
-  if [[ "${CP4BA_INST_RPA_TENANT_OWNER_NAME}" = "cpadmin" ]]; then
-    _CPADMIN_PWD=$(oc get secret -n ${CP4BA_INST_RPA_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
-    echo -e "RPA admin user credentials: cpadmin / ${_CPADMIN_PWD}"
-  fi
+  showRPAInfos
 
 }
 
@@ -711,18 +760,19 @@ installRpaStandalone () {
     if [ $? -eq 0 ]; then
       oc new-project "${CP4BA_INST_RPA_NAMESPACE}" 2> /dev/null 1> /dev/null
     else
-      echo -e "Namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
+      log_error "Namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
       exit 1
     fi
   fi
 
   setupRpaResources
 
-  waitInstallationCompleted
+  installationCompleted
 
 }
 
 echo "=============================================================="
-echo -e "${_CLR_GREEN}Deploying IBM RPA standalone resources (RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}') [managed: ${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}] in namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}', please wait..."
+log_info "${_CLR_GREEN}Deploying IBM RPA standalone resources (RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}') [managed: ${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}] in namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}', please wait..."
 
 installRpaStandalone
+exit 0
