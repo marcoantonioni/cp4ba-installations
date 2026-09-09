@@ -772,7 +772,8 @@ installRpaStandalone () {
 }
 
 echo "=============================================================="
-log_info "${_CLR_GREEN}Deploying IBM RPA standalone resources (RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}') [managed: ${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}] in namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}', please wait..."
+log_info "${_CLR_GREEN}Deploying IBM RPA standalone resources in namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}'"
+log_info "${_CLR_GREEN}RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}', Managed: ${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}"
 
 installRpaStandalone
 exit 0
