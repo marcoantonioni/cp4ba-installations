@@ -159,7 +159,7 @@ waitCSVSucceeded () {
           PHASE=$(oc get csv -n ${CP4BA_INST_RPA_NAMESPACE} $_CSV_NAME_VERSION -o jsonpath="{.status.phase}")
           if [ "${PHASE}" = "Succeeded" ]; then
             if [ $_seconds -gt 0 ]; then
-              echo -e "\033[2K"
+              echo -e -n "\033[2K"
             fi
             log_info "${_CLR_GREEN}CSV '${_CLR_YELLOW}$_CSV_NAME_VERSION${_CLR_GREEN}' installation completed."
             break
