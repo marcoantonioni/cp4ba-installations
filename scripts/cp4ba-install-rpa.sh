@@ -142,7 +142,7 @@ updateRotor () {
   TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
   TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
 
-  echo -e -n "${_CLR_GREEN} (${_CLR_YELLOW} ${_ROTOR_CHAR} ${_CLR_GREEN}) waiting for CSV '${_CLR_YELLOW}$_CSV_NAME${_CLR_GREEN}' installation to complete, elapsed time [${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s]\033[0K\r"
+  echo -e -n "${_CLR_GREEN}Wait for CSV '${_CLR_YELLOW}$_CSV_NAME${_CLR_GREEN}' installation to complete (${_CLR_YELLOW} ${_ROTOR_CHAR} ${_CLR_GREEN}), elapsed time [${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s]\033[0K\r"
 }
 
 waitCSVSucceeded () {
@@ -683,7 +683,7 @@ setupRpaResources () {
     _COMPLETION=$(oc get RoboticProcessAutomation -n ${CP4BA_INST_RPA_NAMESPACE} rpa -o jsonpath='{.status.conditions[*]}' | jq 'select(.reason=="Progress")' | jq .message | sed 's/"//g')
     if [[ "$_COMPLETION" = "100%" ]]; then
       echo -e -n "\033[2K"
-      log_info "${_CLR_GREEN}RPA resource configuration 100% completed"   
+      log_info "${_CLR_GREEN}RPA resource configuration ${_CLR_YELLOW}${_COMPLETION}${_CLR_GREEN} completed"   
       break
     else
       echo -e -n "${_CLR_GREEN}RPA resource configuration ${_CLR_YELLOW}${_COMPLETION}${_CLR_GREEN} completed, wait...\033[0K\r"      

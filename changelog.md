@@ -1,6 +1,19 @@
 
 # Change Log
 
+## [1.7.4] - 2026-09-10
+
+### Added
+
+RPA Runtime deployment for managed and unmanaged environments.
+
+### Changed
+
+### Fixed
+
+cp4ba-install-rpa.sh
+
+
 ## [1.7.3] - 2026-08-26
 
 ### Added

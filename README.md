@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-08-26</i> (see changelog.md for details)
+<i>Last update: 2026-09-10</i> (see changelog.md for details)
 
 As of June 26 2026, the 'main' branch contains artifacts compatible with v26.
 
@@ -41,6 +41,8 @@ The main capabilities/components present as of the last update date:
 - WfPS
 - PFS
 - ADS
+- ODM
+- RPA
 
 [Installation Guide detailed documentation](https://github.com/marcoantonioni/cp4ba-documentation)
 
@@ -387,6 +389,8 @@ If you do not have a full-grants user, ask your administrator to provide you wit
 If this is not possible and you necessarily have to delegate the administrator to create the catalogs and a namespace for which you will still have the namespace administration grants, you can follow the instructions for deploying an environment in an already created namespace and operators already installed (see '5. Deployment in already created namespace').
 
 Note: You can run installations of different configurations in parallel in different shells, each temporary file is created with random naming and does not create interference.
+
+For a detailed list of installation commands examples see 'CONFIGS-README.md' in configs folders.
 
 ### 1. Production deployment - LDAP/DB/BAW
 
