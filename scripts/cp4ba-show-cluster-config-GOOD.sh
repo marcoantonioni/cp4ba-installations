@@ -41,39 +41,39 @@ showClusterConfiguration () {
   _CM_CLUS_CFG=$(oc get configmap cluster-config-v1 -n kube-system -o jsonpath='{.data.install-config}' | yq -o json)
 
   if [[ ! -z "${_CM_CLUS_CFG}" ]]; then
-    _BASE_DOMAIN=$(echo $_CM_CLUS_CFG | jq .baseDomain 2>/dev/null | sed 's/"//g')
-    _CLUS_NAME=$(echo $_CM_CLUS_CFG | jq .metadata.name 2>/dev/null | sed 's/"//g')
-    _PUBLISH=$(echo $_CM_CLUS_CFG | jq .publish 2>/dev/null | sed 's/"//g')
+    _BASE_DOMAIN=$(echo $_CM_CLUS_CFG | jq .baseDomain | sed 's/"//g')
+    _CLUS_NAME=$(echo $_CM_CLUS_CFG | jq .metadata.name | sed 's/"//g')
+    _PUBLISH=$(echo $_CM_CLUS_CFG | jq .publish | sed 's/"//g')
 
     echo -e "${_CLR_GREEN}Cluster infos: Name[${_CLR_YELLOW}$_CLUS_NAME${_CLR_GREEN}] Base domain[${_CLR_YELLOW}$_BASE_DOMAIN${_CLR_GREEN}] Publish[${_CLR_YELLOW}$_PUBLISH${_CLR_GREEN}]"
 
     # control plane
-    _WN_ARCH=$(echo $_CM_CLUS_CFG | jq .controlPlane.architecture 2>/dev/null | sed 's/"//g')
-    _WN_HYPERT=$(echo $_CM_CLUS_CFG | jq .controlPlane.hyperthreading 2>/dev/null | sed 's/"//g')
-    _WN_NAME=$(echo $_CM_CLUS_CFG | jq .controlPlane.name 2>/dev/null | sed 's/"//g')
-    _WN_REPL=$(echo $_CM_CLUS_CFG | jq .controlPlane.replicas 2>/dev/null | sed 's/"//g')
+    _WN_ARCH=$(echo $_CM_CLUS_CFG | jq .controlPlane.architecture | sed 's/"//g')
+    _WN_HYPERT=$(echo $_CM_CLUS_CFG | jq .controlPlane.hyperthreading | sed 's/"//g')
+    _WN_NAME=$(echo $_CM_CLUS_CFG | jq .controlPlane.name | sed 's/"//g')
+    _WN_REPL=$(echo $_CM_CLUS_CFG | jq .controlPlane.replicas | sed 's/"//g')
     echo -e "${_CLR_GREEN}Control group: Name[${_CLR_YELLOW}$_WN_NAME${_CLR_GREEN}] Architecture[${_CLR_YELLOW}$_WN_ARCH${_CLR_GREEN}] Hyperthreading[${_CLR_YELLOW}$_WN_HYPERT${_CLR_GREEN}] Replicas[${_CLR_YELLOW}$_WN_REPL${_CLR_GREEN}]"
 
     # worker node groups
     _counter=0
-    echo $_CM_CLUS_CFG | jq -c '.compute[]' 2>/dev/null | while read c; do
-      _WN_ARCH=$(echo "$c" | jq .architecture 2>/dev/null | sed 's/"//g')
-      _WN_HYPERT=$(echo "$c" | jq .hyperthreading 2>/dev/null | sed 's/"//g')
-      _WN_NAME=$(echo "$c" | jq .name 2>/dev/null | sed 's/"//g')
-      _WN_REPL=$(echo "$c" | jq .replicas 2>/dev/null | sed 's/"//g')
+    echo $_CM_CLUS_CFG | jq -c '.compute[]' | while read c; do
+      _WN_ARCH=$(echo "$c" | jq .architecture | sed 's/"//g')
+      _WN_HYPERT=$(echo "$c" | jq .hyperthreading | sed 's/"//g')
+      _WN_NAME=$(echo "$c" | jq .name | sed 's/"//g')
+      _WN_REPL=$(echo "$c" | jq .replicas | sed 's/"//g')
       _counter=$((_counter + 1))
       echo -e "${_CLR_GREEN}Compute group: [${_CLR_YELLOW}$_counter${_CLR_GREEN}]: Name[${_CLR_YELLOW}$_WN_NAME${_CLR_GREEN}] Architecture[${_CLR_YELLOW}$_WN_ARCH${_CLR_GREEN}] Hyperthreading[${_CLR_YELLOW}$_WN_HYPERT${_CLR_GREEN}] Replicas[${_CLR_YELLOW}$_WN_REPL${_CLR_GREEN}]"
     done
 
     # network type
-    _CN_NETTYPE=$(echo $_CM_CLUS_CFG | jq -c .networking.networkType 2>/dev/null | sed 's/"//g')
+    _CN_NETTYPE=$(echo $_CM_CLUS_CFG | jq -c .networking.networkType | sed 's/"//g')
     echo -e "${_CLR_GREEN}Network type [${_CLR_YELLOW}$_CN_NETTYPE${_CLR_GREEN}]" 
 
     # cluster networks
     _counter=0
     echo -e -n "${_CLR_GREEN}  Cluster networks: " 
-    echo $_CM_CLUS_CFG | jq -c '.networking.clusterNetwork[]' 2>/dev/null | while read c; do
-      _CN_CIDR=$(echo "$c" | jq .cidr 2>/dev/null | sed 's/"//g')
+    echo $_CM_CLUS_CFG | jq -c '.networking.clusterNetwork[]' | while read c; do
+      _CN_CIDR=$(echo "$c" | jq .cidr | sed 's/"//g')
       _counter=$((_counter + 1))
       echo -e -n "${_CLR_GREEN}CIDR[${_CLR_YELLOW}$_CN_CIDR${_CLR_GREEN}] "
     done
@@ -82,8 +82,8 @@ showClusterConfiguration () {
     # machine networks
     _counter=0
     echo -e -n "${_CLR_GREEN}  Machine networks: " 
-    echo $_CM_CLUS_CFG | jq -c '.networking.machineNetwork[]' 2>/dev/null | while read c; do
-      _CN_CIDR=$(echo "$c" | jq .cidr 2>/dev/null | sed 's/"//g')
+    echo $_CM_CLUS_CFG | jq -c '.networking.machineNetwork[]' | while read c; do
+      _CN_CIDR=$(echo "$c" | jq .cidr | sed 's/"//g')
       _counter=$((_counter + 1))
       echo -e -n "${_CLR_GREEN}CIDR[${_CLR_YELLOW}$_CN_CIDR${_CLR_GREEN}] "
     done
@@ -92,8 +92,8 @@ showClusterConfiguration () {
     # service networks
     _counter=0
     echo -e -n "${_CLR_GREEN}  Service networks: " 
-    echo $_CM_CLUS_CFG | jq -c '.networking.serviceNetwork[]' 2>/dev/null | while read c; do
-      _CN_SN=$(echo "$c" | jq . 2>/dev/null | sed 's/"//g')
+    echo $_CM_CLUS_CFG | jq -c '.networking.serviceNetwork[]' | while read c; do
+      _CN_SN=$(echo "$c" | jq . | sed 's/"//g')
       _counter=$((_counter + 1))
       echo -e -n "${_CLR_GREEN}[${_CLR_YELLOW}$_CN_SN${_CLR_GREEN}] "
     done
@@ -102,16 +102,16 @@ showClusterConfiguration () {
     # platform
     echo -e "${_CLR_GREEN}Platform"
 
-    _BM=$(echo $_CM_CLUS_CFG | jq '.platform?.baremetal // ""' 2>/dev/null)
+    _BM=$(echo $_CM_CLUS_CFG | jq '.platform?.baremetal // ""')
     if [[ ! -z "$_BM" ]]; then
-      _LIBVIRT=$(echo $_BM | jq .libvirtURI 2>/dev/null | sed 's/"//g')
+      _LIBVIRT=$(echo $_BM | jq .libvirtURI | sed 's/"//g')
       echo -e "${_CLR_GREEN}  LibvirtURI [${_CLR_YELLOW}$_LIBVIRT${_CLR_GREEN}]"
 
       # api vips
       _counter=0
       echo -e -n "${_CLR_GREEN}  API VIPs " 
-      echo $_BM | jq -c '.apiVIPs[]' 2>/dev/null | while read c; do
-        _ITEM=$(echo "$c" | jq . 2>/dev/null | sed 's/"//g')
+      echo $_BM | jq -c '.apiVIPs[]' | while read c; do
+        _ITEM=$(echo "$c" | jq . | sed 's/"//g')
         _counter=$((_counter + 1))
         echo -e -n "${_CLR_GREEN}[${_CLR_YELLOW}$_ITEM${_CLR_GREEN}] "
       done
@@ -120,8 +120,8 @@ showClusterConfiguration () {
       # ingres vips
       _counter=0
       echo -e -n "${_CLR_GREEN}  Ingress VIPs " 
-      echo $_BM | jq -c '.ingressVIPs[]' 2>/dev/null | while read c; do
-        _ITEM=$(echo "$c" | jq . 2>/dev/null | sed 's/"//g')
+      echo $_BM | jq -c '.ingressVIPs[]' | while read c; do
+        _ITEM=$(echo "$c" | jq . | sed 's/"//g')
         _counter=$((_counter + 1))
         echo -e -n "${_CLR_GREEN}[${_CLR_YELLOW}$_ITEM${_CLR_GREEN}] "
       done
@@ -130,15 +130,15 @@ showClusterConfiguration () {
       # hosts
       _counter=0
       echo -e "${_CLR_GREEN}  Hosts" 
-      echo $_BM | jq -c '.hosts[]' 2>/dev/null | while read c; do
-        _HNAME=$(echo "$c" | jq .name 2>/dev/null | sed 's/"//g')
-        _HROLE=$(echo "$c" | jq .role 2>/dev/null | sed 's/"//g')
+      echo $_BM | jq -c '.hosts[]' | while read c; do
+        _HNAME=$(echo "$c" | jq .name | sed 's/"//g')
+        _HROLE=$(echo "$c" | jq .role | sed 's/"//g')
 
-        _NODE_STATUS=$(oc get node ${_HNAME} -o json 2>/dev/null)
-        _NODE_CAP_CPU=$(echo $_NODE_STATUS | jq .status.capacity.cpu 2>/dev/null)
-        _NODE_CAP_PODS=$(echo $_NODE_STATUS | jq .status.capacity.pods 2>/dev/null)
-        _NODE_ALLOC_CPU=$(echo $_NODE_STATUS | jq .status.allocatable.cpu 2>/dev/null)
-        _NODE_ALLOC_PODS=$(echo $_NODE_STATUS | jq .status.allocatable.pods 2>/dev/null)
+        _NODE_STATUS=$(oc get node ${_HNAME} -o json)
+        _NODE_CAP_CPU=$(echo $_NODE_STATUS | jq .status.capacity.cpu)
+        _NODE_CAP_PODS=$(echo $_NODE_STATUS | jq .status.capacity.pods)
+        _NODE_ALLOC_CPU=$(echo $_NODE_STATUS | jq .status.allocatable.cpu)
+        _NODE_ALLOC_PODS=$(echo $_NODE_STATUS | jq .status.allocatable.pods)
         _NUM_ACTIVE_PODS=$(oc get pods -A --no-headers --field-selector='status.phase=Running' --field-selector spec.nodeName=$_HNAME 2>/dev/null| grep Running | wc -l)
 
         _counter=$((_counter + 1))
@@ -148,10 +148,10 @@ showClusterConfiguration () {
       # actual allocated resources
       _pod_running_total=0
       _allocatable_pod_running_total=0
-      for nodeName in `oc get nodes --no-headers --selector='node-role.kubernetes.io/worker=' 2>/dev/null | awk '{print $1}'`; do
+      for nodeName in `oc get nodes --no-headers --selector='node-role.kubernetes.io/worker=' | awk '{print $1}'`; do
         _NUM_ACTIVE_PODS=$(oc get pods -A --no-headers --field-selector='status.phase=Running' --field-selector spec.nodeName=$nodeName 2>/dev/null| grep Running | wc -l)
         _pod_running_total=$((_pod_running_total + $_NUM_ACTIVE_PODS))
-        _allocatable_on_node=$(oc get node $nodeName -o jsonpath='{.status.allocatable.pods}' 2>/dev/null)
+        _allocatable_on_node=$(oc get node $nodeName -o jsonpath='{.status.allocatable.pods}')
         _allocatable_pod_running_total=$((_allocatable_pod_running_total + _allocatable_on_node))
       done
       echo -e "Total number of running pods on worker nodes [${_CLR_YELLOW}$_pod_running_total${_CLR_GREEN}] of total allocatables[${_CLR_YELLOW}$_allocatable_pod_running_total${_CLR_GREEN}]"
