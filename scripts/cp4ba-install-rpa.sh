@@ -641,14 +641,16 @@ EOF
 
 }
 
+setupRpaDatabase () {
+  deployRPAMsSqlServer
+  sleep 10
+  installMsSqlTools
+  sleep 30
+  createDatabases
 
-setupRpaResources () {
-  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
-    createServiceAccount
-    createOperatorGroup
-    installFoundationalServices
-  fi 
+}
 
+installOperators () {
   installOperatorCatalog
   waitCSVSucceeded "operand-deployment-lifecycle-manager"
 
@@ -656,28 +658,20 @@ setupRpaResources () {
   installMQOperator
   installRpaOperator
 
-  createRpaSecrets
+}
 
-  # install database
-  deployRPAMsSqlServer
-  sleep 10
-  installMsSqlTools
-  sleep 30
-  createDatabases
-  sleep 10
-
-  # wait operators readiness
+waitRpaOperators () {
   waitCSVSucceeded "ibm-mq."
   waitCSVSucceeded "ibm-automation-rpa."
 
-  # deploy RPA
-  createRpaCR
+}
 
-  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
+waitFoundationalOperators () {
     waitCSVSucceeded "ibm-iam-operator."
     waitCSVSucceeded "ibm-zen-operator."
-  fi
+}
 
+waitRpaResourcesReadiness () {
   # wait for RPA instance readiness
   while [ true ]; do
     _COMPLETION=$(oc get RoboticProcessAutomation -n ${CP4BA_INST_RPA_NAMESPACE} rpa -o jsonpath='{.status.conditions[*]}' | jq 'select(.reason=="Progress")' | jq .message | sed 's/"//g')
@@ -690,6 +684,32 @@ setupRpaResources () {
       sleep 5
     fi
   done
+
+}
+
+setupRpaResources () {
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
+    createServiceAccount
+    createOperatorGroup
+    installFoundationalServices
+  fi 
+
+  installOperators
+
+  createRpaSecrets
+
+  setupRpaDatabase
+
+  waitRpaOperators
+
+  createRpaCR
+
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
+    waitFoundationalOperators
+  fi
+
+  waitRpaResourcesReadiness
+
 }
 
 checkRpaManagedMode () {
