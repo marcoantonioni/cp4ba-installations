@@ -408,7 +408,7 @@ createRpaSecrets () {
 
 }
 
-createServiceAccount () {
+createServiceAccountCP4BA () {
 
 cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
 apiVersion: v1
@@ -421,6 +421,22 @@ imagePullSecrets:
 EOF
 
 oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+
+}
+
+createServiceAccountRPA () {
+
+cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ibm-rpa-operator
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
+imagePullSecrets:
+- name: 'ibm-entitlement-key'
+EOF
+
+oc adm policy add-scc-to-user anyuid -z ibm-rpa-operator -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
 
 }
 
@@ -685,10 +701,12 @@ waitRpaResourcesReadiness () {
 
 setupRpaResources () {
   if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
-    createServiceAccount
+    createServiceAccountCP4BA
     createOperatorGroup
     installFoundationalServices
-  fi 
+  fi
+
+  createServiceAccountRPA
 
   installOperators
 
