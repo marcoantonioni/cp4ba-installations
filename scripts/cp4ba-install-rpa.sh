@@ -161,7 +161,14 @@ waitCSVSucceeded () {
             if [ $_seconds -gt 0 ]; then
               echo -e -n "\033[2K"
             fi
-            log_info "${_CLR_GREEN}CSV '${_CLR_YELLOW}$_CSV_NAME_VERSION${_CLR_GREEN}' installation completed."
+
+            NOW_SECONDS=$SECONDS
+            ELAPSED_SECONDS=$(( $NOW_SECONDS - $_CSV_START_SECONDS ))
+            TOT_SECONDS=$(($ELAPSED_SECONDS % 60))
+            TOT_MINUTES=$(( $(($ELAPSED_SECONDS / 60)) % 60))
+            TOT_HOURS=$(( $(($ELAPSED_SECONDS / 3600)) % 24))
+
+            log_info "${_CLR_GREEN}CSV '${_CLR_YELLOW}$_CSV_NAME_VERSION${_CLR_GREEN}' installation completed in [${_CLR_YELLOW}${TOT_HOURS}${_CLR_GREEN}h:${_CLR_YELLOW}${TOT_MINUTES}${_CLR_GREEN}m:${_CLR_YELLOW}${TOT_SECONDS}${_CLR_GREEN}s]"
             break
           else
             updateRotor $_seconds $_CSV_NAME_VERSION
