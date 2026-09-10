@@ -424,22 +424,6 @@ oc adm policy add-scc-to-user anyuid -z ibm-cp4ba-anyuid -n ${CP4BA_INST_RPA_NAM
 
 }
 
-createServiceAccountRPA () {
-
-cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: ibm-rpa-operator
-  namespace: ${CP4BA_INST_RPA_NAMESPACE}
-imagePullSecrets:
-- name: 'ibm-entitlement-key'
-EOF
-
-oc adm policy add-scc-to-user anyuid -z ibm-rpa-operator -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-
-}
-
 createOperatorGroup () {
 
 cat <<EOF | oc apply -f - 2> /dev/null 1> /dev/null
@@ -669,12 +653,15 @@ setupRpaDatabase () {
 installOperators () {
   installOperatorCatalog
   waitCSVSucceeded "operand-deployment-lifecycle-manager"
-
-  installMQOperator
-  waitCSVSucceeded "ibm-mq."
+  sleep 60
 
   installRpaOperator
   waitCSVSucceeded "ibm-automation-rpa."
+  sleep 60
+
+  installMQOperator
+  waitCSVSucceeded "ibm-mq."
+  sleep 60
 
 }
 
@@ -701,16 +688,14 @@ waitRpaResourcesReadiness () {
 
 setupRpaResources () {
   if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
-    createServiceAccountCP4BA
+    # createServiceAccountCP4BA
     createOperatorGroup
     installFoundationalServices
   fi
 
-  createServiceAccountRPA
+  createRpaSecrets
 
   installOperators
-
-  createRpaSecrets
 
   setupRpaDatabase
 
