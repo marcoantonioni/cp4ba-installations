@@ -654,14 +654,10 @@ installOperators () {
   installOperatorCatalog
   waitCSVSucceeded "operand-deployment-lifecycle-manager"
 
-  # install operators
   installMQOperator
-  installRpaOperator
-
-}
-
-waitRpaOperators () {
   waitCSVSucceeded "ibm-mq."
+
+  installRpaOperator
   waitCSVSucceeded "ibm-automation-rpa."
 
 }
@@ -699,8 +695,6 @@ setupRpaResources () {
   createRpaSecrets
 
   setupRpaDatabase
-
-  waitRpaOperators
 
   createRpaCR
 
