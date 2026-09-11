@@ -645,7 +645,7 @@ postInstallationSteps () {
       fi
     fi
 
-    if [[ "${CP4BA_INST_DB_RPA}" = "true" ]]; then
+    if [[ "${CP4BA_INST_RPA}" = "true" ]]; then
       ${_SCRIPT_DIR}/cp4ba-install-rpa.sh -c ${_CFG}
       if [[ $? -ne 0 ]]; then
         log_error "${_CLR_RED}[✗] Error, RPA resources not installed.${_CLR_NC}"
