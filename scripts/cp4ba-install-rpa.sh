@@ -323,7 +323,6 @@ EOF
 }
 
 deployRPAMsSqlServer () {
-  log_info "Installing MSSQL Server for RPA capability"
 
   removeOldRPADb
 
@@ -581,6 +580,7 @@ verifyDatabases () {
 
 createDatabases () {
   log_info "Creating databases in server at FQDN: ${_CLR_YELLOW}${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local${_CLR_NC}"
+
   oc rsh -n ${CP4BA_INST_RPA_NAMESPACE} mssql-tools "/opt/mssql-tools/bin/sqlcmd" -C -S "${CP4BA_INST_RPA_SERVICE_NAME}.${CP4BA_INST_RPA_NAMESPACE}.svc.cluster.local" -U sa -P ${CP4BA_INST_RPA_DB_PWD} -Q "create database [automation]; create database [knowledge]; create database [wordnet]; create database [address]; create database [audit];" 2> /dev/null 1> /dev/null
 
   if [[ "${CP4BA_INST_RPA_VERIFY_DB}" = "true" ]]; then
@@ -601,42 +601,29 @@ spec:
   license:
     accept: true
     includeSWCUpload: true
-  #createRoutes: true
-  #webDriverUpdates:
-  #  enabled: true
-  #systemQueueProvider:
-  #  highAvailability: false
-  #ui:
-  #  replicas: 1
-  #hotStorageCleanup:
-  #  enabled: true
   version: ${CP4BA_INST_RPA_VERSION}
+  fileStorageClass: ${CP4BA_INST_SC_FILE}
+  blockStorageClass: ${CP4BA_INST_SC_BLOCK}
   iam:
     route: cpd
   zen:
     managed: ${CP4BA_INST_RPA_MANAGED}
-  fileStorageClass: ${CP4BA_INST_SC_FILE}
-  blockStorageClass: ${CP4BA_INST_SC_BLOCK}
   sizeMapping:
     watson-nlp:
       replicas: 1
   api:
-    #replicas: 1
     databaseConnectionSecretName: rpa-db
+    replicas: 1
     firstTenant:
       name: ${CP4BA_INST_RPA_TENANT_NAME}
       ownerSecretName: rpa-first-tenant-owner
     smtp:
-      port: 587
-      server: mail.cp4ba-collateral.svc.cluster.local
+      port: ${CP4BA_INST_RPA_SMTP_SERVER_PORT}
+      server: ${CP4BA_INST_RPA_SMTP_SERVER_FQDN}
       userSecretName: rpa-smtp
-  #antivirus:
-  #  replicas: 1
   tls: {}
   audit:
     forwardingEnabled: false
-  #ocr:
-  #  replicas: 1
 EOF
 
 }
@@ -653,15 +640,26 @@ setupRpaDatabase () {
 installOperators () {
   installOperatorCatalog
   waitCSVSucceeded "operand-deployment-lifecycle-manager"
-  sleep 60
+  sleep 10
 
+  # use specific channel version
+  if [[ "${CP4BA_INST_MQ_FORCE_CHANNEL_VERSION}" = "true" ]]; then
+    if [[ ! -z "${CP4BA_INST_MQ_CHANNEL}" ]]; then
+      log_info "${_CLR_GREEN}Installing MQ operator using channel '${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}'"
+      installMQOperator
+      waitCSVSucceeded "ibm-mq."
+      sleep 10
+    else
+      log_warning "${_CLR_GREEN}Variable CP4BA_INST_MQ_FORCE_CHANNEL_VERSION set to 'true'"
+      log_warning "${_CLR_GREEN}Variable CP4BA_INST_MQ_CHANNEL is empty, cannot set MQ operator channel version"
+      log_warning "${_CLR_GREEN}Let RPA operators decide which MQ channel version to use"
+    fi
+  fi
+
+  log_info "${_CLR_GREEN}Installing RPA operator using channel '${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}'"
   installRpaOperator
   waitCSVSucceeded "ibm-automation-rpa."
-  sleep 60
-
-  installMQOperator
-  waitCSVSucceeded "ibm-mq."
-  sleep 60
+  sleep 10
 
 }
 
@@ -688,7 +686,7 @@ waitRpaResourcesReadiness () {
 
 setupRpaResources () {
   if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
-    # createServiceAccountCP4BA
+    createServiceAccountCP4BA
     createOperatorGroup
     installFoundationalServices
   fi
@@ -697,7 +695,12 @@ setupRpaResources () {
 
   installOperators
 
-  setupRpaDatabase
+  if [[ "${CP4BA_INST_RPA_DB}" = "true" ]]; then
+    log_info "Installing local MSSQL Server for RPA"
+    setupRpaDatabase
+  else
+    log_info "${_CLR_GREEN}Using remote RPA db server"
+  fi
 
   createRpaCR
 
@@ -768,8 +771,19 @@ installationCompleted () {
 
 }
 
+checkConfiguration () {
+
+  if [[ -z "${CP4BA_INST_RPA_CHANNEL}" ]]; then
+    log_error "CP4BA_INST_RPA_CHANNEL not set."
+    exit 1
+  fi
+
+}
+
 #-----------------------------------------
-installRpaStandalone () {
+installRpa () {
+
+  checkConfiguration
 
   checkRpaManagedMode
 
@@ -796,8 +810,8 @@ installRpaStandalone () {
 }
 
 echo "=============================================================="
-log_info "${_CLR_GREEN}Deploying IBM RPA standalone resources in namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}'"
+log_info "${_CLR_GREEN}Deploying IBM RPA resources in namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}'"
 log_info "${_CLR_GREEN}RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}', Managed: ${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}"
 
-installRpaStandalone
+installRpa
 exit 0
