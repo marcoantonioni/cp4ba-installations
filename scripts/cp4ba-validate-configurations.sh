@@ -121,11 +121,7 @@ if [[ -z "${_INST_TMP_FOLDER}" ]]; then
   export _INST_TMP_FOLDER="/tmp"
 fi
 
-#_FOLDER_CONFIGS="/home/marco/cp4ba-projects/cp4ba-installations/configs26"
-#_FOLDER_TEMPLATES="/home/marco/cp4ba-projects/cp4ba-installations/templates26"
-
 _FILE_PROPS=${_CFG}
-#"env1-authoring-baw.properties"
 
 _setDefaultValuesIfNotDefined () {
 
@@ -172,6 +168,7 @@ verifyConfigurationVariables () {
   _SKIP_UNDEFINED_VARS=(
     "CP4BA_INST_OPT_COMPONENTS" 
     "CP4BA_INST_BAS_CUSTOM_XML"
+    "CP4BA_INST_BAS_TLS_CERTS"
   )
 
   _ERRORS=0
