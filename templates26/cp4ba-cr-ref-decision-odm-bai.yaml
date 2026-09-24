@@ -21,6 +21,7 @@
 ##
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=resource-configuring-operational-decision-manager
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-operational-decision-manager
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=scp-shared-configuration
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster

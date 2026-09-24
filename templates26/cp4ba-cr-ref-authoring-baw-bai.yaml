@@ -19,7 +19,8 @@
 ## 
 ## patterns: foundation,baw_authoring
 ##
-## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-authoring
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-workflow-authoring
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=scp-shared-configuration
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster

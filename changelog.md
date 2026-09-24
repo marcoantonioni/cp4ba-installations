@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.5] - 2026-09-24
+
+### Added
+
+### Changed
+
+Comments in v26 .yaml templates
+
+### Fixed
+
+
 ## [1.7.4] - 2026-09-10
 
 ### Added

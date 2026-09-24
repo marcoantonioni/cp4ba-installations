@@ -23,6 +23,7 @@
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-workflow-runtime-workstream-services#ref_baw_params__baw
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-workflow-runtime-workstream-services#ref_baw_params__bai
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-application-engine
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=scp-shared-configuration
 ###############################################################################
 apiVersion: icp4a.ibm.com/v1
 kind: ICP4ACluster
