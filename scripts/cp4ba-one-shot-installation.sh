@@ -482,7 +482,10 @@ oneShotInstallation () {
 
   initialChecks
 
-  ${_SCRIPT_DIR}/cp4ba-show-cluster-config.sh
+  # optional
+  if [[ "${CP4BA_INST_SHOW_CLUSTER_CONFIG}" = "true" ]]; then
+    ${_SCRIPT_DIR}/cp4ba-show-cluster-config.sh
+  fi
 
   _OSI_START_SECONDS=$SECONDS
 

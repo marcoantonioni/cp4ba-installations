@@ -1,6 +1,22 @@
 
 # Change Log
 
+## [1.7.6] - 2026-09-25
+
+### Added
+
+### Changed
+
+Run of step 'cp4ba-show-cluster-config.sh' is now optional.
+
+If needed, set in your shell the var CP4BA_INST_SHOW_CLUSTER_CONFIG to "true" the run './cp4ba-one-shot-installation.sh'
+```bash
+export CP4BA_INST_SHOW_CLUSTER_CONFIG="true"
+```
+
+### Fixed
+
+
 ## [1.7.5] - 2026-09-24
 
 ### Added
