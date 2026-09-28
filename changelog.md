@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.7] - 2026-09-28
+
+### Added
+
+WfPS runtime configuration
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.6] - 2026-09-25
 
 ### Added

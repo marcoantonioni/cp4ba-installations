@@ -203,6 +203,16 @@ CONFIG_FILE=${_PTC}/env1-runtime-opensearch-foundation.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+last test: 20260928
+```bash
+_VV=26.0.2
+_KK=26.0.0-IF002
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
+CONFIG_FILE=${_PTC}/env1-runtime-wfps-pfs.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+```
+
+
 #### Decision Runtime envs
 
 ```bash
