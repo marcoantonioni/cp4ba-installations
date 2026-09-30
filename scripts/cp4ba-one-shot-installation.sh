@@ -202,6 +202,10 @@ checkPrereqTools () {
 
 checkExtDbCertificates() {
 
+  if [[ "${CP4BA_INST_DB}" = "true" ]]; then
+    return 0
+  fi
+
   if [[ -z "${CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL}" ]]; then
     CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="false"      
   fi
@@ -215,7 +219,7 @@ checkExtDbCertificates() {
       exit 1
     else
       if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
-        log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+        log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty, must contain certificates to access external db.${_CLR_GREEN}"
         exit 1
       fi      
     fi
@@ -226,7 +230,7 @@ checkExtDbCertificates() {
         exit 1        
       fi
       if ! find "${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}" -mindepth 1 -maxdepth 1 | read; then
-        log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty.${_CLR_GREEN}"
+        log_error "${_CLR_RED}[✗] ERROR folder '${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER}' is empty, must contain certificates to access external db.${_CLR_GREEN}"
         exit 1
       fi      
     fi

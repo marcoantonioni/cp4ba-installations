@@ -1,6 +1,16 @@
 
 # Change Log
 
+## [1.7.8] - 2026-09-30
+
+### Added
+
+### Changed
+
+### Fixed
+
+Fixed logic tests for external certificates presence in checkExtDbCertificates()
+
 ## [1.7.7] - 2026-09-28
 
 ### Added
