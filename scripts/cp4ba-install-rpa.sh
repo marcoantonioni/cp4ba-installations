@@ -148,15 +148,23 @@ updateRotor () {
 waitCSVSucceeded () {
 
   _CSV_NAME=$1
+  _CSV_NS=$2
   _seconds=0
   _CSV_START_SECONDS=$SECONDS
+
+  if [[ -z "${_CSV_NS}" ]]; then
+    _CSV_NS="${CP4BA_INST_RPA_NAMESPACE}"
+  fi
+
+  log_info "${_CLR_GREEN}Wait CSV succeeded '${_CLR_YELLOW}${_CSV_NAME}${_CLR_GREEN}' in namespace '${_CLR_YELLOW}${_CSV_NS}${_CLR_GREEN}'"
+
   while [ true ]
   do
-    _CSV_NAME_VERSION=$(oc get csv -n ${CP4BA_INST_RPA_NAMESPACE} | grep "$_CSV_NAME" | awk '{print $1}')
+    _CSV_NAME_VERSION=$(oc get csv -n ${_CSV_NS} | grep "$_CSV_NAME" | awk '{print $1}')
     if [[ ! -z "${_CSV_NAME_VERSION}" ]]; then
       while [ true ]
       do
-          PHASE=$(oc get csv -n ${CP4BA_INST_RPA_NAMESPACE} $_CSV_NAME_VERSION -o jsonpath="{.status.phase}")
+          PHASE=$(oc get csv -n ${_CSV_NS} $_CSV_NAME_VERSION -o jsonpath="{.status.phase}")
           if [ "${PHASE}" = "Succeeded" ]; then
             if [ $_seconds -gt 0 ]; then
               echo -e -n "\033[2K"
@@ -337,7 +345,10 @@ deployRPAMsSqlServer () {
 installLicensingOperator () {
   echo "Installing IBM Licensing Operator"
 
-cat <<EOF | oc create -f -
+  _YAML_NAME="rpa-licensing-operator"
+  _YAML_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${_YAML_NAME}-${CP4BA_INST_NAMESPACE}.yaml"
+
+cat <<EOF > "${_YAML_FILE}"
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
@@ -365,19 +376,22 @@ spec:
   sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
 EOF
 
+oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
+
 }
 
 #--------------------------------
 # RPA env
 
 createRpaSecrets () {
-  oc create secret docker-registry ibm-entitlement-key \
+  oc delete secret ibm-entitlement-key -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc create secret docker-registry ibm-entitlement-key -n ${CP4BA_INST_RPA_NAMESPACE} \
   --docker-server=cp.icr.io \
   --docker-username=cp \
-  --docker-password="${CP4BA_AUTO_ENTITLEMENT_KEY}" \
-  --namespace=${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  --docker-password="${CP4BA_AUTO_ENTITLEMENT_KEY}" 2> /dev/null 1> /dev/null
 
   # db secret
+  oc delete secret rpa-db -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
   oc create secret generic rpa-db -n ${CP4BA_INST_RPA_NAMESPACE} \
     --from-literal=AddressContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_ADDRESS}" \
     --from-literal=AutomationContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_AUTOMATION}" \
@@ -386,16 +400,19 @@ createRpaSecrets () {
     --from-literal=AuditContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_AUDIT}" 2> /dev/null 1> /dev/null
 
   # tenant owner
+  oc delete secret rpa-first-tenant-owner -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
   oc create secret generic rpa-first-tenant-owner -n ${CP4BA_INST_RPA_NAMESPACE} \
     --from-literal=name=${CP4BA_INST_RPA_TENANT_OWNER_NAME} \
     --from-literal=email=${CP4BA_INST_RPA_TENANT_OWNER_EMAIL} 2> /dev/null 1> /dev/null
 
   # smtp secret
+  oc delete secret rpa-smtp -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
   oc create secret generic rpa-smtp -n ${CP4BA_INST_RPA_NAMESPACE} \
     --from-literal=username=${CP4BA_INST_RPA_SMTP_USER} \
     --from-literal=password=${CP4BA_INST_RPA_SMTP_PASSWORD} 2> /dev/null 1> /dev/null
 
   # redis secret https://www.ibm.com/docs/en/rpa/30.0.x?topic=platform-creating-rpa-secrets#creating-a-redis-password-secret
+  oc delete secret rpa-redis-rpa -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
   oc create secret generic rpa-redis-rpa -n ${CP4BA_INST_RPA_NAMESPACE} \
     --from-literal=default_password=${CP4BA_INST_RPA_ADMIN_PWD} 2> /dev/null 1> /dev/null
 
@@ -441,7 +458,10 @@ EOF
 
 installFoundationalServices () {
 
-cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
+  _YAML_NAME="rpa-foundational-services"
+  _YAML_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${_YAML_NAME}-${CP4BA_INST_NAMESPACE}.yaml"
+
+cat <<EOF > "${_YAML_FILE}"
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
@@ -451,7 +471,7 @@ spec:
     displayName: IBMCS Operators
     publisher: IBM
     sourceType: grpc
-    image: icr.io/cpopen/ibm-common-service-catalog:4.10
+    image: icr.io/cpopen/ibm-common-service-catalog:latest
     updateStrategy:
       registryPoll:
           interval: 45m
@@ -462,23 +482,31 @@ metadata:
   name: ibm-common-service-operator
   namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
-  channel: v4.10
+  channel: ${CP4BA_INST_CS_CHANNEL}
+  startingCSV: ${CP4BA_INST_CS_STARTING_CSV}
   installPlanApproval: Automatic
   name: ibm-common-service-operator
   source: opencloud-operators
   sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
 EOF
 
+oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
+
 }
 
 installOperatorCatalog () {
 
-cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
+  _YAML_NAME="rpa-ibm-operator-catalog"
+  _YAML_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${_YAML_NAME}-${CP4BA_INST_NAMESPACE}.yaml"
+
+cat <<EOF > "${_YAML_FILE}"
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: ibm-operator-catalog
-  namespace: ${CP4BA_INST_RPA_NAMESPACE}
+  name: ${CP4BA_INST_IBM_OPERATOR_CATALOG_NAME}
+  namespace: ${CP4BA_INST_IBM_OPERATOR_CATALOG_NS}
+  annotations:
+    olm.catalogImageTemplate: "icr.io/cpopen/ibm-operator-catalog:v{kube_major_version}.{kube_minor_version}"
 spec:
   displayName: IBM Operator Catalog
   image: icr.io/cpopen/ibm-operator-catalog:latest
@@ -488,6 +516,8 @@ spec:
     registryPoll:
       interval: 45m
 EOF
+
+oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
 
 }
 
@@ -501,10 +531,11 @@ metadata:
   namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec:
   channel: ${CP4BA_INST_MQ_CHANNEL}
+  startingCSV: ${CP4BA_INST_MQ_STARTING_CSV}
   installPlanApproval: Automatic
   name: ibm-mq 
-  source: ibm-operator-catalog 
-  sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
+  source: ${CP4BA_INST_IBM_OPERATOR_CATALOG_NAME}
+  sourceNamespace: ${CP4BA_INST_IBM_OPERATOR_CATALOG_NS}
 EOF
 
   # commented fo speed up CSV installation
@@ -522,10 +553,11 @@ metadata:
   namespace: ${CP4BA_INST_RPA_NAMESPACE}
 spec: 
   channel: ${CP4BA_INST_RPA_CHANNEL}
+  startingCSV: ${CP4BA_INST_RPA_STARTING_CSV}
   installPlanApproval: Automatic 
   name: ibm-automation-rpa 
-  source: ibm-operator-catalog
-  sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
+  source: ${CP4BA_INST_IBM_OPERATOR_CATALOG_NAME}
+  sourceNamespace: ${CP4BA_INST_IBM_OPERATOR_CATALOG_NS}
 EOF
 
   # commented fo speed up CSV installation
@@ -535,7 +567,10 @@ EOF
 
 installMsSqlTools () {
 
-cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
+  _YAML_NAME="rpa-mssql-tools"
+  _YAML_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${_YAML_NAME}-${CP4BA_INST_NAMESPACE}.yaml"
+
+cat <<EOF > "${_YAML_FILE}"
 kind: Pod
 apiVersion: v1
 metadata:
@@ -549,6 +584,9 @@ spec:
       image: 'mcr.microsoft.com/mssql-tools'
       command: [ "/bin/bash", "-c", "sleep infinity" ]
 EOF
+
+oc delete pod mssql-tools -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
 
   while [ true ]
   do
@@ -590,8 +628,12 @@ createDatabases () {
 }
 
 createRpaCR () {
+  log_info "${_CLR_GREEN}Installing RoboticProcessAutomation with default MQ operator version"
 
-cat <<EOF | oc create -f - 2> /dev/null 1> /dev/null
+  _YAML_NAME="rpa-instance"
+  _YAML_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${_YAML_NAME}-${CP4BA_INST_NAMESPACE}.yaml"
+
+cat <<EOF > "${_YAML_FILE}"
 apiVersion: rpa.automation.ibm.com/v1
 kind: RoboticProcessAutomation
 metadata:
@@ -625,6 +667,61 @@ spec:
   audit:
     forwardingEnabled: false
 EOF
+
+oc delete RoboticProcessAutomation -n ${CP4BA_INST_RPA_NAMESPACE} ${CP4BA_INST_RPA_INSTANCE_NAME} 2> /dev/null 1> /dev/null
+oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
+
+}
+
+createRpaCR_MQSpecific () {
+  log_info "${_CLR_GREEN}Installing RoboticProcessAutomation with MQ operator using channel '${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}' and version '${_CLR_YELLOW}${CP4BA_INST_MQ_VER}${_CLR_GREEN}'"
+
+  _YAML_NAME="rpa-instance"
+  _YAML_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${_YAML_NAME}-${CP4BA_INST_NAMESPACE}.yaml"
+
+cat <<EOF > "${_YAML_FILE}"
+apiVersion: rpa.automation.ibm.com/v1
+kind: RoboticProcessAutomation
+metadata:
+  name: ${CP4BA_INST_RPA_INSTANCE_NAME}
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
+spec:
+  license:
+    accept: true
+    includeSWCUpload: true
+  version: ${CP4BA_INST_RPA_VERSION}
+  fileStorageClass: ${CP4BA_INST_SC_FILE}
+  blockStorageClass: ${CP4BA_INST_SC_BLOCK}
+  iam:
+    route: cpd
+  zen:
+    managed: ${CP4BA_INST_RPA_MANAGED}
+  sizeMapping:
+    watson-nlp:
+      replicas: 1
+  api:
+    databaseConnectionSecretName: rpa-db
+    replicas: 1
+    firstTenant:
+      name: ${CP4BA_INST_RPA_TENANT_NAME}
+      ownerSecretName: rpa-first-tenant-owner
+    smtp:
+      port: ${CP4BA_INST_RPA_SMTP_SERVER_PORT}
+      server: ${CP4BA_INST_RPA_SMTP_SERVER_FQDN}
+      userSecretName: rpa-smtp
+  systemQueueProvider:
+    license:
+      license: ${CP4BA_INST_MQ_LICENSE_CODE}
+      metric: ProcessorValueUnit
+      usage: ${CP4BA_INST_MQ_LICENSE_USAGE}
+    version: ${CP4BA_INST_MQ_VER}
+  tls: {}
+  audit:
+    forwardingEnabled: false
+EOF
+
+oc delete RoboticProcessAutomation -n ${CP4BA_INST_RPA_NAMESPACE} ${CP4BA_INST_RPA_INSTANCE_NAME} 2> /dev/null 1> /dev/null
+oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
 
 }
 
@@ -670,6 +767,7 @@ waitFoundationalOperators () {
 
 waitRpaResourcesReadiness () {
   # wait for RPA instance readiness
+  _seconds=0
   while [ true ]; do
     _COMPLETION=$(oc get RoboticProcessAutomation -n ${CP4BA_INST_RPA_NAMESPACE} rpa -o jsonpath='{.status.conditions[*]}' | jq 'select(.reason=="Progress")' | jq .message | sed 's/"//g')
     if [[ "$_COMPLETION" = "100%" ]]; then
@@ -679,6 +777,11 @@ waitRpaResourcesReadiness () {
     else
       echo -e -n "${_CLR_GREEN}RPA resource configuration ${_CLR_YELLOW}${_COMPLETION}${_CLR_GREEN} completed, wait...\033[0K\r"      
       sleep 5
+      ((_seconds=_seconds+5))
+      if [[ $_seconds -ge 600 ]]; then
+        log_warning "${_CLR_GREEN}RPA resource configuration not completed after ${_CLR_YELLOW}${_seconds}${_CLR_GREEN} seconds, the configuration will complete automatically."  
+        break
+      fi
     fi
   done
 
@@ -702,7 +805,11 @@ setupRpaResources () {
     log_info "${_CLR_GREEN}Using remote RPA db server"
   fi
 
-  createRpaCR
+  if [[ "${CP4BA_INST_MQ_FORCE_CHANNEL_VERSION}" = "true" ]]; then
+    createRpaCR_MQSpecific
+  else
+    createRpaCR
+  fi
 
   if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
     waitFoundationalOperators
@@ -811,7 +918,11 @@ installRpa () {
 
 echo "=============================================================="
 log_info "${_CLR_GREEN}Deploying IBM RPA resources in namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}'"
-log_info "${_CLR_GREEN}RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}', Managed: ${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}"
+log_info "${_CLR_GREEN}RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, RPA csv:${_CLR_YELLOW}${CP4BA_INST_MQ_STARTING_CSV}${_CLR_GREEN}, Managed:${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}"
+if [[ "${CP4BA_INST_MQ_FORCE_CHANNEL_VERSION}" = "true" ]]; then
+  log_info "${_CLR_GREEN}Use MQ version:${_CLR_YELLOW}${CP4BA_INST_MQ_VER}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}', MQ csv:${_CLR_YELLOW}${CP4BA_INST_MQ_STARTING_CSV}${_CLR_GREEN}"
+fi
 
 installRpa
+
 exit 0

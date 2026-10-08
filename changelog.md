@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.9] - 2026-10-08
+
+### Added
+
+### Changed
+
+### Fixed
+
+Fixed RPA script and congigurations
+
+
 ## [1.7.8] - 2026-09-30
 
 ### Added
