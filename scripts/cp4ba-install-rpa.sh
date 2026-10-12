@@ -6,6 +6,8 @@ _me=$(basename "$0")
 
 _CFG=""
 _FORCE="false"
+_RPA_INST_COMPLETED=0
+_RPA_WAIT_ONLY=0
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -53,11 +55,12 @@ usage () {
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:f flag
+while getopts c:fw flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         f) _FORCE="true";;
+        w) _RPA_WAIT_ONLY=1;;
     esac
 done
 
@@ -849,12 +852,13 @@ waitRpaResourcesReadiness () {
     if [[ "$_COMPLETION" = "100%" ]]; then
       echo -e -n "\033[2K"
       log_info "${_CLR_GREEN}RPA resource configuration ${_CLR_YELLOW}${_COMPLETION}${_CLR_GREEN} completed"   
+      _RPA_INST_COMPLETED=1
       break
     else
       echo -e -n "${_CLR_GREEN}RPA resource configuration ${_CLR_YELLOW}${_COMPLETION}${_CLR_GREEN} completed, wait...\033[0K\r"      
       sleep 5
       ((_seconds=_seconds+5))
-      if [[ $_seconds -ge 600 ]]; then
+      if [[ $_seconds -ge 7200 ]]; then
         log_warning "${_CLR_GREEN}RPA resource configuration not completed after ${_CLR_YELLOW}${_seconds}${_CLR_GREEN} seconds, the configuration will complete automatically."  
         break
       fi
@@ -878,6 +882,14 @@ installLdap () {
     fi
   fi
 
+}
+
+waitRpaResources () {
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
+    waitFoundationalOperators
+  fi
+
+  waitRpaResourcesReadiness
 }
 
 setupRpaResources () {
@@ -921,12 +933,6 @@ setupRpaResources () {
     createRpaCR
   fi
 
-  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
-    waitFoundationalOperators
-  fi
-
-  waitRpaResourcesReadiness
-
 }
 
 checkRpaManagedMode () {
@@ -964,9 +970,16 @@ checkRpaManagedMode () {
 }
 
 showRPAInfos () {
-  _CPD_URL="https://"$(oc get route -n ${CP4BA_INST_RPA_NAMESPACE} cpd -o jsonpath="{.spec.host}")
-  log_info "${_CLR_GREEN}RPA Control Center URL: ${_CPD_URL}/rpa/ui"
-  log_info "${_CLR_GREEN}RPA API URL: ${_CPD_URL}/rpa/api"
+  _CPD_URL=$(oc get route -n ${CP4BA_INST_RPA_NAMESPACE} cpd -o jsonpath="{.spec.host}" 2> /dev/null )
+  if [[ ! -z "${_CPD_URL}" ]]; then
+    log_info "${_CLR_GREEN}RPA Control Center URL: "https://"${_CPD_URL}/rpa/ui"
+    log_info "${_CLR_GREEN}RPA API URL: ${_CPD_URL}/rpa/api"
+  fi
+  _RPA_API_SERVICE_ROUTE=$(oc get route -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null | grep "rpa-api-service-dedicated" | awk '{print $1}')
+  if [[ ! -z "${_RPA_API_SERVICE_ROUTE}" ]]; then
+    _RPA_API_SERVICE_URL="https://"$(oc get route -n ${CP4BA_INST_RPA_NAMESPACE} ${_RPA_API_SERVICE_ROUTE} -o jsonpath="{.spec.host}" 2> /dev/null )
+    log_info "${_CLR_GREEN}RPA API Service dedicated URL: ${_RPA_API_SERVICE_URL}"
+  fi
   log_info "${_CLR_GREEN}RPA tenant owner: ${CP4BA_INST_RPA_TENANT_OWNER_NAME}"
   if [[ "${CP4BA_INST_RPA_TENANT_OWNER_NAME}" = "cpadmin" ]]; then
     _CPADMIN_PWD=$(oc get secret -n ${CP4BA_INST_RPA_NAMESPACE} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
@@ -1004,28 +1017,33 @@ installRpa () {
 
   checkRpaManagedMode
 
-  namespaceExist "ibm-licensing"
-  if [ $? -eq 0 ]; then
-    oc new-project "ibm-licensing" 2> /dev/null 1> /dev/null
-    installLicensingOperator
-  fi
-
-  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
-    namespaceExist "${CP4BA_INST_RPA_NAMESPACE}"
+  if [[ ${_RPA_WAIT_ONLY} -eq 0 ]]; then
+    namespaceExist "ibm-licensing"
     if [ $? -eq 0 ]; then
-      oc new-project "${CP4BA_INST_RPA_NAMESPACE}" 2> /dev/null 1> /dev/null
-    else
-      if [[ "${_FORCE}" = "false" ]]; then
-        log_error "Namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
-        exit 1
+      oc new-project "ibm-licensing" 2> /dev/null 1> /dev/null
+      installLicensingOperator
+    fi
+
+    if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
+      namespaceExist "${CP4BA_INST_RPA_NAMESPACE}"
+      if [ $? -eq 0 ]; then
+        oc new-project "${CP4BA_INST_RPA_NAMESPACE}" 2> /dev/null 1> /dev/null
+      else
+        if [[ "${_FORCE}" = "false" ]]; then
+          log_error "Namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
+          exit 1
+        fi
       fi
     fi
+
+    setupRpaResources
   fi
 
-  setupRpaResources
+  waitRpaResources
 
-  installationCompleted
-
+  if [[ ${_RPA_INST_COMPLETED} -eq 1 ]]; then
+    installationCompleted
+  fi
 }
 
 echo "=============================================================="
