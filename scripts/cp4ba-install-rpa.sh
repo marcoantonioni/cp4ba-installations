@@ -50,7 +50,9 @@ usage () {
   echo ""
   echo -e "${_CLR_GREEN}usage: $_me$
     -c full-path-to-config-file
-       (eg: '../configs/env1.properties'){_CLR_NC}"
+       (eg: '../configs/env1.properties'){_CLR_NC}
+    -w (optional)wait only (wait for setup completion)
+    -f (optional)force installation into existent namespace"
 }
 
 #--------------------------------------------------------
@@ -877,7 +879,7 @@ installLdap () {
         exit 1
       fi
     else
-      log_error "${_CLR_RED}[✗] Error, LDAP configuration file not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      log_error "${_CLR_RED}[✗] Error, LDAP configuration file not set.${_CLR_NC}"
       exit 1
     fi
   fi
@@ -1011,6 +1013,34 @@ checkConfiguration () {
 }
 
 #-----------------------------------------
+createIdp () {
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]] && [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+    if [[ ! -z "${CP4BA_INST_IDP_CFG_FILE}" ]]; then
+      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-idp.sh -p "${CP4BA_INST_IDP_CFG_FILE}" -c "${_CFG}"
+      if [[ $? -ne 0 ]]; then
+        log_error "${_CLR_RED}[✗] Error, IDP not installed.${_CLR_NC}"
+        exit 1
+      fi
+    else
+      log_error "${_CLR_RED}[✗] Error, IDP configuration file not set."
+      exit 1
+    fi
+  fi
+}
+
+onboardUsers () {
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]] && [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+    if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
+      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -e ${CP4BA_INST_NAMESPACE} -s -o add
+
+    else
+      log_error "${_CLR_RED}[✗] Error, LDAP configuration file not set.${_CLR_NC}"
+      exit 1
+    fi
+  fi
+}
+
+#-----------------------------------------
 installRpa () {
 
   checkConfiguration
@@ -1037,9 +1067,14 @@ installRpa () {
     fi
 
     setupRpaResources
+
+    createIdp
+    onboardUsers
   fi
 
   waitRpaResources
+
+
 
   if [[ ${_RPA_INST_COMPLETED} -eq 1 ]]; then
     installationCompleted
