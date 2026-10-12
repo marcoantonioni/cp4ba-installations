@@ -5,7 +5,7 @@
 _me=$(basename "$0")
 
 _CFG=""
-
+_FORCE="false"
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -53,10 +53,11 @@ usage () {
 
 #--------------------------------------------------------
 # read command line params
-while getopts c: flag
+while getopts c:f flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
+        f) _FORCE="true";;
     esac
 done
 
@@ -383,6 +384,11 @@ oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
 #--------------------------------
 # RPA env
 
+_RPA_SECNAME_DB="${CP4BA_INST_RPA_INSTANCE_NAME}-db"
+_RPA_SECNAME_TENANT_OWNER="${CP4BA_INST_RPA_INSTANCE_NAME}-first-tenant-owner"
+_RPA_SECNAME_SMTP="${CP4BA_INST_RPA_INSTANCE_NAME}-smtp"
+_RPA_SECNAME_REDIS="${CP4BA_INST_RPA_INSTANCE_NAME}-redis-rpa"
+
 createRpaSecrets () {
   oc delete secret ibm-entitlement-key -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
   oc create secret docker-registry ibm-entitlement-key -n ${CP4BA_INST_RPA_NAMESPACE} \
@@ -391,8 +397,8 @@ createRpaSecrets () {
   --docker-password="${CP4BA_AUTO_ENTITLEMENT_KEY}" 2> /dev/null 1> /dev/null
 
   # db secret
-  oc delete secret rpa-db -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc create secret generic rpa-db -n ${CP4BA_INST_RPA_NAMESPACE} \
+  oc delete secret ${_RPA_SECNAME_DB} -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc create secret generic ${_RPA_SECNAME_DB} -n ${CP4BA_INST_RPA_NAMESPACE} \
     --from-literal=AddressContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_ADDRESS}" \
     --from-literal=AutomationContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_AUTOMATION}" \
     --from-literal=KnowledgeBase="${CP4BA_INST_RPA_DB_CONN_PARAMS_KNOWLEDGE}" \
@@ -400,28 +406,29 @@ createRpaSecrets () {
     --from-literal=AuditContext="${CP4BA_INST_RPA_DB_CONN_PARAMS_AUDIT}" 2> /dev/null 1> /dev/null
 
   # tenant owner
-  oc delete secret rpa-first-tenant-owner -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc create secret generic rpa-first-tenant-owner -n ${CP4BA_INST_RPA_NAMESPACE} \
+  oc delete secret ${_RPA_SECNAME_TENANT_OWNER} -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc create secret generic ${_RPA_SECNAME_TENANT_OWNER} -n ${CP4BA_INST_RPA_NAMESPACE} \
     --from-literal=name=${CP4BA_INST_RPA_TENANT_OWNER_NAME} \
     --from-literal=email=${CP4BA_INST_RPA_TENANT_OWNER_EMAIL} 2> /dev/null 1> /dev/null
 
   # smtp secret
-  oc delete secret rpa-smtp -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc create secret generic rpa-smtp -n ${CP4BA_INST_RPA_NAMESPACE} \
+  oc delete secret ${_RPA_SECNAME_SMTP} -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  oc create secret generic ${_RPA_SECNAME_SMTP} -n ${CP4BA_INST_RPA_NAMESPACE} \
     --from-literal=username=${CP4BA_INST_RPA_SMTP_USER} \
     --from-literal=password=${CP4BA_INST_RPA_SMTP_PASSWORD} 2> /dev/null 1> /dev/null
 
-  # redis secret https://www.ibm.com/docs/en/rpa/30.0.x?topic=platform-creating-rpa-secrets#creating-a-redis-password-secret
-  oc delete secret rpa-redis-rpa -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc create secret generic rpa-redis-rpa -n ${CP4BA_INST_RPA_NAMESPACE} \
-    --from-literal=default_password=${CP4BA_INST_RPA_ADMIN_PWD} 2> /dev/null 1> /dev/null
+  if [[ "${CP4BA_INST_RPA_REDIS_SECRET}" = "true" ]]; then
+    # redis secret https://www.ibm.com/docs/en/rpa/30.0.x?topic=platform-creating-rpa-secrets#creating-a-redis-password-secret
+    oc delete secret ${_RPA_SECNAME_REDIS} -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+    oc create secret generic ${_RPA_SECNAME_REDIS} -n ${CP4BA_INST_RPA_NAMESPACE} \
+      --from-literal=default_password=${CP4BA_INST_RPA_ADMIN_PWD} 2> /dev/null 1> /dev/null
 
-  oc label secret rpa-redis-rpa app.kubernetes.io/component=rpa -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc label secret rpa-redis-rpa app.kubernetes.io/instance=rpa -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc label secret rpa-redis-rpa app.kubernetes.io/managed-by=ibm-rpa-operator -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc label secret rpa-redis-rpa app.kubernetes.io/name=redis -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-  oc label secret rpa-redis-rpa rpa.automation.ibm.com/cr-name=rpa -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
-
+    oc label secret ${_RPA_SECNAME_REDIS} app.kubernetes.io/component=rpa -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+    oc label secret ${_RPA_SECNAME_REDIS} app.kubernetes.io/instance=${CP4BA_INST_RPA_INSTANCE_NAME} -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+    oc label secret ${_RPA_SECNAME_REDIS} app.kubernetes.io/managed-by=ibm-rpa-operator -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+    oc label secret ${_RPA_SECNAME_REDIS} app.kubernetes.io/name=redis -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+    oc label secret ${_RPA_SECNAME_REDIS} rpa.automation.ibm.com/cr-name=${CP4BA_INST_RPA_INSTANCE_NAME} -n ${CP4BA_INST_RPA_NAMESPACE} 2> /dev/null 1> /dev/null
+  fi
 }
 
 createServiceAccountCP4BA () {
@@ -455,6 +462,32 @@ EOF
 
 }
 
+installPGOperator () {
+
+  _YAML_NAME="rpa-pg-operator"
+  _YAML_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${_YAML_NAME}-${CP4BA_INST_NAMESPACE}.yaml"
+
+cat <<EOF > "${_YAML_FILE}"
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: ibm-pg-operator-catalog
+  namespace: ${CP4BA_INST_RPA_NAMESPACE}
+spec:
+  displayName: ibm-pg-operator-catalog
+  publisher: IBM
+  sourceType: grpc
+  image: icr.io/cpopen/ibm-pg-operator-catalog:${CP4BA_INST_PG_OPERATOR_CATALOG_VERSION}
+  grpcPodConfig:
+    securityContextConfig: restricted
+  updateStrategy:
+    registryPoll:
+      interval: 45m
+EOF
+
+  oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
+
+}
 
 installFoundationalServices () {
 
@@ -490,7 +523,7 @@ spec:
   sourceNamespace: ${CP4BA_INST_RPA_NAMESPACE}
 EOF
 
-oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
+  oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
 
 }
 
@@ -517,7 +550,7 @@ spec:
       interval: 45m
 EOF
 
-oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
+  oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
 
 }
 
@@ -538,8 +571,49 @@ spec:
   sourceNamespace: ${CP4BA_INST_IBM_OPERATOR_CATALOG_NS}
 EOF
 
-  # commented fo speed up CSV installation
-  # waitCSVSucceeded "ibm-mq."
+}
+
+installNamespaceScope () {
+  # https://www.ibm.com/docs/en/rpa/30.0.x?topic=trrhocpei-redis-pod-fails-after-installing-rpa-red-hat-openshift-container-platform
+
+  log_info "${_CLR_GREEN}Installing NamespaceScope"
+
+  _GIT_HUB_ADDRESS="https://raw.githubusercontent.com/IBM/ibm-namespace-scope-operator/refs/heads/master/deploy"
+
+  curl -sk -o ${CP4BA_INST_OUTPUT_FOLDER}/operator.ibm.com_namespacescopes.yaml ${_GIT_HUB_ADDRESS}/operator.ibm.com_namespacescopes.yaml
+  curl -sk -o ${CP4BA_INST_OUTPUT_FOLDER}/role.yaml ${_GIT_HUB_ADDRESS}/role.yaml
+  curl -sk -o ${CP4BA_INST_OUTPUT_FOLDER}/role_binding.yaml ${_GIT_HUB_ADDRESS}/role_binding.yaml
+  curl -sk -o ${CP4BA_INST_OUTPUT_FOLDER}/service_account.yaml ${_GIT_HUB_ADDRESS}/service_account.yaml
+  curl -sk -o ${CP4BA_INST_OUTPUT_FOLDER}/operator.yaml ${_GIT_HUB_ADDRESS}/operator.yaml
+
+  oc create -f ${CP4BA_INST_OUTPUT_FOLDER}/operator.ibm.com_namespacescopes.yaml
+  oc -n ${CP4BA_INST_RPA_NAMESPACE} apply -f ${CP4BA_INST_OUTPUT_FOLDER}/service_account.yaml
+  oc -n ${CP4BA_INST_RPA_NAMESPACE} apply -f ${CP4BA_INST_OUTPUT_FOLDER}/role.yaml
+  oc -n ${CP4BA_INST_RPA_NAMESPACE} apply -f ${CP4BA_INST_OUTPUT_FOLDER}/role_binding.yaml
+  oc -n ${CP4BA_INST_RPA_NAMESPACE} apply -f ${CP4BA_INST_OUTPUT_FOLDER}/operator.yaml
+
+  _YAML_NAME="rpa-namespacescope"
+  _YAML_FILE="${CP4BA_INST_OUTPUT_FOLDER}/${_YAML_NAME}-${CP4BA_INST_NAMESPACE}.yaml"
+
+cat <<EOF > "${_YAML_FILE}"
+apiVersion: operator.ibm.com/v1
+kind: NamespaceScope
+metadata:
+    name: namespacescope
+    namespace: ${CP4BA_INST_RPA_NAMESPACE}
+spec:
+    configmapName: namespace-scope
+    csvInjector:
+        enable: false
+    namespaceMembers:
+        - ${CP4BA_INST_RPA_NAMESPACE}
+        - ${CP4BA_INST_RPA_NAMESPACE}
+        - default
+    restartLabels:
+        intent: projected
+EOF
+
+oc create -f "${_YAML_FILE}" 2> /dev/null 1> /dev/null
 
 }
 
@@ -560,8 +634,6 @@ spec:
   sourceNamespace: ${CP4BA_INST_IBM_OPERATOR_CATALOG_NS}
 EOF
 
-  # commented fo speed up CSV installation
-  # waitCSVSucceeded "ibm-automation-rpa."
 }
 
 
@@ -653,16 +725,18 @@ spec:
   sizeMapping:
     watson-nlp:
       replicas: 1
+  redis:
+    version: "${CP4BA_INST_REDIS_VER}"  
   api:
-    databaseConnectionSecretName: rpa-db
+    databaseConnectionSecretName: ${_RPA_SECNAME_DB}
     replicas: 1
     firstTenant:
       name: ${CP4BA_INST_RPA_TENANT_NAME}
-      ownerSecretName: rpa-first-tenant-owner
+      ownerSecretName: ${_RPA_SECNAME_TENANT_OWNER}
     smtp:
       port: ${CP4BA_INST_RPA_SMTP_SERVER_PORT}
       server: ${CP4BA_INST_RPA_SMTP_SERVER_FQDN}
-      userSecretName: rpa-smtp
+      userSecretName: ${_RPA_SECNAME_SMTP}
   tls: {}
   audit:
     forwardingEnabled: false
@@ -699,16 +773,18 @@ spec:
   sizeMapping:
     watson-nlp:
       replicas: 1
+  redis:
+    version: "${CP4BA_INST_REDIS_VER}"  
   api:
-    databaseConnectionSecretName: rpa-db
+    databaseConnectionSecretName: ${_RPA_SECNAME_DB}
     replicas: 1
     firstTenant:
       name: ${CP4BA_INST_RPA_TENANT_NAME}
-      ownerSecretName: rpa-first-tenant-owner
+      ownerSecretName: ${_RPA_SECNAME_TENANT_OWNER}
     smtp:
       port: ${CP4BA_INST_RPA_SMTP_SERVER_PORT}
       server: ${CP4BA_INST_RPA_SMTP_SERVER_FQDN}
-      userSecretName: rpa-smtp
+      userSecretName: ${_RPA_SECNAME_SMTP}
   systemQueueProvider:
     license:
       license: ${CP4BA_INST_MQ_LICENSE_CODE}
@@ -787,10 +863,44 @@ waitRpaResourcesReadiness () {
 
 }
 
+installLdap () {
+
+  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]] && [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
+    if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
+      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/add-ldap.sh -p "${CP4BA_INST_LDAP_CFG_FILE}" -n ${CP4BA_INST_NAMESPACE} -c "${_CFG}"
+      if [[ $? -ne 0 ]]; then
+        log_error "${_CLR_RED}[✗] Error, LDAP not installed.${_CLR_NC}"
+        exit 1
+      fi
+    else
+      log_error "${_CLR_RED}[✗] Error, LDAP configuration file not set for '${_CLR_YELLOW}${_INST_ENV_FULL_PATH}${_CLR_RED}'${_CLR_NC}"
+      exit 1
+    fi
+  fi
+
+}
+
 setupRpaResources () {
+  
   if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
     createServiceAccountCP4BA
     createOperatorGroup
+
+    IFS='.' read -ra _CS_VER <<< "$CP4BA_INST_CS_CHANNEL"
+    _CS_MAJOR="${_CS_VER[0]}"
+    _CS_MINOR="${_CS_VER[1]}"
+    _CS_FIX="${_CS_VER[2]}"
+    unset IFS
+
+    if [[ $_CS_MINOR -ge 19 ]]; then
+      log_info "${_CLR_GREEN}Installing PG Operator version:${_CLR_YELLOW}${CP4BA_INST_PG_OPERATOR_CATALOG_VERSION}${_CLR_GREEN}"
+      installPGOperator
+    fi
+
+    installLdap
+
+    # KO installNamespaceScope
+
     installFoundationalServices
   fi
 
@@ -905,8 +1015,10 @@ installRpa () {
     if [ $? -eq 0 ]; then
       oc new-project "${CP4BA_INST_RPA_NAMESPACE}" 2> /dev/null 1> /dev/null
     else
-      log_error "Namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
-      exit 1
+      if [[ "${_FORCE}" = "false" ]]; then
+        log_error "Namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}' already present, skip installation."
+        exit 1
+      fi
     fi
   fi
 

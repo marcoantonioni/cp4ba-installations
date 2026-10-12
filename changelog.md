@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.10] - 2026-10-12
+
+### Added
+
+LDAP installation for managed RPA deployments
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.9] - 2026-10-08
 
 ### Added

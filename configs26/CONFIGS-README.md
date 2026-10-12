@@ -270,7 +270,7 @@ CONFIG_FILE=${_PTC}/env1-runtime-rpa.properties
 
 Unmanaged RPA v3.4 deployment (must be deployed into namespace with Foundation services)
 ```bash
-export CP4BA_INST_NAMESPACE="cp4ba-rpa-34"
+export CP4BA_INST_NAMESPACE="cp4ba-rpa-34-wa"
 export CP4BA_INST_RPA_CHANNEL="v3.4"
 export CP4BA_INST_RPA_STARTING_CSV="ibm-automation-rpa.v3.4.0"
 export CP4BA_INST_RPA_VERSION="3.4.0"
@@ -279,6 +279,7 @@ export CP4BA_INST_MQ_CHANNEL="v4.0-sc2"
 export CP4BA_INST_MQ_STARTING_CSV="ibm-mq.v4.0.4"
 export CP4BA_INST_MQ_VER="10.0.0.0-r3"
 export CP4BA_INST_MQ_LICENSE_CODE="L-CXDB-XTZ9J8"
+export CP4BA_INST_REDIS_VER="1.3.1" # workaround bug in REDIS operator (missing role 1.4.0)
 
 _VV=26.0.2
 _KK=26.0.0-IF002
@@ -287,8 +288,22 @@ CONFIG_FILE=${_PTC}/env1-runtime-rpa.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
-Managed RPA deployment (must be deployed into an empty namespace)
+Managed RPA v3.4 deployment (must be deployed into an empty namespace)
 ```bash
+export CP4BA_INST_NAMESPACE="cp4ba-rpa-34-managed"
+export CP4BA_INST_RPA_CHANNEL="v3.4"
+export CP4BA_INST_RPA_STARTING_CSV="ibm-automation-rpa.v3.4.0"
+export CP4BA_INST_RPA_VERSION="3.4.0"
+export CP4BA_INST_MQ_FORCE_CHANNEL_VERSION="true"
+export CP4BA_INST_MQ_CHANNEL="v4.0-sc2"
+export CP4BA_INST_MQ_STARTING_CSV="ibm-mq.v4.0.4"
+export CP4BA_INST_MQ_VER="10.0.0.0-r3"
+export CP4BA_INST_MQ_LICENSE_CODE="L-CXDB-XTZ9J8"
+export CP4BA_INST_REDIS_VER="1.3.1" # workaround bug in REDIS operator (missing role 1.4.0)
+
+export CP4BA_INST_RPA_MANAGED="true"
+export CP4BA_INST_LDAP="true"
+
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-runtime-rpa-managed.properties
 ./cp4ba-install-rpa.sh -c ${CONFIG_FILE}
