@@ -818,7 +818,6 @@ setupRpaDatabase () {
 installOperators () {
   installOperatorCatalog
   waitCSVSucceeded "operand-deployment-lifecycle-manager"
-  sleep 10
 
   # use specific channel version
   if [[ "${CP4BA_INST_MQ_FORCE_CHANNEL_VERSION}" = "true" ]]; then
@@ -837,13 +836,13 @@ installOperators () {
   log_info "${_CLR_GREEN}Installing RPA operator using channel '${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}'"
   installRpaOperator
   waitCSVSucceeded "ibm-automation-rpa."
-  sleep 10
 
 }
 
 waitFoundationalOperators () {
     waitCSVSucceeded "ibm-iam-operator."
     waitCSVSucceeded "ibm-zen-operator."
+    waitCSVSucceeded "ibm-common-service-operator."
 }
 
 waitRpaResourcesReadiness () {
@@ -887,10 +886,7 @@ installLdap () {
 }
 
 waitRpaResources () {
-  if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]]; then
-    waitFoundationalOperators
-  fi
-
+  waitFoundationalOperators
   waitRpaResourcesReadiness
 }
 
@@ -1041,6 +1037,12 @@ onboardUsers () {
 }
 
 #-----------------------------------------
+
+onboardRpaUsers () {
+  log_info "onboardRpaUsers: not yet implemented"
+}
+
+#-----------------------------------------
 installRpa () {
 
   checkConfiguration
@@ -1067,14 +1069,15 @@ installRpa () {
     fi
 
     setupRpaResources
-
-    createIdp
-    onboardUsers
   fi
 
   waitRpaResources
 
-
+  if [[ ${_RPA_WAIT_ONLY} -eq 0 ]]; then
+    createIdp
+    onboardUsers
+    onboardRpaUsers
+  fi
 
   if [[ ${_RPA_INST_COMPLETED} -eq 1 ]]; then
     installationCompleted
@@ -1083,7 +1086,7 @@ installRpa () {
 
 echo "=============================================================="
 log_info "${_CLR_GREEN}Deploying IBM RPA resources in namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}'"
-log_info "${_CLR_GREEN}RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, RPA csv:${_CLR_YELLOW}${CP4BA_INST_MQ_STARTING_CSV}${_CLR_GREEN}, Managed:${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}"
+log_info "${_CLR_GREEN}RPA version:${_CLR_YELLOW}${CP4BA_INST_RPA_VERSION}${_CLR_GREEN}, RPA channel:${_CLR_YELLOW}${CP4BA_INST_RPA_CHANNEL}${_CLR_GREEN}, RPA csv:${_CLR_YELLOW}${CP4BA_INST_RPA_STARTING_CSV}${_CLR_GREEN}, Managed:${_CLR_YELLOW}${CP4BA_INST_RPA_MANAGED}${_CLR_GREEN}"
 if [[ "${CP4BA_INST_MQ_FORCE_CHANNEL_VERSION}" = "true" ]]; then
   log_info "${_CLR_GREEN}Use MQ version:${_CLR_YELLOW}${CP4BA_INST_MQ_VER}${_CLR_GREEN}, MQ channel:${_CLR_YELLOW}${CP4BA_INST_MQ_CHANNEL}${_CLR_GREEN}', MQ csv:${_CLR_YELLOW}${CP4BA_INST_MQ_STARTING_CSV}${_CLR_GREEN}"
 fi
