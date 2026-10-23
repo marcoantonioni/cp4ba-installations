@@ -1027,8 +1027,7 @@ createIdp () {
 onboardUsers () {
   if [[ "${CP4BA_INST_RPA_MANAGED}" = "true" ]] && [[ "${CP4BA_INST_LDAP}" = "true" ]]; then
     if [[ ! -z "${CP4BA_INST_LDAP_CFG_FILE}" ]]; then
-      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -e ${CP4BA_INST_NAMESPACE} -s -o add
-
+      ${CP4BA_INST_LDAP_TOOLS_FOLDER}/onboard-users.sh -p ${CP4BA_INST_LDAP_CFG_FILE} -n ${CP4BA_INST_SUPPORT_NAMESPACE} -e ${CP4BA_INST_NAMESPACE} -c "rpa" -s -o add
     else
       log_error "${_CLR_RED}[✗] Error, LDAP configuration file not set.${_CLR_NC}"
       exit 1
@@ -1039,7 +1038,7 @@ onboardUsers () {
 #-----------------------------------------
 
 onboardRpaUsers () {
-  log_info "onboardRpaUsers: not yet implemented"
+  log_warning "onboardRpaUsers: not yet implemented"
 }
 
 #-----------------------------------------

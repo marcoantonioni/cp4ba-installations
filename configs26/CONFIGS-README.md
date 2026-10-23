@@ -257,6 +257,9 @@ CONFIG_FILE=${_PTC}/env1-runtime-odm-bai.properties
 
 #### RPA Runtime envs
 
+For definition of values in vars '..._STARTING_CSV' leave it empty if you are not sure about version.
+
+Use only when absolutely necessary. StartinCSV versions may become unavailable within the selected channel.
 
 ##### RPA Unmanaged
 
@@ -275,7 +278,7 @@ Unmanaged RPA v3.4 deployment (must be deployed into namespace with Foundation s
 ```bash
 export CP4BA_INST_NAMESPACE="cp4ba-rpa-34"
 export CP4BA_INST_RPA_CHANNEL="v3.4"
-export CP4BA_INST_RPA_STARTING_CSV="ibm-automation-rpa.v3.4.0"
+# export CP4BA_INST_RPA_STARTING_CSV="ibm-automation-rpa.v3.4.0"
 export CP4BA_INST_RPA_VERSION="3.4.0"
 export CP4BA_INST_MQ_FORCE_CHANNEL_VERSION="true"
 
@@ -285,11 +288,13 @@ export CP4BA_INST_MQ_FORCE_CHANNEL_VERSION="true"
 # MQ channel: v4.1, startingCSV: ibm-mq.v4.1.0, mq ver: 
 
 export CP4BA_INST_MQ_CHANNEL="v4.0-sc2"
-export CP4BA_INST_MQ_STARTING_CSV="ibm-mq.v4.0.4"
-export CP4BA_INST_MQ_VER="10.0.0.0-r3"
+# export CP4BA_INST_MQ_STARTING_CSV="ibm-mq.v4.0.5"
+export CP4BA_INST_MQ_VER="10.0.0.5-r2"
 
 export CP4BA_INST_MQ_LICENSE_CODE="L-CXDB-XTZ9J8"
-export CP4BA_INST_REDIS_VER="1.3.1" # workaround bug in REDIS operator (missing role 1.4.0)
+export CP4BA_INST_REDIS_VER="1.3.1"
+
+# export CP4BA_INST_CS_STARTING_CSV="ibm-common-service-operator.v4.19.4"
 
 _VV=26.0.2
 _KK=26.0.0-IF002
@@ -304,7 +309,27 @@ Managed RPA v3.4 deployment (must be deployed into an empty namespace)
 ```bash
 export CP4BA_INST_NAMESPACE="cp4ba-rpa-34-managed"
 export CP4BA_INST_RPA_CHANNEL="v3.4"
-export CP4BA_INST_RPA_STARTING_CSV="ibm-automation-rpa.v3.4.0"
+# export CP4BA_INST_RPA_STARTING_CSV="ibm-automation-rpa.v3.4.0"
+export CP4BA_INST_RPA_VERSION="3.4.0"
+
+export CP4BA_INST_MQ_FORCE_CHANNEL_VERSION="false"
+export CP4BA_INST_REDIS_VER="1.4.0"
+
+export CP4BA_INST_RPA_MANAGED="true"
+
+# export CP4BA_INST_CS_STARTING_CSV="ibm-common-service-operator.v4.19.4"
+
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
+CONFIG_FILE=${_PTC}/env1-runtime-rpa-managed.properties
+./cp4ba-install-rpa.sh -c ${CONFIG_FILE}
+```
+
+
+Managed RPA v3.4 deployment (must be deployed into an empty namespace)
+```bash
+export CP4BA_INST_NAMESPACE="cp4ba-rpa-34-managed"
+export CP4BA_INST_RPA_CHANNEL="v3.4"
+# export CP4BA_INST_RPA_STARTING_CSV="ibm-automation-rpa.v3.4.0"
 export CP4BA_INST_RPA_VERSION="3.4.0"
 
 export CP4BA_INST_MQ_FORCE_CHANNEL_VERSION="true"
@@ -313,12 +338,14 @@ export CP4BA_INST_MQ_FORCE_CHANNEL_VERSION="true"
 # MQ channel: v4.0-sc2, startingCSV: ibm-mq.v4.0.5, mq ver: 10.0.0.5-r2
 # MQ channel: v4.1, startingCSV: ibm-mq.v4.1.0, mq ver: 10.0.1.0-r1
 export CP4BA_INST_MQ_CHANNEL="v4.0-sc2"
-export CP4BA_INST_MQ_STARTING_CSV="ibm-mq.v4.0.5"
+# export CP4BA_INST_MQ_STARTING_CSV="ibm-mq.v4.0.5"
 export CP4BA_INST_MQ_VER="10.0.0.5-r2"
 export CP4BA_INST_MQ_LICENSE_CODE="L-CXDB-XTZ9J8"
 export CP4BA_INST_REDIS_VER="1.3.1" # workaround bug in REDIS operator (missing role 1.4.0)
 
 export CP4BA_INST_RPA_MANAGED="true"
+
+# export CP4BA_INST_CS_STARTING_CSV="ibm-common-service-operator.v4.19.4"
 
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-runtime-rpa-managed.properties
@@ -329,7 +356,7 @@ Managed RPA v3.4 deployment (must be deployed into an empty namespace)
 ```bash
 export CP4BA_INST_NAMESPACE="cp4ba-rpa-34-managed-redis140"
 export CP4BA_INST_RPA_CHANNEL="v3.4"
-export CP4BA_INST_RPA_STARTING_CSV="ibm-automation-rpa.v3.4.0"
+# export CP4BA_INST_RPA_STARTING_CSV="ibm-automation-rpa.v3.4.0"
 export CP4BA_INST_RPA_VERSION="3.4.0"
 export CP4BA_INST_MQ_FORCE_CHANNEL_VERSION="true"
 
@@ -344,6 +371,8 @@ export CP4BA_INST_MQ_LICENSE_CODE="L-CXDB-XTZ9J8"
 export CP4BA_INST_REDIS_VER="1.4.0"
 
 export CP4BA_INST_RPA_MANAGED="true"
+
+# export CP4BA_INST_CS_STARTING_CSV="ibm-common-service-operator.v4.19.4"
 
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-runtime-rpa-managed.properties

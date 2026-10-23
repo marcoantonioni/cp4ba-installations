@@ -7,5 +7,5 @@ output/*.out
 scripts/*.out
 scripts/*.log
 scratchpad.txt
-
+*.json
 
