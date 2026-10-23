@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.11] - 2026-10-23
+
+### Added
+
+RPA day 2 automations ... work in progress
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.10] - 2026-10-12
 
 ### Added
