@@ -1,0 +1,16 @@
+# Use pattern 'tenant-name, tenant-admin-name, locale-code'
+tenant-dev, rpatenantadmin1, 1033
+tenant-prod, rpatenantadmin2, 1040
+
+
+
+# Common LCID Values (Decimal
+# Language    Country/Region	    LCID 	BCP 47 Tag
+# --------------------------------------------------
+# English     United States	      1033	en-US
+# English     United Kingdom	    2057	en-GB
+# Italian     Italy	              1040	it-IT
+# French      France	            1036	fr-FR
+# German      Germany	            1031	de-DE
+# Spanish     Spain (Modern Sort) 1034	es-ES
+# Portuguese  Portugal            2070  pt-PT

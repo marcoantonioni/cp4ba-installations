@@ -1,0 +1,9 @@
+
+# Use pattern 'username : role1, role2, roleN'
+# blanks inside complex roles name is ignored, 'Bot Developer' and 'BotDeveloper' are equivalent
+
+# Tenant administered by 'rpatenantadmin1'
+rpatenantadmin1:Bot Developer, BusinessOperator, Business User, Tenant Administrator
+rpauser11 :Bot Developer 
+rpauser12 :Bot Developer, Business Operator
+rpauser13 :Bot Developer, Business Operator, Business User 
