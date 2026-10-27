@@ -302,7 +302,9 @@ loginAsRpaAdmin () {
   fi
 
   _RPA_USER_INFO=$(curl -ks --cookie "ibm-private-cloud-session=$_USER_ACCESS_TK" $_PAK_HOST/rpa/api/zen-token-login)
-#echo $_RPA_USER_INFO | jq .
+  
+  #echo $_RPA_USER_INFO | jq .
+  
   _OIDC_TK=$(echo $_RPA_USER_INFO | jq -r .oidcAccessToken)
   
   _NUM_OF_TENANTS=$(echo $_RPA_USER_INFO | jq '.tenants | length')
@@ -312,20 +314,18 @@ loginAsRpaAdmin () {
     exit 1
   fi
 
+  _TENANT_NAME=""
   if [[ ! -z "${_USE_TENANT_NAME}" ]]; then
     _SELECTED_TENANT=$(echo $_RPA_USER_INFO | jq '.tenants[] | select(.name=="'${_USE_TENANT_NAME}'")')
-    _TENANT_ID=$(echo $_SELECTED_TENANT | jq .id)
-    _TENANT_NAME=$(echo $_SELECTED_TENANT | jq .name)
-    _TENANT_CODE=$(echo $_SELECTED_TENANT | jq .code)
-  else
-    _TENANT_ID=$(echo $_RPA_USER_INFO | jq -r .tenants[0].id)
-    _TENANT_NAME=$(echo $_RPA_USER_INFO | jq -r .tenants[0].name)
-    _TENANT_CODE=$(echo $_RPA_USER_INFO | jq -r .tenants[0].code)
+    _TENANT_ID=$(echo $_SELECTED_TENANT | jq .id | sed 's/"//g')
+    _TENANT_NAME=$(echo $_SELECTED_TENANT | jq .name | sed 's/"//g')
+    _TENANT_CODE=$(echo $_SELECTED_TENANT | jq .code | sed 's/"//g')
   fi
-
   if [[ -z "${_TENANT_NAME}" ]]; then
-    log_error "Tenant '${_CLR_YELLOW}${_USE_TENANT_NAME}${_CLR_RED}' not found or not administered by user '${_CLR_YELLOW}${_USER_ADMIN_NAME}${_CLR_RED}'."
-    exit 1
+    # log_warning "Tenant '${_CLR_YELLOW}${_USE_TENANT_NAME}${_CLR_GREEN}' not administered by user '${_CLR_YELLOW}${_USER_ADMIN_NAME}${_CLR_GREEN}'."
+    _TENANT_ID=$(echo $_RPA_USER_INFO | jq -r .tenants[0].id | sed 's/"//g')
+    _TENANT_NAME=$(echo $_RPA_USER_INFO | jq -r .tenants[0].name | sed 's/"//g')
+    _TENANT_CODE=$(echo $_RPA_USER_INFO | jq -r .tenants[0].code | sed 's/"//g')
   fi
 
   if [[ -z "${_OIDC_TK}" ]]; then
@@ -337,8 +337,7 @@ loginAsRpaAdmin () {
     exit 1              
   fi
 
-  _PAYLOAD=$(curl -ks -H "Content-Type: application/x-www-form-urlencoded" -d grant_type=password \
-      --cookie "ibm-private-cloud-session=$_USER_ACCESS_TK" -H "tenantId:$_TENANT_ID" -H "oidc-access-token:$_OIDC_TK" $_PAK_HOST/rpa/api/v1.0/token)
+  _PAYLOAD=$(curl -ks -H "Content-Type: application/x-www-form-urlencoded" -d grant_type=password --cookie "ibm-private-cloud-session=$_USER_ACCESS_TK" -H "tenantId:$_TENANT_ID" -H "oidc-access-token:$_OIDC_TK" $_PAK_HOST/rpa/api/v1.0/token)
 
   _RPA_ACCESS_TK=$( echo "${_PAYLOAD}" | jq -r .access_token 2>/dev/null)
   if [[ -z "${_RPA_ACCESS_TK}" ]]; then
@@ -347,8 +346,11 @@ loginAsRpaAdmin () {
   fi
 
   userDetails "${_USER_ADMIN_NAME}"
+  # echo "user: ${_USER_DETAILS}"
+  
   _USER_ID=$(echo $_USER_DETAILS | jq .results[0].id | sed 's/"//g')
   userRoles "${_USER_ID}"
+  #echo "roles: ${_USER_ROLES}"
 
   _IS_PLATFORM_ADMIN=$(echo "${_USER_ROLES}" | jq .results[].name | grep "Administrator" | wc -l)
 
@@ -585,10 +587,47 @@ addTenants() {
 }
 
 #-------------------------------------------------------
+_removeTenant() {
+  _removed=0
+  tenantName="$1"
+  if [[ ! -z "${tenantName}" ]]; then
+    _TID=$(rpa_get_active_tenant_id_by_name "${tenantName}")
+    if [[ ! -z "${_TID}" ]]; then
+      rpa_suspend_tenant "${_TID}"
+      rpa_delete_tenant "${_TID}"
+      log_info "Removed tenant '${_CLR_YELLOW}${tenantName}${_CLR_GREEN}' '${_CLR_YELLOW}${_TID}${_CLR_GREEN}'"
+      _removed=1
+    else
+      rpa_list_suspended_tenants
+      _IDS=$(echo $_RPA_RESULT_SUSPENDED_TENANTS | jq '.results[]? | select(select(.name=="'${tenantName}'")) | .id ')
+      IFS=$'\n'
+      LIST_OF_TID=($(echo "${_IDS}" | sed 's/\r//g'))
+      for index in "${!LIST_OF_TID[@]}"; do
+        _tid=$(sed 's/"//g' <<<"${LIST_OF_TID[index]}")
+        rpa_delete_tenant "${_tid}"
+        log_info "Removed suspended tenant '${_CLR_YELLOW}${tenantName}${_CLR_GREEN}' '${_CLR_YELLOW}${_tid}${_CLR_GREEN}'"
+        _removed=1
+      done      
+    fi
+    if [[ $_removed -eq 0 ]]; then
+      log_warning "Tenant name '${tenantName}' not found."
+    fi
+  else
+    log_error "Tenant name '${tenantName}' not valid"
+  fi
+}
+
+#-------------------------------------------------------
 removeTenants() {
 
+  if [[ ! -z "${_USE_TENANT_NAME}" ]]; then
+    _removeTenant "${_USE_TENANT_NAME}"
+  fi
+
   if [[ -z "${_TENANTS_FILENAME}" || ! -f "${_TENANTS_FILENAME}" ]]; then
-    log_error "Tenants file not found."
+    if [[ -z "${_USE_TENANT_NAME}" ]]; then
+      log_error "Tenants file not found."
+    fi
     return 1
   fi
   
@@ -601,35 +640,7 @@ removeTenants() {
       if [[ ! "$lineTenants" == "#"* ]]; then
         IFS="," read -r tenantName tenantAdmin tenantLocale <<< "${lineTenants}"
         tenantName=$(sed 's/ //g' <<<${tenantName})
-        if [[ ! -z "${tenantName}" ]]; then
-          _TID=$(rpa_get_active_tenant_id_by_name "${tenantName}")
-          if [[ ! -z "${_TID}" ]]; then
-            rpa_suspend_tenant "${_TID}"
-            rpa_delete_tenant "${_TID}"
-            log_info "Removed tenant '${_CLR_YELLOW}${tenantName}${_CLR_GREEN}' administered by '${_CLR_YELLOW}${tenantAdmin}${_CLR_GREEN}'"
-          else
-
-            rpa_list_suspended_tenants
-            _IDS=$(echo $_RPA_RESULT_SUSPENDED_TENANTS | jq '.results[]? | select(select(.name=="'${tenantName}'")) | .id ')
-            IFS=$'\n'
-            LIST_OF_TID=($(echo "${_IDS}" | sed 's/\r//g'))
-            for index in "${!LIST_OF_TID[@]}"; do
-              _tid=$(sed 's/"//g' <<<"${LIST_OF_TID[index]}")
-              rpa_delete_tenant "${_tid}"
-              log_info "Removed suspended tenant '${_CLR_YELLOW}${tenantName}${_CLR_GREEN}' '${_CLR_YELLOW}${_tid}${_CLR_GREEN}' administered by '${_CLR_YELLOW}${tenantAdmin}${_CLR_GREEN}'"
-            done      
-
-            #_TID=$(rpa_get_suspended_tenant_id_by_name "${tenantName}")
-            #if [[ ! -z "${_TID}" ]]; then
-            #  rpa_delete_tenant "${_TID}"
-            #  log_info "Removed tenant '${tenantName}' administered by '${tenantAdmin}'"
-            #else
-            #  log_error "Tenant '${tenantName}' not found"
-            #fi  
-          fi
-        else
-          log_error "Tenant name '${tenantName}' not valid"
-        fi
+        _removeTenant "${tenantName}"
       fi
     fi
   done
@@ -1690,6 +1701,13 @@ checkRequiredTools(){
 
 # export CP4BA_INST_NAMESPACE="cp4ba-rpa-34-managed-1"
 
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addtenants -f ../rpa-day2/tenants
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k removetenants -f ../rpa-day2/tenants
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k removetenants -t test1
+
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-1
 
 # ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin1 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-1
@@ -1698,16 +1716,11 @@ checkRequiredTools(){
 
 # ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin2 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-2
 
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addtenants -f ../rpa-day2/tenants
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k removetenants -f ../rpa-day2/tenants -f ../rpa-day2/tenants
-
-
 
 
 loginAsRpaAdmin
 log_info "User '${_CLR_YELLOW}${_USER_ADMIN_NAME}${_CLR_GREEN}', namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}'"
-log_info "Working on tenant name '${_CLR_YELLOW}${_TENANT_NAME}${_CLR_GREEN}', code '${_CLR_YELLOW}${_TENANT_CODE}${_CLR_GREEN}', id '${_CLR_YELLOW}${_TENANT_ID}${_CLR_GREEN}'"
+log_info "Administered tenant name '${_CLR_YELLOW}${_TENANT_NAME}${_CLR_GREEN}', code '${_CLR_YELLOW}${_TENANT_CODE}${_CLR_GREEN}', id '${_CLR_YELLOW}${_TENANT_ID}${_CLR_GREEN}'"
 
 case "${_CMD}" in
 

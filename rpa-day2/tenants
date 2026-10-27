@@ -1,7 +1,7 @@
 # Use pattern 'tenant-name, tenant-admin-name, locale-code'
 tenant-dev, rpatenantadmin1, 1033
 tenant-prod, rpatenantadmin2, 1040
-
+TENANT-A, rpaadmin, 1033
 
 
 # Common LCID Values (Decimal
