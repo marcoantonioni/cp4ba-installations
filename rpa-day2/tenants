@@ -2,6 +2,7 @@
 tenant-dev, rpatenantadmin1, 1033
 tenant-prod, rpatenantadmin2, 1040
 TENANT-A, rpaadmin, 1033
+TENANT-B, rpaadmin, 1033
 
 
 # Common LCID Values (Decimal

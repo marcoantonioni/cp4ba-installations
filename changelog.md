@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.12] - 2026-10-28
+
+### Added
+
+RPA day 2 automations, added Tenants and Users management tools (see Samples section in cp4ba-rpa-day2-automations.sh)
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.11] - 2026-10-23
 
 ### Added

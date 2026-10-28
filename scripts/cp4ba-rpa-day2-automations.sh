@@ -49,6 +49,14 @@ _RPA_RESULT_BOTS=""
 _RPA_LOCALE="${_RPA_LOCALE:-en-US}"
 _RPA_ACCOUNT_INFO=""
 
+_RPA_NEW_USER=""
+_RPA_NEW_TEAM=""
+_RPA_NEW_CREDENTIAL=""
+_RPA_NEW_COMPUTER_GROUP=""
+_RPA_NEW_CREDS_POOL=""
+_RPA_NEW_PROJECT=""
+_RPA_NEW_BOT=""
+
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
@@ -121,9 +129,6 @@ if [[ -z "${_CFG}" ]] || [[ -z "${_CMD}" ]]; then
   exit 1
 fi
 
-export CP4BA_LOGGING_ENABLED="true"
-export CP4BA_INST_RPA_NAMESPACE="${CP4BA_INST_RPA_NAMESPACE:-cp4ba}"
-
 
 #----------------------------------------------------
 _SCRIPT_PATH="${BASH_SOURCE}"
@@ -192,17 +197,19 @@ _rpa_check_response() {
   local http_code
   http_code=$(echo "$response" | jq -r '.statusCode // empty' 2>/dev/null || true)
   if [[ -n "$http_code" ]] && [[ "$http_code" -ge 400 ]]; then
-    echo "ERROR: API returned HTTP ${http_code}" >&2
-    echo "$response" | jq '.' 2>/dev/null || echo "$response" >&2
+    log_error "ERROR CODE: API returned HTTP ${http_code}"
+    _msg=$(echo "$response" | jq '.' 2>/dev/null || echo "$response" >&2)
+    log_error "ERROR MESSAGE: ${_msg}"
     return 1
   fi
   # Also catch IBM RPA "error" wrapper
   local err_msg
   err_msg=$(echo "$response" | jq -r '.errorMessage // empty' 2>/dev/null || true)
   if [[ -n "$err_msg" ]]; then
-    echo "API message: ${err_msg}" >&2
+    log_error "ERROR RPA MESSAGE: ${err_msg}"
+    return 1
   fi
-
+  return 0
 }
 
 # Assert that _RPA_ACCESS_TK is populated (call after loginAsRpaAdmin)
@@ -274,7 +281,7 @@ loginAsDeploymentAdmin () {
 
 #-------------------------------------------------------
 loginAsRpaAdmin () {
-
+  log_info "Logging in as '${_CLR_YELLOW}${_USER_ADMIN_NAME}${_CLR_GREEN}'"
   if [[ -z "${_USER_ADMIN_NAME}" ]] || [[ -z "${_USER_ADMIN_PWD}" ]]; then
     log_error "Missing admin user name or password"
     usage
@@ -533,7 +540,7 @@ removeUsers() {
         if [[ "${userName}" != "${_USER_ADMIN_NAME}" ]]; then
           if [[ ! -z "${userName}" ]]; then
             rpa_remove_user_from_tenant "${userName}"
-            log_info "User '${userName}' removed from tenant '${_TENANT_NAME}' / '${_TENANT_CODE}'"
+            log_info "User '${_CLR_YELLOW}${userName}${_CLR_GREEN}' removed from tenant '${_CLR_YELLOW}${_TENANT_NAME}' / '${_TENANT_CODE}${_CLR_GREEN}'"
           fi
         else
           log_warning "Skip user '${userName}', is tenant admin."
@@ -572,7 +579,9 @@ addTenants() {
           if [[ ! -z "${_USER_INFO}" ]]; then
             tenantAdminEmail=$(echo ${_USER_INFO} | jq .email | sed 's/"//g')
             rpa_create_tenant "${tenantName}" "${tenantAdmin}" "${tenantAdminEmail}" "${tenantLocale}"
-            log_info "Added tenant '${tenantName}' administered by '${tenantAdmin}'"
+            if [[ $? -eq 0 ]]; then
+              log_info "Added tenant '${_CLR_YELLOW}${tenantName}${_CLR_GREEN}' administered by '${_CLR_YELLOW}${tenantAdmin}${_CLR_GREEN}'"
+            fi
           else
             log_error "Tenant admin '${tenantAdmin}' not in users domains, skip tenant configuration."
           fi
@@ -709,7 +718,13 @@ rpa_list_users_to_import() {
   url="$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/user/import?offset=${offset}&limit=${limit}&asc=true&orderBy=DisplayName&search=${search}"
   _RPA_RESULT_USERS=$(curl -sk -H "Authorization: Bearer ${_RPA_ACCESS_TK}" -X GET "${url}")
 
-  _rpa_check_response "$_RPA_RESULT_USERS"  
+  _rpa_check_response "$_RPA_RESULT_USERS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_users_to_import"
+  return 1
+
 }
 
 #-----------------------------------------------------------------------------
@@ -725,6 +740,12 @@ rpa_list_tenant_users() {
   _RPA_RESULT_TENANT_USERS=$(curl -sk -H "Authorization: Bearer ${_RPA_ACCESS_TK}" -X GET "${url}")
 
   _rpa_check_response "$_RPA_RESULT_TENANT_USERS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_tenant_users"
+  return 1
+
 }
 
 
@@ -760,8 +781,14 @@ rpa_create_user() {
     -H "Accept: application/json" \
     -d "$payload")
 
+  _RPA_NEW_USER=""
   _rpa_check_response "$response"
-  echo "$response" | jq '{ id: .id, login: .login, email: .email, roles: [.roles[]? | .name] }'
+  if [[ $? -eq 0 ]]; then
+    _RPA_NEW_USER=$(echo "$response" | jq '{ id: .id, login: .login, email: .email, roles: [.roles[]? | .name] }')
+    return 0
+  fi
+  log_error "rpa_create_user"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -777,6 +804,12 @@ rpa_list_roles() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_ROLES"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_roles"
+  return 1
+
 }
 
 #-----------------------------------------------------------------------------
@@ -802,6 +835,11 @@ rpa_list_teams() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_TEAMS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_teams"
+  return 1
 
 }
 
@@ -828,16 +866,19 @@ rpa_create_team() {
     --arg desc "$description" \
     '{ name: $name, description: $desc }')
 
-  local response
-  response=$(curl -sk -X POST "$(_rpa_base_url)/team" \
+  _RPA_RESULT_TEAMS=$(curl -sk -X POST "$(_rpa_base_url)/team" \
     -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
     -d "$payload")
 
-  _RPA_RESULT_TEAMS="$response"
-  _rpa_check_response "$response"
-  echo "$response" | jq '{ id: .id, name: .name, description: .description }'
+  _rpa_check_response "$_RPA_RESULT_TEAMS"
+  if [[ $? -eq 0 ]]; then
+    _RPA_NEW_TEAM=$(echo "$_RPA_RESULT_TEAMS" | jq '{ id: .id, name: .name, description: .description }')
+    return 0
+  fi
+  log_error "rpa_create_team"
+  return 1  
 }
 
 #-----------------------------------------------------------------------------
@@ -859,6 +900,11 @@ rpa_add_user_to_team() {
     -d "$payload")
 
   _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_add_user_to_team"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -885,6 +931,11 @@ rpa_create_role() {
     -d "$payload")
 
   _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_create_role"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -900,6 +951,11 @@ rpa_list_active_tenants() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_TENANTS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_active_tenants"
+  return 1
 
 }
 
@@ -916,6 +972,11 @@ rpa_list_suspended_tenants() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_SUSPENDED_TENANTS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_suspended_tenants"
+  return 1
 
 }
 
@@ -962,6 +1023,11 @@ rpa_add_user_to_tenant() {
     -d "$payload")
 
   _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_add_user_to_tenant"
+  return 1
 
 }
 
@@ -974,6 +1040,11 @@ rpa_change_user_roles() {
   response=$(curl -sk -H "Authorization: Bearer ${_RPA_ACCESS_TK}" -H 'accept: application/json' -H 'Content-Type: application/json' \
             -X PATCH -d "${record}" "${_url}/user/$userId/roles")
   _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_change_user_roles"
+  return 1
 
 } 
 
@@ -999,12 +1070,18 @@ rpa_remove_user_from_tenant() {
         -d "$payload")
 
       _rpa_check_response "$response"
+      if [[ $? -eq 0 ]]; then
+        return 0
+      fi
+      log_error "rpa_remove_user_from_tenant"
+      return 1
     else
       log_error "User '${userName}' not found."
     fi
   else
     log_error "Username is empty."
   fi
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1013,6 +1090,11 @@ rpa_get_account_info() {
   _RPA_ACCOUNT_INFO=$(curl -sk -H "Authorization: Bearer ${_RPA_ACCESS_TK}" -X GET "${url}" | base64 -d)
 
   _rpa_check_response "$_RPA_ACCOUNT_INFO"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_get_account_info"
+  return 1
 
 }
 
@@ -1058,6 +1140,7 @@ rpa_create_tenant() {
   local admin_name="$2"
   local admin_email="$3"
   local tenant_locale="$4"
+  _RPA_RESULT_NEW_TENANT=""
   
   _rpa_require_token || return 1
 
@@ -1077,7 +1160,11 @@ rpa_create_tenant() {
     -d "$payload")
 
   _rpa_check_response "$response"
-  _RPA_RESULT_NEW_TENANT=$(echo "$response" | jq '{ id: .id}')
+  if [[ $? -eq 0 ]]; then
+    _RPA_RESULT_NEW_TENANT=$(echo "$response" | jq '{ id: .id}')
+    return 0
+  fi
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1092,6 +1179,11 @@ rpa_suspend_tenant() {
     -H "Accept: application/json")
 
   _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_suspend_tenant"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1106,6 +1198,11 @@ rpa_resume_tenant() {
     -H "Accept: application/json")
 
   _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_resume_tenant"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1120,6 +1217,11 @@ rpa_delete_tenant() {
     -H "Accept: application/json")
 
   _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_delete_tenant"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1135,6 +1237,11 @@ rpa_list_credentials() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_CREDENTIALS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_credentials"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1183,8 +1290,14 @@ rpa_create_credential() {
     -H "Accept: application/json" \
     -d "$payload")
 
+  _RPA_NEW_CREDENTIAL=""
   _rpa_check_response "$response"
-  echo "$response" | jq '{ id: .id, name: .name, type: .type }'
+  if [[ $? -eq 0 ]]; then
+    _RPA_NEW_CREDENTIAL=$(echo "$response" | jq '{ id: .id, name: .name, type: .type }')
+    return 0
+  fi
+  log_error "rpa_create_credential"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1201,6 +1314,11 @@ rpa_list_credential_pools() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_CREDENTIAL_POOLS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_credential_pools"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1244,8 +1362,14 @@ rpa_create_credential_pool() {
     -H "Accept: application/json" \
     -d "$payload")
 
+  _RPA_NEW_CREDS_POOL=""
   _rpa_check_response "$response"
-  echo "$response" | jq '{ id: .id, name: .name, description: .description }'
+  if [[ $? -eq 0 ]]; then
+    _RPA_NEW_CREDS_POOL=$(echo "$response" | jq '{ id: .id, name: .name, description: .description }')
+    return 0
+  fi
+  log_error "rpa_create_credential_pool"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1261,6 +1385,11 @@ rpa_list_computers() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_COMPUTERS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_computers"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1291,6 +1420,11 @@ rpa_list_computer_groups() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_COMPUTER_GROUPS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_computer_groups"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1326,8 +1460,15 @@ rpa_create_computer_group() {
     -H "Accept: application/json" \
     -d "$payload")
 
+  _RPA_NEW_COMPUTER_GROUP=""
   _rpa_check_response "$response"
-  echo "$response" | jq '{ id: .id, name: .name, description: .description }'
+  if [[ $? -eq 0 ]]; then
+    _RPA_NEW_COMPUTER_GROUP=$(echo "$response" | jq '{ id: .id, name: .name, description: .description }')
+    return 0
+  fi
+  log_error "rpa_create_computer_group"
+  return 1
+  
 }
 
 #-----------------------------------------------------------------------------
@@ -1355,12 +1496,11 @@ rpa_update_computer() {
     -d "$payload")
 
   _rpa_check_response "$response"
-  echo "$response" | jq '{
-    id:              .id,
-    name:            .name,
-    computerGroupId: .computerGroupId,
-    multiSession:    .multiSession
-  }'
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_update_computer"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1376,6 +1516,11 @@ rpa_list_projects() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_PROJECTS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_projects"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1421,8 +1566,15 @@ rpa_create_project() {
     -H "Accept: application/json" \
     -d "$payload")
 
+  _RPA_NEW_PROJECT=""
   _rpa_check_response "$response"
-  echo "$response" | jq '{ id: .id, name: .name, description: .description, teamId: .teamId }'
+  if [[ $? -eq 0 ]]; then
+    _RPA_NEW_PROJECT=$(echo "$response" | jq '{ id: .id, name: .name, description: .description, teamId: .teamId }')
+    return 0
+  fi
+  log_error "rpa_create_project"
+  return 1
+
 }
 
 #-----------------------------------------------------------------------------
@@ -1442,6 +1594,11 @@ rpa_list_bots() {
     -H "Accept: application/json")
 
   _rpa_check_response "$_RPA_RESULT_BOTS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_bots"
+  return 1
 }
 
 #-----------------------------------------------------------------------------
@@ -1493,15 +1650,22 @@ rpa_create_bot() {
     -H "Accept: application/json" \
     -d "$payload")
 
+  _RPA_NEW_BOT=""
   _rpa_check_response "$response"
-  echo "$response" | jq '{
-    id:              .id,
-    name:            .name,
-    description:     .description,
-    scriptId:        .scriptId,
-    scriptVersion:   .scriptVersion,
-    computerGroupId: .computerGroupId
-  }'
+  if [[ $? -eq 0 ]]; then
+    _RPA_NEW_BOT=$(echo "$response" | jq '{
+      id:              .id,
+      name:            .name,
+      description:     .description,
+      scriptId:        .scriptId,
+      scriptVersion:   .scriptVersion,
+      computerGroupId: .computerGroupId
+    }')
+    return 0
+  fi
+  log_error "rpa_create_bot"
+  return 1
+
 }
 
 #-----------------------------------------------------------------------------
@@ -1535,14 +1699,11 @@ rpa_update_bot() {
     -d "$payload")
 
   _rpa_check_response "$response"
-  echo "$response" | jq '{
-    id:              .id,
-    name:            .name,
-    description:     .description,
-    scriptId:        .scriptId,
-    scriptVersion:   .scriptVersion,
-    computerGroupId: .computerGroupId
-  }'
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_update_bot"
+  return 1
 }
 
 
@@ -1699,28 +1860,50 @@ checkRequiredTools(){
 
 # echo "Work in progress, do not use this script"
 
+
+#=====================================
+# Samples section
+#=====================================
+
 # export CP4BA_INST_NAMESPACE="cp4ba-rpa-34-managed-1"
+# export CP4BA_LOGGING_ENABLED="true"
 
-
+#-------------------------------------------
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addtenants -f ../rpa-day2/tenants
 
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k removetenants -f ../rpa-day2/tenants
 
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k removetenants -t test1
 
+
+#-------------------------------------------
+# Use -t to telect a specific tenant, otherwise the tool automatically select the first tenant in list of managed by the user
+
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-1
 
-# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin1 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-1
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-2 -t TENANT-A
 
-# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin1 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-1 -t tenant-prod
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-3 -t TENANT-B
 
-# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin2 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-2
+# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin1 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-2
+
+# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin1 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-2 -t tenant-dev
+
+# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin2 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-3
+
+# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin2 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-3 -t tenant-prod
+
+#-------------------------------------------
 
 
+
+log_info "======================================================="
+log_info "RPA Day2 tools"
+log_info "======================================================="
 
 loginAsRpaAdmin
 log_info "User '${_CLR_YELLOW}${_USER_ADMIN_NAME}${_CLR_GREEN}', namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}'"
-log_info "Administered tenant name '${_CLR_YELLOW}${_TENANT_NAME}${_CLR_GREEN}', code '${_CLR_YELLOW}${_TENANT_CODE}${_CLR_GREEN}', id '${_CLR_YELLOW}${_TENANT_ID}${_CLR_GREEN}'"
+log_info "Logged to tenant name '${_CLR_YELLOW}${_TENANT_NAME}${_CLR_GREEN}', code '${_CLR_YELLOW}${_TENANT_CODE}${_CLR_GREEN}', id '${_CLR_YELLOW}${_TENANT_ID}${_CLR_GREEN}'"
 
 case "${_CMD}" in
 
