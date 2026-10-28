@@ -5,7 +5,7 @@
 
 ### Added
 
-RPA day 2 automations, added Tenants and Users management tools (see Samples section in cp4ba-rpa-day2-automations.sh)
+RPA day 2 automations, added Tenants, Users, Credential, CredentialPool management tools (see Samples section in cp4ba-rpa-day2-automations.sh)
 
 ### Changed
 

@@ -7,6 +7,8 @@ _USER_ADMIN_PWD=""
 
 _USER_ROLES_FILENAME=""
 _TENANTS_FILENAME=""
+_CREDENTIALS_FILENAME=""
+_CREDENTIAL_POOLS_FILENAME=""
 
 _USER_IAM_TK=""
 _USER_ACCESS_TK=""
@@ -57,6 +59,8 @@ _RPA_NEW_CREDS_POOL=""
 _RPA_NEW_PROJECT=""
 _RPA_NEW_BOT=""
 
+_CREDS_NAME_ID=""
+
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
 _CLR_GREEN="\033[0;32m"   #'0;32' is Green's ANSI color code
@@ -100,23 +104,37 @@ usage () {
     -c full-path-to-config-file
        (eg: '../configs/env1.properties'){_CLR_NC}
     -r full-path-to-users-roles-file
-    -f fill-path-to-tenants-file
+    -f full-path-to-tenants-file
+    -g full-path-to-credentials-file
+    -h full-path-to-credential-pools-file
     -u admin-user-name
     -p password-user-name
     -s sys-login-use-cpadmin-via-ocp-secret
-    -k command [addtenants | removetenants | listtenants | addusers | removeusers]
+    -k command [addtenants | 
+                removetenants | 
+                listtenants | 
+                addusers | 
+                removeusers |
+                listcredentials | 
+                createcredential |
+                deletecredential |
+                listcredentialpools |
+                createcredentialpool |
+                deletecredentialpool]
     "
 }
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:r:t:f:u:p:k:s flag
+while getopts c:r:t:f:u:p:k:g:h:s flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
         k) _CMD=${OPTARG};;
         r) _USER_ROLES_FILENAME=${OPTARG};;
         f) _TENANTS_FILENAME=${OPTARG};;
+        g) _CREDENTIALS_FILENAME=${OPTARG};;
+        h) _CREDENTIAL_POOLS_FILENAME=${OPTARG};;
         t) _USE_TENANT_NAME=${OPTARG};;
         u) _USER_ADMIN_NAME=${OPTARG};;
         p) _USER_ADMIN_PWD=${OPTARG};;
@@ -686,11 +704,201 @@ userRoles () {
       -X GET "${_url}/user/"${_USER_ID}"/roles?all=true")
 }
 
-
 #-------------------------------------------------------
 rpaBotsList () {
   _url=$(_rpa_base_url "v2.0" "")
   _RPA_BOTS_LIST=$(curl -sk -H "Authorization: Bearer ${_RPA_ACCESS_TK}" -X GET "${_url}/workspace/${_WORKSPACE_ID}/bots")
+}
+
+#-------------------------------------------------------
+listCredentials() {
+  
+  rpa_list_credentials 0 50 ""
+  rpa_show_credentials
+  
+}
+
+#-------------------------------------------------------
+loadCredentialsFromFile () {
+  _FILE_CREDS="$1"
+  log_info "${_CLR_GREEN}Loading credentials from file '${_CLR_YELLOW}${_FILE_CREDS}${_CLR_GREEN}'${_CLR_NC}"
+
+  IFS=$'\n'
+  LIST_OF_CREDS=($(cat "${_FILE_CREDS}" | sed 's/\r//g'))
+  unset IFS
+}
+
+#---------------------------------------------------------------------------
+createCredential() {
+
+  if [[ -z "${_CREDENTIALS_FILENAME}" || ! -f "${_CREDENTIALS_FILENAME}" ]]; then
+    log_error "Credentials file not found."
+    return 1
+  fi
+
+  loadCredentialsFromFile "${_CREDENTIALS_FILENAME}"
+  
+  for indexCreds in "${!LIST_OF_CREDS[@]}"; do
+    lineCreds="${LIST_OF_CREDS[indexCreds]}"
+    if [[ ! -z "${lineCreds}" ]]; then
+      if [[ ! "$lineCreds" == "#"* ]]; then
+        IFS=":" read -r credName userAndPass <<< "${lineCreds}"
+        IFS="," read -r userName userPass <<< "${userAndPass}"
+
+        if [[ ! -z "$(echo ${credName} | sed 's/ //g')" ]]; then
+          rpa_create_credential "${credName}" "${userName}" "${userPass}"
+          if [[ $? -eq 0 ]]; then
+            log_info "Credential '${_CLR_YELLOW}${credName} / $(echo $_RPA_NEW_CREDENTIAL | jq .id | sed 's/"//g')${_CLR_GREEN}' created."
+          fi
+        else
+          log_warning "Empty credential name"
+        fi
+      fi
+    fi
+  done
+  unset IFS
+
+}
+
+#---------------------------------------------------------------------------
+deleteCredential() {
+
+  if [[ -z "${_CREDENTIALS_FILENAME}" || ! -f "${_CREDENTIALS_FILENAME}" ]]; then
+    log_error "Credentials file not found."
+    return 1
+  fi
+
+  loadCredentialsFromFile "${_CREDENTIALS_FILENAME}"
+
+  loadCredsNameId
+  
+  for indexCreds in "${!LIST_OF_CREDS[@]}"; do
+    lineCreds="${LIST_OF_CREDS[indexCreds]}"
+    if [[ ! -z "${lineCreds}" ]]; then
+      if [[ ! "$lineCreds" == "#"* ]]; then
+        IFS=":" read -r credName userAndPass <<< "${lineCreds}"
+        if [[ ! -z "$(echo ${credName} | sed 's/ //g')" ]]; then
+          rpa_delete_credential "${credName}"
+          if [[ $? -eq 0 ]]; then
+            log_info "Credential '${_CLR_YELLOW}${credName}${_CLR_GREEN}' deleted."
+          else
+            log_warning "Credential '${credName}' not found."
+          fi
+        else
+          log_warning "Empty credential name"
+        fi
+      fi
+    fi
+  done
+  unset IFS
+
+}
+
+#---------------------------------------------------------------------------
+listCredentialPools() {
+  rpa_list_credential_pools 0 50
+  echo $_RPA_RESULT_CREDENTIAL_POOLS | jq .
+}
+
+#---------------------------------------------------------------------------
+loadCredsNameId() {
+  _RPA_RESULT_CREDENTIALS=""
+  rpa_list_credentials 0 50 ""
+
+  _CREDS_NAME_ID=$(echo "$_RPA_RESULT_CREDENTIALS" | jq '{
+    creds: [.results[]? | {
+      id:   .id,
+      name: .name
+    }]
+  }')
+
+  # echo $_CREDS_NAME_ID | jq .
+}
+
+#-------------------------------------------------------
+loadCredentialPoolsFromFile () {
+  _FILE_CRED_POOLS="$1"
+  log_info "${_CLR_GREEN}Loading credential pools from file '${_CLR_YELLOW}${_FILE_CRED_POOLS}${_CLR_GREEN}'${_CLR_NC}"
+
+  IFS=$'\n'
+  LIST_OF_CRED_POOLS=($(cat "${_FILE_CRED_POOLS}" | sed 's/\r//g'))
+  unset IFS
+}
+
+
+#---------------------------------------------------------------------------
+createCredentialPool() {
+  local name="$1"
+  local creds="$2"
+
+  if [[ -z "${_CREDENTIAL_POOLS_FILENAME}" || ! -f "${_CREDENTIAL_POOLS_FILENAME}" ]]; then
+    log_error "Credential pools file not found."
+    return 1
+  fi
+
+  loadCredsNameId
+
+  loadCredentialPoolsFromFile "${_CREDENTIAL_POOLS_FILENAME}"
+
+  for indexCreds in "${!LIST_OF_CRED_POOLS[@]}"; do
+    lineCreds="${LIST_OF_CRED_POOLS[indexCreds]}"
+    if [[ ! -z "${lineCreds}" ]]; then
+      if [[ ! "$lineCreds" == "#"* ]]; then
+        IFS=":" read -r credName creds <<< "${lineCreds}"
+        
+        if [[ ! -z "$(echo ${credName} | sed 's/ //g')" ]]; then
+          rpa_create_credential_pool "${credName}" "${creds}"
+          if [[ $? -eq 0 ]]; then
+            log_info "Credential pool '${_CLR_YELLOW}${credName} / $(echo $_RPA_NEW_CREDS_POOL | jq .id | sed 's/"//g')${_CLR_GREEN}' created."
+          fi
+        else
+          log_warning "Empty credential pool name"
+        fi
+      fi
+    fi
+  done
+  unset IFS
+
+  return 0
+}
+
+#---------------------------------------------------------------------------
+deleteCredentialPool() {
+  local name="$1"
+  local creds="$2"
+
+  if [[ -z "${_CREDENTIAL_POOLS_FILENAME}" || ! -f "${_CREDENTIAL_POOLS_FILENAME}" ]]; then
+    log_error "Credential pools file not found."
+    return 1
+  fi
+
+  rpa_list_credential_pools 0 50
+
+  loadCredentialPoolsFromFile "${_CREDENTIAL_POOLS_FILENAME}"
+
+  for indexCreds in "${!LIST_OF_CRED_POOLS[@]}"; do
+    lineCreds="${LIST_OF_CRED_POOLS[indexCreds]}"
+    if [[ ! -z "${lineCreds}" ]]; then
+      if [[ ! "$lineCreds" == "#"* ]]; then
+        IFS=":" read -r credName creds <<< "${lineCreds}"
+        
+        if [[ ! -z "$(echo ${credName} | sed 's/ //g')" ]]; then
+          rpa_delete_credential_pool "${credName}"
+          if [[ $? -eq 0 ]]; then
+            _id=$(echo $_RPA_RESULT_CREDENTIAL_POOLS | jq '.results[] | select(.name=="'${credName}'")' | jq .id | sed 's/"//g')
+            log_info "Credential pool '${_CLR_YELLOW}${credName} / ${_id}${_CLR_GREEN}' deleted."
+          else
+            log_warning "Credential pool '${_CLR_YELLOW}${credName}' not found."
+          fi
+        else
+          log_warning "Empty credential pool name"
+        fi
+      fi
+    fi
+  done
+  unset IFS
+
+  return 0
 }
 
 #---------------------------------------------------------------------------
@@ -1228,11 +1436,12 @@ rpa_delete_tenant() {
 rpa_list_credentials() {
   local offset="${1:-0}"
   local limit="${2:-50}"
+  local search="${3:-}"
   
   _rpa_require_token || return 1
 
   _RPA_RESULT_CREDENTIALS=$(curl -sk -X GET \
-    "$(_rpa_base_url)/credential?offset=${offset}&limit=${limit}&asc=true&orderBy=name" \
+    "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}" )/credential?offset=${offset}&limit=${limit}&asc=true&orderBy=name&search=${search}" \
     -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
     -H "Accept: application/json")
 
@@ -1250,10 +1459,12 @@ rpa_show_credentials() {
   echo "$_RPA_RESULT_CREDENTIALS" | jq '{
     total:   .total,
     results: [.results[]? | {
-      id:          .id,
-      name:        .name,
-      description: .description,
-      type:        .type
+      id:                   .id,
+      name:                 .name,
+      description:          .description,
+      type:                 .type,
+      isDeactivated:        .isDeactivated,
+      credentialProviderId: .credentialProviderId
     }]
   }'
 }
@@ -1261,30 +1472,24 @@ rpa_show_credentials() {
 #-----------------------------------------------------------------------------
 rpa_create_credential() {
   local name="$1"
-  local description="$2"
-  local type="${3:-UserPassword}"
-  local login="$4"
-  local password="$5"
+  local userName="$2"
+  local password="$3"
   
   _rpa_require_token || return 1
 
   local payload
   payload=$(jq -n \
     --arg name  "$name" \
-    --arg desc  "$description" \
-    --arg type  "$type" \
-    --arg login "$login" \
+    --arg uname "$userName" \
     --arg pass  "$password" \
     '{
       name:        $name,
-      description: $desc,
-      type:        $type,
-      login:       $login,
+      userName:    $uname,
       password:    $pass
     }')
 
   local response
-  response=$(curl -sk -X POST "$(_rpa_base_url)/credential" \
+  response=$(curl -sk -X POST "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/credential" \
     -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
@@ -1293,10 +1498,34 @@ rpa_create_credential() {
   _RPA_NEW_CREDENTIAL=""
   _rpa_check_response "$response"
   if [[ $? -eq 0 ]]; then
-    _RPA_NEW_CREDENTIAL=$(echo "$response" | jq '{ id: .id, name: .name, type: .type }')
+    _RPA_NEW_CREDENTIAL=$(echo "$response" | jq '{ id: .id, name: .name}')
     return 0
   fi
   log_error "rpa_create_credential"
+  return 1
+}
+
+#-----------------------------------------------------------------------------
+rpa_delete_credential() {
+  local credName="$1"
+    
+  credId=$(getCredIdByName "${credName}")
+  if [[ -z "${credId}" ]]; then
+    return 1
+  fi
+
+  local response
+  response=$(curl -sk -X DELETE "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/credential/${credId}" \
+    -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
+    -H "Content-Type: application/json" \
+    -H "Accept: application/json" \
+    -d "$payload")
+
+  _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_delete_credential"
   return 1
 }
 
@@ -1306,10 +1535,9 @@ rpa_list_credential_pools() {
   local limit="${2:-50}"
   
   _rpa_require_token || return 1
-  # NOT SECURE CODE – endpoint path not confirmed in public docs
 
   _RPA_RESULT_CREDENTIAL_POOLS=$(curl -sk -X GET \
-    "$(_rpa_base_url)/credential/pool?offset=${offset}&limit=${limit}&asc=true&orderBy=name" \
+    "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/credential-pool?offset=${offset}&limit=${limit}&asc=true&orderBy=name" \
     -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
     -H "Accept: application/json")
 
@@ -1336,27 +1564,51 @@ rpa_show_credential_pools() {
 }
 
 #-----------------------------------------------------------------------------
+getCredIdByName() {
+  credName="$1"
+  echo ${_CREDS_NAME_ID} | jq '.creds[] | select(.name=="'${credName}'")' | jq .id | sed 's/"//g'
+}
+
+#-----------------------------------------------------------------------------
+getCredPoolIdByName() {
+  credName="$1"
+  echo ${_RPA_RESULT_CREDENTIAL_POOLS} | jq '.results[] | select(.name=="'${credName}'")' | jq .id | sed 's/"//g'
+}
+
+#-----------------------------------------------------------------------------
 rpa_create_credential_pool() {
   local name="$1"
-  local description="$2"
-  local credential_ids_json="${3:-[]}"
+  local credentials="${2:-}"
   
   _rpa_require_token || return 1
-  # NOT SECURE CODE – endpoint path not confirmed in public docs
+
+  IFS=',' read -r -a listOfCreds <<< "${credentials}"
+  items=""
+  _inserted=0
+  for index in "${!listOfCreds[@]}"; do
+    cred="${listOfCreds[index]}"
+    cred=$(sed 's/^[ \t]*//;s/[ \t]*$//' <<<${cred})
+    credId=$(getCredIdByName "${cred}")
+    #echo "  cred-> [$index] '${cred}' / '${credId}'"
+    if [[ ! -z "${credId}" ]]; then 
+      if [[ $_inserted -gt 0 ]]; then
+        items="${items},"
+      fi            
+      items="${items}\"${credId}\""
+      _inserted=1
+    else
+      log_error "Credential '${cred}' not found"
+    fi
+  done
 
   local payload
   payload=$(jq -n \
     --arg  name "$name" \
-    --arg  desc "$description" \
-    --argjson ids "$credential_ids_json" \
-    '{
-      name:          $name,
-      description:   $desc,
-      credentialIds: $ids
-    }')
+    --arg credentials "$credentials" \
+    '{name: $name, credentials:['$items']}')
 
   local response
-  response=$(curl -sk -X POST "$(_rpa_base_url)/credential/pool" \
+  response=$(curl -sk -X POST "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/credential-pool" \
     -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
@@ -1365,11 +1617,38 @@ rpa_create_credential_pool() {
   _RPA_NEW_CREDS_POOL=""
   _rpa_check_response "$response"
   if [[ $? -eq 0 ]]; then
-    _RPA_NEW_CREDS_POOL=$(echo "$response" | jq '{ id: .id, name: .name, description: .description }')
+    _RPA_NEW_CREDS_POOL=$(echo "$response" | jq '{ id: .id, name: .name}')
     return 0
   fi
   log_error "rpa_create_credential_pool"
   return 1
+}
+
+#-----------------------------------------------------------------------------
+rpa_delete_credential_pool() {
+  local name="$1"
+
+  _rpa_require_token || return 1
+
+  credPoolId=$(getCredPoolIdByName "${name}")
+  if [[ -z "${credPoolId}" ]]; then
+    return 1
+  fi
+
+  local response
+  response=$(curl -sk -X DELETE "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/credential-pool/${credPoolId}" \
+    -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
+    -H "Content-Type: application/json" \
+    -H "Accept: application/json" \
+    -d "$payload")
+
+  _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_delete_credential_pool"
+  return 1
+
 }
 
 #-----------------------------------------------------------------------------
@@ -1869,6 +2148,8 @@ checkRequiredTools(){
 # export CP4BA_LOGGING_ENABLED="true"
 
 #-------------------------------------------
+# Tenants samples
+
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addtenants -f ../rpa-day2/tenants
 
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k removetenants -f ../rpa-day2/tenants
@@ -1877,6 +2158,8 @@ checkRequiredTools(){
 
 
 #-------------------------------------------
+# Users samples
+
 # Use -t to telect a specific tenant, otherwise the tool automatically select the first tenant in list of managed by the user
 
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-1
@@ -1894,7 +2177,21 @@ checkRequiredTools(){
 # ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin2 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-3 -t tenant-prod
 
 #-------------------------------------------
+# Credential samples
 
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k listcredentials
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k listcredentials -t TENANT-A
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k createcredential -t TENANT-A -g ../rpa-day2/credentials-1
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k deletecredential -t TENANT-A -g ../rpa-day2/credentials-1
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k listcredentialpools -t TENANT-A
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k createcredentialpool -t TENANT-A -h ../rpa-day2/credential-pools-1
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k deletecredentialpool -t TENANT-A -h ../rpa-day2/credential-pools-1
 
 
 log_info "======================================================="
@@ -1925,6 +2222,30 @@ case "${_CMD}" in
 
   "listtenants")
     listTenants
+    ;;
+
+  "listcredentials")
+    listCredentials
+    ;;
+
+  "createcredential")
+    createCredential
+    ;;
+
+  "deletecredential")
+    deleteCredential
+    ;;
+
+  "listcredentialpools")
+    listCredentialPools
+    ;;
+
+  "createcredentialpool")
+    createCredentialPool
+    ;;
+
+  "deletecredentialpool")
+    deleteCredentialPool
     ;;
 
   *)
