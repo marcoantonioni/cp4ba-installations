@@ -1,6 +1,19 @@
 
 # Change Log
 
+## [1.7.13] - 2026-11-02
+
+### Added
+
+RPA day 2 automations, added Computer Groups management tools (see Samples section in cp4ba-rpa-day2-automations.sh)
+
+Added template for workflow-workstream Starter deployment
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.12] - 2026-10-28
 
 ### Added

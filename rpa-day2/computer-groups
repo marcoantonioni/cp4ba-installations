@@ -1,0 +1,6 @@
+# Use pattern 'computer-group-name :computer-name1,computer-name2,computer-name3'
+# blanks in name are not valid, eg: ' Computer One '
+
+MyCG1: RPA1
+MyCG2: RPA2
+MyCG3: RPA1,RPA2

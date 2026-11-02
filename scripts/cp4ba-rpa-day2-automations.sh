@@ -9,6 +9,7 @@ _USER_ROLES_FILENAME=""
 _TENANTS_FILENAME=""
 _CREDENTIALS_FILENAME=""
 _CREDENTIAL_POOLS_FILENAME=""
+_COMPUTER_GROUP_FILENAME=""
 
 _USER_IAM_TK=""
 _USER_ACCESS_TK=""
@@ -31,6 +32,7 @@ _RPA_BOTS_LIST="{}"
 
 LIST_OF_USERS=""
 LIST_OF_TENANTS=""
+LIST_OF_COMPUTER_GROUPS=""
 
 # ---------------------------------------------------------------------------
 # Global result variables (populated by each API function)
@@ -60,6 +62,7 @@ _RPA_NEW_PROJECT=""
 _RPA_NEW_BOT=""
 
 _CREDS_NAME_ID=""
+_COMPUTERS_NAME_ID=""
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -120,13 +123,16 @@ usage () {
                 deletecredential |
                 listcredentialpools |
                 createcredentialpool |
-                deletecredentialpool]
+                deletecredentialpool |
+                listcomputergroups |
+                createcomputergroup |
+                deletecomputergroup]
     "
 }
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:r:t:f:u:p:k:g:h:s flag
+while getopts c:r:t:f:u:p:k:g:h:i:s flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
@@ -135,6 +141,7 @@ do
         f) _TENANTS_FILENAME=${OPTARG};;
         g) _CREDENTIALS_FILENAME=${OPTARG};;
         h) _CREDENTIAL_POOLS_FILENAME=${OPTARG};;
+        i) _COMPUTER_GROUP_FILENAME=${OPTARG};;
         t) _USE_TENANT_NAME=${OPTARG};;
         u) _USER_ADMIN_NAME=${OPTARG};;
         p) _USER_ADMIN_PWD=${OPTARG};;
@@ -902,6 +909,57 @@ deleteCredentialPool() {
 }
 
 #---------------------------------------------------------------------------
+listComputerGroups() {
+  rpa_list_computer_groups 0 50 ""
+  rpa_show_computer_groups
+}
+
+loadComputerGroupsFromFile() {
+  _FILE_CG="$1"
+  log_info "${_CLR_GREEN}Loading computer groups from file '${_CLR_YELLOW}${_FILE_CG}${_CLR_GREEN}'${_CLR_NC}"
+
+  IFS=$'\n'
+  LIST_OF_COMPUTER_GROUPS=($(cat "${_FILE_CG}" | sed 's/\r//g'))
+  unset IFS
+}
+
+#---------------------------------------------------------------------------
+createComputerGroup() {
+
+  if [[ -z "${_COMPUTER_GROUP_FILENAME}" || ! -f "${_COMPUTER_GROUP_FILENAME}" ]]; then
+    log_error "Computer groups file not found."
+    return 1
+  fi
+
+  loadComputersNameId
+
+  loadComputerGroupsFromFile "${_COMPUTER_GROUP_FILENAME}"
+
+  for indexCG in "${!LIST_OF_COMPUTER_GROUPS[@]}"; do
+    lineCG="${LIST_OF_COMPUTER_GROUPS[indexCG]}"
+    lineCG=$(sed 's/^[ \t]*//;s/[ \t]*$//' <<<${lineCG})
+    if [[ ! -z "${lineCG}" ]]; then
+      if [[ ! "$lineCG" == "#"* ]]; then
+        IFS=":" read -r cgName compNames <<< "${lineCG}"
+        cgName=$(sed 's/ //g' <<<${cgName})
+        compNames=$(sed 's/ //g' <<<${compNames})
+
+        rpa_create_computer_group "${cgName}" "${compNames}"
+      fi
+    fi
+  done
+  unset IFS  
+
+}
+
+#---------------------------------------------------------------------------
+deleteComputerGroup() {
+  return 0
+}
+
+
+
+#---------------------------------------------------------------------------
 _rpa_base_url() {
   _VER="v2.0"
   if [[ ! -z "$1" ]]; then
@@ -1659,7 +1717,7 @@ rpa_list_computers() {
   _rpa_require_token || return 1
 
   _RPA_RESULT_COMPUTERS=$(curl -sk -X GET \
-    "$(_rpa_base_url)/computer?offset=${offset}&limit=${limit}&asc=true&orderBy=name" \
+    "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}" )/computer?offset=${offset}&limit=${limit}&asc=true&orderBy=name" \
     -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
     -H "Accept: application/json")
 
@@ -1669,85 +1727,6 @@ rpa_list_computers() {
   fi
   log_error "rpa_list_computers"
   return 1
-}
-
-#-----------------------------------------------------------------------------
-rpa_show_computers() {
-  
-  echo "$_RPA_RESULT_COMPUTERS" | jq '{
-    total:   .total,
-    results: [.results[]? | {
-      id:              .id,
-      name:            .name,
-      status:          .status,
-      computerGroupId: .computerGroupId,
-      multiSession:    .multiSession
-    }]
-  }'
-}
-
-#-----------------------------------------------------------------------------
-rpa_list_computer_groups() {
-  local offset="${1:-0}"
-  local limit="${2:-50}"
-  
-  _rpa_require_token || return 1
-
-  _RPA_RESULT_COMPUTER_GROUPS=$(curl -sk -X GET \
-    "$(_rpa_base_url)/computer/group?offset=${offset}&limit=${limit}&asc=true&orderBy=name" \
-    -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
-    -H "Accept: application/json")
-
-  _rpa_check_response "$_RPA_RESULT_COMPUTER_GROUPS"
-  if [[ $? -eq 0 ]]; then
-    return 0
-  fi
-  log_error "rpa_list_computer_groups"
-  return 1
-}
-
-#-----------------------------------------------------------------------------
-rpa_show_computer_groups() {
-  
-  echo "$_RPA_RESULT_COMPUTER_GROUPS" | jq '{
-    total:   .total,
-    results: [.results[]? | {
-      id:          .id,
-      name:        .name,
-      description: .description
-    }]
-  }'
-}
-
-#-----------------------------------------------------------------------------
-rpa_create_computer_group() {
-  local name="$1"
-  local description="${2:-}"
-  
-  _rpa_require_token || return 1
-
-  local payload
-  payload=$(jq -n \
-    --arg name "$name" \
-    --arg desc "$description" \
-    '{ name: $name, description: $desc }')
-
-  local response
-  response=$(curl -sk -X POST "$(_rpa_base_url)/computer/group" \
-    -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
-    -H "Content-Type: application/json" \
-    -H "Accept: application/json" \
-    -d "$payload")
-
-  _RPA_NEW_COMPUTER_GROUP=""
-  _rpa_check_response "$response"
-  if [[ $? -eq 0 ]]; then
-    _RPA_NEW_COMPUTER_GROUP=$(echo "$response" | jq '{ id: .id, name: .name, description: .description }')
-    return 0
-  fi
-  log_error "rpa_create_computer_group"
-  return 1
-  
 }
 
 #-----------------------------------------------------------------------------
@@ -1781,6 +1760,127 @@ rpa_update_computer() {
   log_error "rpa_update_computer"
   return 1
 }
+
+#-----------------------------------------------------------------------------
+rpa_show_computers() {
+  
+  echo "$_RPA_RESULT_COMPUTERS" | jq '{
+    total:   .total,
+    results: [.results[]? | {
+      id:              .id,
+      name:            .name,
+      status:          .status,
+      computerGroupId: .computerGroupId,
+      multiSession:    .multiSession
+    }]
+  }'
+}
+
+#-----------------------------------------------------------------------------
+rpa_list_computer_groups() {
+  local offset="${1:-0}"
+  local limit="${2:-50}"
+  local search="${3:-}"
+  
+  _rpa_require_token || return 1
+
+  _RPA_RESULT_COMPUTER_GROUPS=$(curl -sk -X GET \
+    "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/group?offset=${offset}&limit=${limit}&search=${search}&asc=true&orderBy=name&include=CreatedBy,Computers" \
+    -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
+    -H "Accept: application/json")
+
+  _rpa_check_response "$_RPA_RESULT_COMPUTER_GROUPS"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_list_computer_groups"
+  return 1
+}
+
+#-----------------------------------------------------------------------------
+rpa_show_computer_groups() {
+  
+  echo "$_RPA_RESULT_COMPUTER_GROUPS" | jq '{
+    total:   .total,
+    results: [.results[]? | {
+      id:          .id,
+      name:        .name,
+      description: .description
+    }]
+  }'
+}
+
+
+#---------------------------------------------------------------------------
+loadComputersNameId() {
+  _COMPUTERS_NAME_ID=""
+  rpa_list_computers 0 50 ""
+
+  _COMPUTERS_NAME_ID=$(echo "$_RPA_RESULT_COMPUTERS" | jq '{
+    computers: [.results[]? | {
+      id:   .id,
+      name: .name
+    }]
+  }')
+
+  # echo $_COMPUTERS_NAME_ID | jq .
+}
+
+getComputerIdByName() {
+  cmpName="$1"
+  echo ${_COMPUTERS_NAME_ID} | jq '.computers[] | select(.name=="'${cmpName}'")' | jq .id | sed 's/"//g'
+}
+
+#-----------------------------------------------------------------------------
+rpa_create_computer_group() {
+  local name="$1"
+  local computerNames="${2:-}"
+  
+  _rpa_require_token || return 1
+
+  IFS=',' read -r -a listOfNames <<< "${computerNames}"
+  items=""
+  _inserted=0
+  for index in "${!listOfNames[@]}"; do
+    computerName="${listOfNames[index]}"
+    computerName=$(sed 's/^[ \t]*//;s/[ \t]*$//' <<<${computerName})
+    cmpId=$(getComputerIdByName "${computerName}")
+    # echo "  computer-> [$index] '${computerName}' / '${cmpId}'"
+    if [[ ! -z "${cmpId}" ]]; then 
+      if [[ $_inserted -gt 0 ]]; then
+        items="${items},"
+      fi            
+      items="${items}\"${cmpId}\""
+      _inserted=1
+    else
+      log_error "Computer '${computerName}' not found"
+    fi
+  done
+
+  local payload
+  payload=$(jq -n \
+    --arg  name "$name" \
+    --arg computers "$" \
+    '{name: $name, computers:['$items']}')
+
+  local response
+  response=$(curl -sk -X POST "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/group" \
+    -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
+    -H "Content-Type: application/json" \
+    -H "Accept: application/json" \
+    -d "$payload")
+
+  _RPA_NEW_COMPUTER_GROUP=""
+  _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    _RPA_NEW_COMPUTER_GROUP=$(echo "$response" | jq '{ id: .id, name: .name }')
+    return 0
+  fi
+  log_error "rpa_create_computer_group"
+  return 1
+  
+}
+
 
 #-----------------------------------------------------------------------------
 rpa_list_projects() {
@@ -2193,6 +2293,9 @@ checkRequiredTools(){
 
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k deletecredentialpool -t TENANT-A -h ../rpa-day2/credential-pools-1
 
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k listcomputergroups
+
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k createcomputergroup -i ../rpa-day2/computer-groups
 
 log_info "======================================================="
 log_info "RPA Day2 tools"
@@ -2247,6 +2350,19 @@ case "${_CMD}" in
   "deletecredentialpool")
     deleteCredentialPool
     ;;
+
+  "listcomputergroups")
+    listComputerGroups
+    ;;
+
+  "createcomputergroup")
+    createComputerGroup
+    ;;
+
+  "deletecomputergroup")
+    deleteComputerGroup
+    ;;
+
 
   *)
     log_error "Command '${_CMD}' not found"
