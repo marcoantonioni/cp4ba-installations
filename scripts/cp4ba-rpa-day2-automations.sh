@@ -11,6 +11,7 @@ _CREDENTIALS_FILENAME=""
 _CREDENTIAL_POOLS_FILENAME=""
 _COMPUTER_GROUP_FILENAME=""
 _COMPUTERS_FILENAME=""
+_PROJECTS_FILENAME=""
 
 _USER_IAM_TK=""
 _USER_ACCESS_TK=""
@@ -34,6 +35,7 @@ _RPA_BOTS_LIST="{}"
 LIST_OF_USERS=""
 LIST_OF_TENANTS=""
 LIST_OF_COMPUTER_GROUPS=""
+LIST_OF_PROJECTS=""
 
 # ---------------------------------------------------------------------------
 # Global result variables (populated by each API function)
@@ -64,6 +66,8 @@ _RPA_NEW_BOT=""
 
 _CREDS_NAME_ID=""
 _COMPUTERS_NAME_ID=""
+_PROJECTS_NAME_ID=""
+_TEAMS_NAME_ID=""
 
 #--------------------------------------------------------
 _CLR_RED="\033[0;31m"   #'0;31' is Red's ANSI color code
@@ -130,13 +134,14 @@ usage () {
                 listcomputergroups |
                 createcomputergroup |
                 deletecomputergroup |
+                updatecomputergroups |
                 updatecomputers]
     "
 }
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:r:t:f:u:p:k:g:h:i:l:s flag
+while getopts c:r:t:f:u:p:k:g:h:i:l:m:s flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
@@ -147,6 +152,7 @@ do
         h) _CREDENTIAL_POOLS_FILENAME=${OPTARG};;
         i) _COMPUTER_GROUP_FILENAME=${OPTARG};;
         l) _COMPUTERS_FILENAME=${OPTARG};;
+        m) _PROJECTS_FILENAME=${OPTARG};;
         t) _USE_TENANT_NAME=${OPTARG};;
         u) _USER_ADMIN_NAME=${OPTARG};;
         p) _USER_ADMIN_PWD=${OPTARG};;
@@ -464,12 +470,21 @@ loadTenantsFromFile () {
 
 }
 
+#-------------------------------------------------------
+loadProjectsFromFile() {
+  _FILE_PROJECTS="$1"
+  log_info "${_CLR_GREEN}Loading projects from file '${_CLR_YELLOW}${_FILE_PROJECTS}${_CLR_GREEN}'${_CLR_NC}"
+
+  IFS=$'\n'
+  LIST_OF_PROJECTS=($(cat "${_FILE_PROJECTS}" | sed 's/\r//g'))
+
+}
 
 #-------------------------------------------------------
 onboardUsersAndConfigureRoles () {
   if [[ ! -z "${_USER_ROLES_FILENAME}" && ! -f "${_USER_ROLES_FILENAME}" ]]; then
     log_error "File users/roles not found."
-    retrun 1
+    return 1
   fi
   
   loadUsersRolesFromFile "${_USER_ROLES_FILENAME}"
@@ -547,7 +562,7 @@ onboardUsersAndConfigureRoles () {
     fi
   done
   unset IFS
-
+  return 0
 }
 
 #-------------------------------------------------------
@@ -555,7 +570,7 @@ removeUsers() {
 
   if [[ ! -z "${_USER_ROLES_FILENAME}" && ! -f "${_USER_ROLES_FILENAME}" ]]; then
     log_error "File users not found."
-    retrun 1
+    return 1
   fi
   
   loadUsersRolesFromFile "${_USER_ROLES_FILENAME}"
@@ -579,6 +594,7 @@ removeUsers() {
     fi
   done
   unset IFS
+  return 0
 
 }
 
@@ -622,6 +638,7 @@ addTenants() {
     fi
   done
   unset IFS  
+  return 0
 
 }
 
@@ -684,6 +701,7 @@ removeTenants() {
     fi
   done
   unset IFS  
+  return 0
 }
 
 #-------------------------------------------------------
@@ -769,6 +787,7 @@ createCredential() {
     fi
   done
   unset IFS
+  return 0
 
 }
 
@@ -803,6 +822,7 @@ deleteCredential() {
     fi
   done
   unset IFS
+  return 0
 
 }
 
@@ -840,8 +860,6 @@ loadCredentialPoolsFromFile () {
 
 #---------------------------------------------------------------------------
 createCredentialPool() {
-  local name="$1"
-  local creds="$2"
 
   if [[ -z "${_CREDENTIAL_POOLS_FILENAME}" || ! -f "${_CREDENTIAL_POOLS_FILENAME}" ]]; then
     log_error "Credential pools file not found."
@@ -870,7 +888,6 @@ createCredentialPool() {
     fi
   done
   unset IFS
-
   return 0
 }
 
@@ -909,8 +926,8 @@ deleteCredentialPool() {
     fi
   done
   unset IFS
-
   return 0
+
 }
 
 #---------------------------------------------------------------------------
@@ -954,6 +971,7 @@ createComputerGroup() {
     fi
   done
   unset IFS  
+  return 0
 
 }
 
@@ -982,16 +1000,111 @@ deleteComputerGroup() {
     fi
   done
   unset IFS  
+  return 0
 }
 
 #---------------------------------------------------------------------------
 updateComputers() {
   # _COMPUTERS_FILENAME
-
-  rpa_list_computer_groups
+  # rpa_list_computers
 
   return 0
 }
+
+#---------------------------------------------------------------------------
+updateComputerGroups() {
+  # _COMPUTER_GROUP_FILENAME
+  # rpa_list_computer_groups
+
+  return 0
+}
+
+
+#---------------------------------------------------------------------------
+listProjects() {
+  rpa_list_projects 0 100 ""
+  echo $_RPA_RESULT_PROJECTS | jq .results[].name | sed 's/"//g'
+}
+
+#---------------------------------------------------------------------------
+loadTeamsNameId() {
+
+  _TEAMS_NAME_ID=""
+  rpa_list_teams 0 50 ""
+
+  _TEAMS_NAME_ID=$(echo "$_RPA_RESULT_TEAMS" | jq '{
+    teams: [.results[]? | {
+      id:   .id,
+      name: .name
+    }]
+  }')
+
+  # echo $_TEAMS_NAME_ID | jq .
+}
+
+#---------------------------------------------------------------------------
+getTeamIdByName() {
+  teamName="$1"
+  echo ${_TEAMS_NAME_ID} | jq '.teams[] | select(.name=="'${teamName}'")' | jq .id | sed 's/"//g'
+}
+
+#---------------------------------------------------------------------------
+createProjects() {
+
+  if [[ -z "${_PROJECTS_FILENAME}" || ! -f "${_PROJECTS_FILENAME}" ]]; then
+    log_error "Projects file not found."
+    return 1
+  fi
+  
+  loadTeamsNameId
+
+  loadProjectsFromFile "${_PROJECTS_FILENAME}"
+
+  for indexProjs in "${!LIST_OF_PROJECTS[@]}"; do
+    lineProjs="${LIST_OF_PROJECTS[indexProjs]}"
+    if [[ ! -z "${lineProjs}" ]]; then      
+      if [[ ! "$lineProjs" == "#"* ]]; then
+        IFS=":" read -r prjName prjInfos <<< "${lineProjs}"
+        prjName=$(echo "${prjName}" | sed 's/^[ \t]*//;s/[ \t]*$//')
+        if [[ ! -z "${prjName}" ]]; then
+          prjInfos=$(echo "${prjInfos}" | sed 's/^[ \t]*//;s/[ \t]*$//')
+          IFS="," read -r prjDescription prjTeamsList <<< "${prjInfos}"
+          prjDescription=$(echo "${prjDescription}" | sed 's/^[ \t]*//;s/[ \t]*$//')
+          prjTeamsList=$(echo "${prjTeamsList}" | sed 's/^[ \t]*//;s/[ \t]*$//')
+          IFS="+" read -r -a prjTeamsNames <<< "${prjTeamsList}"
+          items=""
+          _inserted=0
+          for index in "${!prjTeamsNames[@]}"; do
+            team="${prjTeamsNames[index]}"
+            team=$(sed 's/^[ \t]*//;s/[ \t]*$//' <<<${team})
+            teamId=$(getTeamIdByName "${team}")
+            # echo "  team-> [$index] '${team}' / '${teamId}'"
+            if [[ ! -z "${teamId}" ]]; then 
+              if [[ $_inserted -gt 0 ]]; then
+                items="${items},"
+              fi            
+              items="${items}\"${teamId}\""
+              _inserted=1
+            else
+              log_error "Team '${team}' not found"
+            fi
+          done
+
+          log_info "Creating Project '${_CLR_YELLOW}${prjName}${_CLR_GREEN}'"
+          rpa_create_project "${prjName}" "${prjDescription}" "${items}"
+
+        else
+          log_warning "Empty project name"
+        fi
+      fi
+    fi
+  done
+  unset IFS  
+  return 0
+
+}
+
+
 
 #---------------------------------------------------------------------------
 _rpa_base_url() {
@@ -1125,12 +1238,12 @@ rpa_show_roles() {
 rpa_list_teams() {
   local offset="${1:-0}"
   local limit="${2:-50}"
-  
+  local search="${3:-}"
+
   _rpa_require_token || return 1
-  # NOT SECURE CODE – endpoint path not confirmed in public docs
 
   _RPA_RESULT_TEAMS=$(curl -sk -X GET \
-    "$(_rpa_base_url)/team?offset=${offset}&limit=${limit}&asc=true&orderBy=name" \
+    "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/team?offset=${offset}&limit=${limit}&asc=true&orderBy=name&include=Roles,Users,LdapGroups&ignoreSystemTeam=false&search=${search}" \
     -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
     -H "Accept: application/json")
 
@@ -1960,11 +2073,12 @@ rpa_delete_computer_group() {
 rpa_list_projects() {
   local offset="${1:-0}"
   local limit="${2:-50}"
+  local search="${3:-}"
   
   _rpa_require_token || return 1
 
   _RPA_RESULT_PROJECTS=$(curl -sk -X GET \
-    "$(_rpa_base_url)/project?offset=${offset}&limit=${limit}&asc=true&orderBy=name" \
+    "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/project?offset=${offset}&limit=${limit}&asc=true&orderBy=name&search=${search}" \
     -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
     -H "Accept: application/json")
 
@@ -1994,26 +2108,28 @@ rpa_show_projects() {
 rpa_create_project() {
   local name="$1"
   local description="$2"
-  local team_id="${3:-}"
-  
+  local teamIds="${3:-}"
+  local techname="$(echo "${name}" | sed 's/.*/\L&/' | sed 's/ /_/g')"
+
   _rpa_require_token || return 1
 
   local payload
-  if [[ -n "$team_id" ]]; then
-    payload=$(jq -n \
-      --arg name "$name" \
-      --arg desc "$description" \
-      --arg tid  "$team_id" \
-      '{ name: $name, description: $desc, teamId: $tid }')
+  if [[ -n "$teamIds" ]]; then
+    payload='{
+      "name": "'$name'",
+      "technicalName": "'$techname'",
+      "description": "'$description'",
+      "teams": ['$teamIds']
+    }'
   else
-    payload=$(jq -n \
-      --arg name "$name" \
-      --arg desc "$description" \
-      '{ name: $name, description: $desc }')
+    payload='{
+      "name": "'$name'",
+      "technicalName": "'$techname'",
+      "description": "'$description'"
+    }'
   fi
-
   local response
-  response=$(curl -sk -X POST "$(_rpa_base_url)/project" \
+  response=$(curl -sk -X POST "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/project" \
     -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
@@ -2022,7 +2138,7 @@ rpa_create_project() {
   _RPA_NEW_PROJECT=""
   _rpa_check_response "$response"
   if [[ $? -eq 0 ]]; then
-    _RPA_NEW_PROJECT=$(echo "$response" | jq '{ id: .id, name: .name, description: .description, teamId: .teamId }')
+    _RPA_NEW_PROJECT=$(echo "$response" | jq '{ id: .id, name: .name }')
     return 0
   fi
   log_error "rpa_create_project"
@@ -2373,6 +2489,8 @@ checkRequiredTools(){
 
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k deletecomputergroup -i ../rpa-day2/computer-groups
 
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k createprojects -m ../rpa-day2/projects
+
 log_info "======================================================="
 log_info "RPA Day2 tools"
 log_info "======================================================="
@@ -2380,6 +2498,7 @@ log_info "======================================================="
 loginAsRpaAdmin
 log_info "User '${_CLR_YELLOW}${_USER_ADMIN_NAME}${_CLR_GREEN}', namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}'"
 log_info "Logged to tenant name '${_CLR_YELLOW}${_TENANT_NAME}${_CLR_GREEN}', code '${_CLR_YELLOW}${_TENANT_CODE}${_CLR_GREEN}', id '${_CLR_YELLOW}${_TENANT_ID}${_CLR_GREEN}'"
+
 
 case "${_CMD}" in
 
@@ -2439,10 +2558,21 @@ case "${_CMD}" in
     deleteComputerGroup
     ;;
 
+  "updatecomputergroups")
+    updateComputerGroups
+    ;;
+
   "updatecomputers")
     updateComputers
     ;;
 
+  "listprojects")
+    listProjects
+    ;;
+
+  "createprojects")
+    createProjects
+    ;;
 
   *)
     log_error "Command '${_CMD}' not found"

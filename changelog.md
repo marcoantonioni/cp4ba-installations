@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.14] - 2026-11-03
+
+### Added
+
+RPA day 2 automations, added Projects management tools (see Samples section in cp4ba-rpa-day2-automations.sh)
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.13] - 2026-11-02
 
 ### Added

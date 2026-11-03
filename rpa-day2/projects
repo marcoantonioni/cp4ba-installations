@@ -1,0 +1,6 @@
+# Use pattern 'project-name : description, technical name, team one|team two'
+# blanks in name are valid, eg: ' Project One '
+
+MyPrj1: My project 1, Everyone
+MyPrj2: My project 2, Team Tenant Administrator
+MyPrj3: My project 3, Team Tenant Administrator+Team Platform Administrator
