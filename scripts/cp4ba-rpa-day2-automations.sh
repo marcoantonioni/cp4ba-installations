@@ -10,6 +10,7 @@ _TENANTS_FILENAME=""
 _CREDENTIALS_FILENAME=""
 _CREDENTIAL_POOLS_FILENAME=""
 _COMPUTER_GROUP_FILENAME=""
+_COMPUTERS_FILENAME=""
 
 _USER_IAM_TK=""
 _USER_ACCESS_TK=""
@@ -110,6 +111,8 @@ usage () {
     -f full-path-to-tenants-file
     -g full-path-to-credentials-file
     -h full-path-to-credential-pools-file
+    -i full-path-to-computer-groups-file
+    -l full-path-to-computers-file
     -u admin-user-name
     -p password-user-name
     -s sys-login-use-cpadmin-via-ocp-secret
@@ -126,13 +129,14 @@ usage () {
                 deletecredentialpool |
                 listcomputergroups |
                 createcomputergroup |
-                deletecomputergroup]
+                deletecomputergroup |
+                updatecomputers]
     "
 }
 
 #--------------------------------------------------------
 # read command line params
-while getopts c:r:t:f:u:p:k:g:h:i:s flag
+while getopts c:r:t:f:u:p:k:g:h:i:l:s flag
 do
     case "${flag}" in
         c) _CFG=${OPTARG};;
@@ -142,6 +146,7 @@ do
         g) _CREDENTIALS_FILENAME=${OPTARG};;
         h) _CREDENTIAL_POOLS_FILENAME=${OPTARG};;
         i) _COMPUTER_GROUP_FILENAME=${OPTARG};;
+        l) _COMPUTERS_FILENAME=${OPTARG};;
         t) _USE_TENANT_NAME=${OPTARG};;
         u) _USER_ADMIN_NAME=${OPTARG};;
         p) _USER_ADMIN_PWD=${OPTARG};;
@@ -943,7 +948,7 @@ createComputerGroup() {
         IFS=":" read -r cgName compNames <<< "${lineCG}"
         cgName=$(sed 's/ //g' <<<${cgName})
         compNames=$(sed 's/ //g' <<<${compNames})
-
+        log_info "Creating computer group '${_CLR_YELLOW}${cgName}${_CLR_GREEN}' with [${_CLR_YELLOW}${compNames}${_CLR_GREEN}]"
         rpa_create_computer_group "${cgName}" "${compNames}"
       fi
     fi
@@ -954,10 +959,39 @@ createComputerGroup() {
 
 #---------------------------------------------------------------------------
 deleteComputerGroup() {
-  return 0
+
+  if [[ -z "${_COMPUTER_GROUP_FILENAME}" || ! -f "${_COMPUTER_GROUP_FILENAME}" ]]; then
+    log_error "Computer groups file not found."
+    return 1
+  fi
+
+  rpa_list_computer_groups
+
+  loadComputerGroupsFromFile "${_COMPUTER_GROUP_FILENAME}"
+
+  for indexCG in "${!LIST_OF_COMPUTER_GROUPS[@]}"; do
+    lineCG="${LIST_OF_COMPUTER_GROUPS[indexCG]}"
+    lineCG=$(sed 's/^[ \t]*//;s/[ \t]*$//' <<<${lineCG})
+    if [[ ! -z "${lineCG}" ]]; then
+      if [[ ! "$lineCG" == "#"* ]]; then
+        IFS=":" read -r cgName compNames <<< "${lineCG}"
+        cgName=$(sed 's/ //g' <<<${cgName})
+        log_info "Deleting computer group '${_CLR_YELLOW}${cgName}${_CLR_GREEN}'"
+        rpa_delete_computer_group "${cgName}"
+      fi
+    fi
+  done
+  unset IFS  
 }
 
+#---------------------------------------------------------------------------
+updateComputers() {
+  # _COMPUTERS_FILENAME
 
+  rpa_list_computer_groups
+
+  return 0
+}
 
 #---------------------------------------------------------------------------
 _rpa_base_url() {
@@ -1737,6 +1771,15 @@ rpa_update_computer() {
   
   _rpa_require_token || return 1
 
+# PUT
+#	https://cpd-cp4ba-rpa-34-managed-1.apps.itz-rnvsfs.infra01-lb.fra02.techzone.ibm.com/rpa/api/v1.0/en-US/computer/631ea0ee-6cb4-4936-9a04-c2ed86dabd42  
+
+# computer enable multi session, credential group id (capacity = numero credenziali)
+# {"name":"RPA1","credentialId":"859f9158-2585-4e73-9de0-d0c734f447bb","vncPassword":null,"runtimePercentageForQueues":100,"standingByRuntimes":null,"capacity":2,"id":"631ea0ee-6cb4-4936-9a04-c2ed86dabd42"}
+
+# computer disable multi session, credential id (capacity = 1)
+# {"name":"RPA2","credentialId":"88d7f3ad-4a52-4e72-94c4-478f5a404158","vncPassword":null,"runtimePercentageForQueues":100,"standingByRuntimes":null,"capacity":1,"id":"99a5362d-7e30-4a05-bd34-9ce494ac1cb1"}
+
   local payload
   payload=$(jq -n \
     --arg  gid "$computer_group_id" \
@@ -1879,6 +1922,37 @@ rpa_create_computer_group() {
   log_error "rpa_create_computer_group"
   return 1
   
+}
+
+getComputerGroupIdByName() {
+  cmpGName="$1"
+  echo ${_RPA_RESULT_COMPUTER_GROUPS} | jq '.results[] | select(.name=="'${cmpGName}'")' | jq .id | sed 's/"//g'
+}
+
+
+#-----------------------------------------------------------------------------
+rpa_delete_computer_group() {
+  local cgName="${1:-}"
+  local grpId=$(getComputerGroupIdByName "${cgName}")
+  _rpa_require_token || return 1
+
+  if [[ -z "${grpId}" ]]; then
+    log_warning "Computer group '${cgName}' not found."
+    return 1
+  fi
+
+  local response
+  response=$(curl -sk -X DELETE "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/group/${grpId}" \
+    -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
+    -H "Accept: application/json")
+
+  _rpa_check_response "$response"
+  if [[ $? -eq 0 ]]; then
+    return 0
+  fi
+  log_error "rpa_delete_tenant"
+  return 1
+
 }
 
 
@@ -2297,6 +2371,8 @@ checkRequiredTools(){
 
 # ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k createcomputergroup -i ../rpa-day2/computer-groups
 
+# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k deletecomputergroup -i ../rpa-day2/computer-groups
+
 log_info "======================================================="
 log_info "RPA Day2 tools"
 log_info "======================================================="
@@ -2361,6 +2437,10 @@ case "${_CMD}" in
 
   "deletecomputergroup")
     deleteComputerGroup
+    ;;
+
+  "updatecomputers")
+    updateComputers
     ;;
 
 
