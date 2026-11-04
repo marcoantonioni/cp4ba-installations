@@ -135,7 +135,10 @@ usage () {
                 createcomputergroup |
                 deletecomputergroup |
                 updatecomputergroups |
-                updatecomputers]
+                updatecomputers |
+                listprojects |
+                createprojects |
+                deleteprojects]
     "
 }
 
@@ -1071,7 +1074,7 @@ createProjects() {
           IFS="," read -r prjDescription prjTeamsList <<< "${prjInfos}"
           prjDescription=$(echo "${prjDescription}" | sed 's/^[ \t]*//;s/[ \t]*$//')
           prjTeamsList=$(echo "${prjTeamsList}" | sed 's/^[ \t]*//;s/[ \t]*$//')
-          IFS="+" read -r -a prjTeamsNames <<< "${prjTeamsList}"
+          IFS="|" read -r -a prjTeamsNames <<< "${prjTeamsList}"
           items=""
           _inserted=0
           for index in "${!prjTeamsNames[@]}"; do
@@ -1104,7 +1107,39 @@ createProjects() {
 
 }
 
+#---------------------------------------------------------------------------
+deleteProjects() {
+  if [[ -z "${_PROJECTS_FILENAME}" || ! -f "${_PROJECTS_FILENAME}" ]]; then
+    log_error "Projects file not found."
+    return 1
+  fi
 
+  rpa_list_projects 0 100 ""
+  
+  loadProjectsFromFile "${_PROJECTS_FILENAME}"
+
+  for indexProjs in "${!LIST_OF_PROJECTS[@]}"; do
+    lineProjs="${LIST_OF_PROJECTS[indexProjs]}"
+    if [[ ! -z "${lineProjs}" ]]; then      
+      if [[ ! "$lineProjs" == "#"* ]]; then
+        IFS=":" read -r prjName prjInfos <<< "${lineProjs}"
+        prjName=$(echo "${prjName}" | sed 's/^[ \t]*//;s/[ \t]*$//')
+        if [[ ! -z "${prjName}" ]]; then
+          log_info "Deleting Project '${_CLR_YELLOW}${prjName}${_CLR_GREEN}'"
+          rpa_delete_project "${prjName}"
+          if [[ $? -gt 0 ]]; then
+            log_error "Cannot delete project '${prjName}'"
+          fi
+        else
+          log_warning "Empty project name"
+        fi
+      fi
+    fi
+  done
+  unset IFS  
+  return 0
+
+}
 
 #---------------------------------------------------------------------------
 _rpa_base_url() {
@@ -2146,6 +2181,37 @@ rpa_create_project() {
 
 }
 
+#---------------------------------------------------------------------------
+getProjectIdByName() {
+  prjName="$1"
+  echo ${_RPA_RESULT_PROJECTS} | jq '.results[] | select(.name=="'${prjName}'")' | jq .id | sed 's/"//g'
+}
+
+#-----------------------------------------------------------------------------
+rpa_delete_project() {
+  local name="$1"
+
+  _rpa_require_token || return 1
+
+  local projectId=$(getProjectIdByName "${name}")
+
+  if [[ ! -z "${projectId}" ]]; then
+    local response
+    response=$(curl -sk -X DELETE "$(_rpa_base_url "v1.0" "${_RPA_LOCALE}")/project/${projectId}" \
+      -H "Authorization: Bearer ${_RPA_ACCESS_TK}" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json")
+
+    _rpa_check_response "$response"
+    if [[ $? -eq 0 ]]; then
+      return 0
+    fi
+  fi
+  log_error "rpa_delete_project"
+  return 1
+
+}
+
 #-----------------------------------------------------------------------------
 rpa_list_bots() {
   local offset="${1:-0}"
@@ -2275,225 +2341,148 @@ rpa_update_bot() {
   return 1
 }
 
-
-#===================================================================
-# TESTS
-#===================================================================
-
-
-testTenantCreate () {
-  loginAsRpaAdmin
-
-  _name="TENANT-A"
-  _admin="rpatenantadmin1" 
-  _adminmail="rpatenantadmin1@vuxrpaprod.net"
-
-  rpa_list_active_tenants
-  rpa_show_active_tenants
-  
-  rpa_create_tenant "${_name}" "${_admin}" "${_adminmail}" "1033"
-  log_info "_RPA_RESULT_NEW_TENANT: $_RPA_RESULT_NEW_TENANT"
-  rpa_list_active_tenants
-  rpa_show_active_tenants
-
-}
-
-testTenantCreateDelete () {
-  loginAsRpaAdmin
-
-  _name="TENANT1"
-  _admin="rpatenantadmin1" 
-  _adminmail="rpatenantadmin1@vuxrpaprod.net"
-
-  rpa_list_active_tenants
-  rpa_show_active_tenants
-  
-  rpa_create_tenant "${_name}" "${_admin}" "${_adminmail}" "1033"
-  log_info "_RPA_RESULT_NEW_TENANT: $_RPA_RESULT_NEW_TENANT"
-  rpa_list_active_tenants
-  rpa_show_active_tenants
-
-  sleep 10
-  _TID=$(rpa_get_active_tenant_id_by_name "${_name}")
-  if [[ ! -z "${_TID}" ]]; then
-    rpa_suspend_tenant "${_TID}"
-    rpa_delete_tenant "${_TID}"
-  else
-    _TID=$(rpa_get_suspended_tenant_id_by_name "${_name}")
-    if [[ ! -z "${_TID}" ]]; then
-      rpa_delete_tenant "${_TID}"
-    else
-      log_error "Tenant '${_name}' not found"
-    fi  
-  fi
-
-  sleep 1
-  rpa_list_active_tenants
-  rpa_show_active_tenants
-
-}
-
-testTenantCreateSuspend () {
-  loginAsRpaAdmin
-
-  _name="TENANT1"
-  _admin="rpatenantadmin1" 
-  _adminmail="rpatenantadmin1@vuxrpaprod.net"
-
-  rpa_list_active_tenants
-  rpa_show_active_tenants
-  
-  rpa_create_tenant "${_name}" "${_admin}" "${_adminmail}" "1033"
-  log_info "_RPA_RESULT_NEW_TENANT: $_RPA_RESULT_NEW_TENANT"
-  rpa_list_active_tenants
-  rpa_show_active_tenants
-
-  sleep 10
-  _TID=$(rpa_get_active_tenant_id_by_name "${_name}")
-  if [[ ! -z "${_TID}" ]]; then
-    rpa_suspend_tenant "${_TID}"
-    sleep 1
-    rpa_list_suspended_tenants
-    rpa_show_suspended_tenants
-  fi
-
-}
-
-testTenantDelete () {
-  loginAsRpaAdmin
-
-  _name="TENANT1"
-
-  _TID=$(rpa_get_suspended_tenant_id_by_name "${_name}")
-  if [[ ! -z "${_TID}" ]]; then
-    rpa_delete_tenant "${_TID}"
-    sleep 1
-    rpa_list_suspended_tenants
-    rpa_show_suspended_tenants
-  fi
-
-}
-
-testLoginAsTenantAdminAndCreateUsers() {
-  _USER_ADMIN_NAME="rpatenantadmin1" 
-  #_USER_ADMIN_NAME="rpaadmin" 
-  _USER_ADMIN_PWD="dem0s"
-  # ="rpatenantadmin1@vuxrpaprod.net"
-  loginAsRpaAdmin
-
-  log_info "User:"
-  echo $_USER_DETAILS | jq .
-
-  rpa_get_account_info
-  echo "${_RPA_ACCOUNT_INFO}" | jq .  
-
-  rpa_list_active_tenants
-  rpa_show_active_tenants
-
-  rpa_list_tenant_users
-  echo "${_RPA_RESULT_TENANT_USERS}" | jq .
-
-  # rpa_list_users_to_import 0 100 "rpa"
-  # echo "${_RPA_RESULT_USERS}" | jq .
-
-  onboardUsersAndConfigureRoles
-
-}
-
-
-testLoginAsTenantAdminAndRemoveUsers() {
-  _USER_ADMIN_NAME="rpatenantadmin1" 
-  _USER_ADMIN_PWD="dem0s"
-  loginAsRpaAdmin
-  rpa_remove_user_from_tenant "rpauser11"
-}
-
 checkRequiredTools(){
   _rpa_require_jq
 }
 
 
-#=====================================
-# Test Tenant
-#=====================================
-# testTenantCreate
-# testTenantCreateDelete
-# testTenantCreateSuspend
-# testTenantDelete
+#===================================================================
+# TESTS use only to debug
+#===================================================================
 
-#=====================================
-# Test User
-#=====================================
-# testLoginAsTenantAdminAndCreateUsers
-# testLoginAsTenantAdminAndRemoveUsers
+## testTenantCreate () {
+##   loginAsRpaAdmin
+## 
+##   _name="TENANT-A"
+##   _admin="rpatenantadmin1" 
+##   _adminmail="rpatenantadmin1@vuxrpaprod.net"
+## 
+##   rpa_list_active_tenants
+##   rpa_show_active_tenants
+##   
+##   rpa_create_tenant "${_name}" "${_admin}" "${_adminmail}" "1033"
+##   log_info "_RPA_RESULT_NEW_TENANT: $_RPA_RESULT_NEW_TENANT"
+##   rpa_list_active_tenants
+##   rpa_show_active_tenants
+## 
+## }
+## 
+## testTenantCreateDelete () {
+##   loginAsRpaAdmin
+## 
+##   _name="TENANT1"
+##   _admin="rpatenantadmin1" 
+##   _adminmail="rpatenantadmin1@vuxrpaprod.net"
+## 
+##   rpa_list_active_tenants
+##   rpa_show_active_tenants
+##   
+##   rpa_create_tenant "${_name}" "${_admin}" "${_adminmail}" "1033"
+##   log_info "_RPA_RESULT_NEW_TENANT: $_RPA_RESULT_NEW_TENANT"
+##   rpa_list_active_tenants
+##   rpa_show_active_tenants
+## 
+##   sleep 10
+##   _TID=$(rpa_get_active_tenant_id_by_name "${_name}")
+##   if [[ ! -z "${_TID}" ]]; then
+##     rpa_suspend_tenant "${_TID}"
+##     rpa_delete_tenant "${_TID}"
+##   else
+##     _TID=$(rpa_get_suspended_tenant_id_by_name "${_name}")
+##     if [[ ! -z "${_TID}" ]]; then
+##       rpa_delete_tenant "${_TID}"
+##     else
+##       log_error "Tenant '${_name}' not found"
+##     fi  
+##   fi
+## 
+##   sleep 1
+##   rpa_list_active_tenants
+##   rpa_show_active_tenants
+## 
+## }
+## 
+## testTenantCreateSuspend () {
+##   loginAsRpaAdmin
+## 
+##   _name="TENANT1"
+##   _admin="rpatenantadmin1" 
+##   _adminmail="rpatenantadmin1@vuxrpaprod.net"
+## 
+##   rpa_list_active_tenants
+##   rpa_show_active_tenants
+##   
+##   rpa_create_tenant "${_name}" "${_admin}" "${_adminmail}" "1033"
+##   log_info "_RPA_RESULT_NEW_TENANT: $_RPA_RESULT_NEW_TENANT"
+##   rpa_list_active_tenants
+##   rpa_show_active_tenants
+## 
+##   sleep 10
+##   _TID=$(rpa_get_active_tenant_id_by_name "${_name}")
+##   if [[ ! -z "${_TID}" ]]; then
+##     rpa_suspend_tenant "${_TID}"
+##     sleep 1
+##     rpa_list_suspended_tenants
+##     rpa_show_suspended_tenants
+##   fi
+## 
+## }
+## 
+## testTenantDelete () {
+##   loginAsRpaAdmin
+## 
+##   _name="TENANT1"
+## 
+##   _TID=$(rpa_get_suspended_tenant_id_by_name "${_name}")
+##   if [[ ! -z "${_TID}" ]]; then
+##     rpa_delete_tenant "${_TID}"
+##     sleep 1
+##     rpa_list_suspended_tenants
+##     rpa_show_suspended_tenants
+##   fi
+## 
+## }
+## 
+## testLoginAsTenantAdminAndCreateUsers() {
+##   _USER_ADMIN_NAME="rpatenantadmin1" 
+##   #_USER_ADMIN_NAME="rpaadmin" 
+##   _USER_ADMIN_PWD="dem0s"
+##   # ="rpatenantadmin1@vuxrpaprod.net"
+##   loginAsRpaAdmin
+## 
+##   log_info "User:"
+##   echo $_USER_DETAILS | jq .
+## 
+##   rpa_get_account_info
+##   echo "${_RPA_ACCOUNT_INFO}" | jq .  
+## 
+##   rpa_list_active_tenants
+##   rpa_show_active_tenants
+## 
+##   rpa_list_tenant_users
+##   echo "${_RPA_RESULT_TENANT_USERS}" | jq .
+## 
+##   # rpa_list_users_to_import 0 100 "rpa"
+##   # echo "${_RPA_RESULT_USERS}" | jq .
+## 
+##   onboardUsersAndConfigureRoles
+## 
+## }
+## 
+## 
+## testLoginAsTenantAdminAndRemoveUsers() {
+##   _USER_ADMIN_NAME="rpatenantadmin1" 
+##   _USER_ADMIN_PWD="dem0s"
+##   loginAsRpaAdmin
+##   rpa_remove_user_from_tenant "rpauser11"
+## }
 
-# echo "Work in progress, do not use this script"
 
-
-#=====================================
-# Samples section
-#=====================================
-
-# export CP4BA_INST_NAMESPACE="cp4ba-rpa-34-managed-1"
-# export CP4BA_LOGGING_ENABLED="true"
-
-#-------------------------------------------
-# Tenants samples
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addtenants -f ../rpa-day2/tenants
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k removetenants -f ../rpa-day2/tenants
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k removetenants -t test1
-
-
-#-------------------------------------------
-# Users samples
-
-# Use -t to telect a specific tenant, otherwise the tool automatically select the first tenant in list of managed by the user
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-1
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-2 -t TENANT-A
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-3 -t TENANT-B
-
-# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin1 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-2
-
-# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin1 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-2 -t tenant-dev
-
-# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin2 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-3
-
-# ./cp4ba-rpa-day2-automations.sh -u rpatenantadmin2 -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k addusers -r ../rpa-day2/user-roles-tenant-3 -t tenant-prod
-
-#-------------------------------------------
-# Credential samples
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k listcredentials
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k listcredentials -t TENANT-A
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k createcredential -t TENANT-A -g ../rpa-day2/credentials-1
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k deletecredential -t TENANT-A -g ../rpa-day2/credentials-1
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k listcredentialpools -t TENANT-A
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k createcredentialpool -t TENANT-A -h ../rpa-day2/credential-pools-1
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k deletecredentialpool -t TENANT-A -h ../rpa-day2/credential-pools-1
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k listcomputergroups
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k createcomputergroup -i ../rpa-day2/computer-groups
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k deletecomputergroup -i ../rpa-day2/computer-groups
-
-# ./cp4ba-rpa-day2-automations.sh -u rpaadmin -p dem0s -c ../configs26/env1-runtime-rpa-managed.properties -k createprojects -m ../rpa-day2/projects
 
 log_info "======================================================="
 log_info "RPA Day2 tools"
 log_info "======================================================="
+checkRequiredTools
 
 loginAsRpaAdmin
 log_info "User '${_CLR_YELLOW}${_USER_ADMIN_NAME}${_CLR_GREEN}', namespace '${_CLR_YELLOW}${CP4BA_INST_RPA_NAMESPACE}${_CLR_GREEN}'"
@@ -2572,6 +2561,10 @@ case "${_CMD}" in
 
   "createprojects")
     createProjects
+    ;;
+
+  "deleteprojects")
+    deleteProjects
     ;;
 
   *)

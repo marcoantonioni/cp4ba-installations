@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.15] - 2026-11-04
+
+### Added
+
+RPA day 2 automations samples descriptions in README-RPA.md
+
+### Changed
+
+### Fixed
+
+
 ## [1.7.14] - 2026-11-03
 
 ### Added
