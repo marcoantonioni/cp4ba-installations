@@ -1036,12 +1036,6 @@ onboardUsers () {
 }
 
 #-----------------------------------------
-
-onboardRpaUsers () {
-  log_warning "onboardRpaUsers: not yet implemented"
-}
-
-#-----------------------------------------
 installRpa () {
 
   checkConfiguration
@@ -1075,7 +1069,6 @@ installRpa () {
   if [[ ${_RPA_WAIT_ONLY} -eq 0 ]]; then
     createIdp
     onboardUsers
-    onboardRpaUsers
   fi
 
   if [[ ${_RPA_INST_COMPLETED} -eq 1 ]]; then
