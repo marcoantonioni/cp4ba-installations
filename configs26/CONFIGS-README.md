@@ -20,6 +20,14 @@ _KK=26.0.0-IF001
 _VV=26.0.2
 _KK=26.0.0-IF002
 
+#### IF003
+_VV=26.0.3
+_KK=26.0.0-IF003
+
+#### IF004
+_VV=26.0.4
+_KK=26.0.0-IF004
+
 #### Base version overridding template values
 export CP4BA_BASE_VER="${CP4BA_BASE_VER:-26.0.0}"
 export CP4BA_INST_APPVER="${CP4BA_BASE_VER}"
