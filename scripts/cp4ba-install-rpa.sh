@@ -1057,9 +1057,6 @@ installRpa () {
 
   checkRpaManagedMode
 
-updateZenServiceCertificate
-exit
-
   if [[ ${_RPA_WAIT_ONLY} -eq 0 ]]; then
     namespaceExist "ibm-licensing"
     if [ $? -eq 0 ]; then
