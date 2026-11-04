@@ -1035,6 +1035,21 @@ onboardUsers () {
   fi
 }
 
+#-------------------------------
+updateZenServiceCertificate () {
+  _ZENCONFIGURED=0
+  if [[ "${CP4BA_INST_ZS_CONFIGURE}" = "true" ]]; then
+    ${CP4BA_INST_UTILS_TOOLS_FOLDER}/cp4ba-tls-update-ep.sh -x -n ${CP4BA_INST_NAMESPACE} -z ${CP4BA_INST_ZS_NAME} -s ${CP4BA_INST_ZS_TARGET_SECRET} -f ${CP4BA_INST_ZS_SOURCE_SECRET} -k ${CP4BA_INST_ZS_SOURCE_NAMESPACE}
+    if [[ $? -ne 0 ]]; then
+      log_warning "${_CLR_YELLOW}[✗] Warning, ZenService not updated with certificate ${CP4BA_INST_ZS_SOURCE_SECRET}.${_CLR_NC}"
+    else
+      _ZENCONFIGURED=1
+    fi
+  fi
+  return $_ZENCONFIGURED
+}
+
+
 #-----------------------------------------
 installRpa () {
 
@@ -1067,6 +1082,7 @@ installRpa () {
   waitRpaResources
 
   if [[ ${_RPA_WAIT_ONLY} -eq 0 ]]; then
+    updateZenServiceCertificate
     createIdp
     onboardUsers
   fi
