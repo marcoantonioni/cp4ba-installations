@@ -182,11 +182,15 @@ CONFIG_FILE=${_PTC}/env1-authoring-odm-bai.properties
 
 ```bash
 
+export CP4BA_INST_GENAI_ENABLED="true"
+export CP4BA_INST_GENAI_WX_APIKEY="...."
+export CP4BA_INST_GENAI_WX_PRJ_ID="...."
+
 export CP4BA_INST_ADS_GENAI_APIKEY="..."
 export CP4BA_INST_ADS_GENAI_PRJ_ID="..."
 
-_VV=26.0.1
-_KK=26.0.0-IF001
+_VV=26.0.4
+_KK=26.0.0-IF004
 _PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
 CONFIG_FILE=${_PTC}/env1-authoring-baw-bai-ae-ads.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}

@@ -726,7 +726,7 @@ EOF
     --from-literal=sslKeystorePassword="averymuchlongpasswordtobecompliantwithfips" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
-    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+    #log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
 
   _SECRET_NAME="${CP4BA_INST_ADS_SECRET_DESIGNER}"
@@ -737,7 +737,7 @@ EOF
     --from-literal=sslKeystorePassword="averymuchlongpasswordtobecompliantwithfips" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
     _ERROR=1
-    log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
+    #log_error "${_CLR_RED}Secret ${_SECRET_NAME} NOT created (verify 'username/password' for secret) !!!${_CLR_NC}"
   fi
 
 }

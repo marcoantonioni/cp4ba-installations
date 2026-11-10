@@ -1,6 +1,16 @@
 
 # Change Log
 
+## [1.7.16] - 2026-11-10
+
+### Added
+
+### Changed
+
+### Fixed
+
+GenAI project id generation in secret XML payload.
+
 ## [1.7.15] - 2026-11-04
 
 ### Added
