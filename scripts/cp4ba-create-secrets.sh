@@ -682,18 +682,21 @@ cat <<EOF > ${_ADS_GENAI_TMP}
   "type": "${CP4BA_INST_ADS_GENAI_TYPE}",
   "description": "${CP4BA_INST_ADS_GENAI_DESC}",
   "updateTime": 0,
-  "version": "${CP4BA_INST_ADS_GENAI_VERSION}",
   "authInfo": {
     "authType": "${CP4BA_INST_ADS_GENAI_AUTH_TYPE}",
     "apiKey": "${CP4BA_INST_ADS_GENAI_APIKEY}",
-    "authUrl": "${CP4BA_INST_ADS_GENAI_AUTH_URL}",
-    "providerAdditionalInfo": {
-        "providerType": "${CP4BA_INST_ADS_GENAI_PROVIDER_TYPE}",
-        "mlUrl": "${CP4BA_INST_ADS_GENAI_ML_URL}",
-        "projectId": "${CP4BA_INST_ADS_GENAI_PRJ_ID}"
-    }  
+    "authUrl": "${CP4BA_INST_ADS_GENAI_AUTH_URL}"
+  },
+  "providerAdditionalInfo": {
+      "providerType": "${CP4BA_INST_ADS_GENAI_PROVIDER_TYPE}",
+      "mlUrl": "${CP4BA_INST_ADS_GENAI_ML_URL}",
+      "projectId": "${CP4BA_INST_ADS_GENAI_PRJ_ID}"
+  },
+  "version": "${CP4BA_INST_ADS_GENAI_VERSION}"
 }
 EOF
+
+# cat ${_ADS_GENAI_TMP} | jq .
 
   # v26 
   _SECRET_NAME="ads-genai-secret"
