@@ -142,6 +142,10 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw-pfs-genai.properties
 
 ```bash
 
+export CP4BA_INST_GENAI_ENABLED="true"
+export CP4BA_INST_GENAI_WX_APIKEY="...."
+export CP4BA_INST_GENAI_WX_PRJ_ID="...."
+
 export CP4BA_INST_ADS_GENAI_APIKEY="..."
 export CP4BA_INST_ADS_GENAI_PRJ_ID="..."
 
@@ -153,6 +157,10 @@ CONFIG_FILE=${_PTC}/env1-authoring-ads.properties
 ```
 
 ```bash
+
+export CP4BA_INST_GENAI_ENABLED="true"
+export CP4BA_INST_GENAI_WX_APIKEY="...."
+export CP4BA_INST_GENAI_WX_PRJ_ID="...."
 
 export CP4BA_INST_ADS_GENAI_APIKEY="..."
 export CP4BA_INST_ADS_GENAI_PRJ_ID="..."
@@ -239,6 +247,10 @@ CONFIG_FILE=${_PTC}/env1-runtime-wfps-pfs.properties
 
 ```bash
 
+export CP4BA_INST_GENAI_ENABLED="true"
+export CP4BA_INST_GENAI_WX_APIKEY="...."
+export CP4BA_INST_GENAI_WX_PRJ_ID="...."
+
 export CP4BA_INST_ADS_GENAI_APIKEY="..."
 export CP4BA_INST_ADS_GENAI_PRJ_ID="..."
 
@@ -250,6 +262,10 @@ CONFIG_FILE=${_PTC}/env1-runtime-ads.properties
 ```
 
 ```bash
+
+export CP4BA_INST_GENAI_ENABLED="true"
+export CP4BA_INST_GENAI_WX_APIKEY="...."
+export CP4BA_INST_GENAI_WX_PRJ_ID="...."
 
 export CP4BA_INST_ADS_GENAI_APIKEY="..."
 export CP4BA_INST_ADS_GENAI_PRJ_ID="..."

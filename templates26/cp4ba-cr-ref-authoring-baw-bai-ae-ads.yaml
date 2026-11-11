@@ -20,6 +20,9 @@
 ## patterns: foundation,baw_authoring
 ##
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-workflow-authoring
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-decision-designer
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-decision-runtime
+## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-shared-by-decision-designer-decision-runtime
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=foundation-application-engine
 ## https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=scp-shared-configuration
 ###############################################################################
@@ -676,6 +679,12 @@ spec:
       rolling_update:
         max_unavailable: ${CP4BA_INST_ADS_RUNTIME_ROLLING_MAX_UNAVAILABLE}
         max_surge: ${CP4BA_INST_ADS_RUNTIME_ROLLING_MAX_SURGE}
+
+    # 20261111
+    parsing_service:
+      resources:
+        limits:
+          ephemeral_storage: 1Gi
 
   # IBM Business Automation Workflow Authoring configuration
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-studio

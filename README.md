@@ -687,7 +687,7 @@ The self signed certificates will be used in step 3.
 Set in your .properties file the following variables
 ```
 export CP4BA_INST_DB_SSL_CERTIFICATE_CREATE_FOR_EXTERNAL="true"
-export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="/tmp/cp4ba-pg-tls-certs"
+export CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER="${CP4BA_INST_DB_SSL_CERTIFICATE_FOLDER:-/tmp/cp4ba-pg-tls-certs}"
 ```
 
 Create certificates

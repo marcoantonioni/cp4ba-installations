@@ -285,13 +285,17 @@ spec:
         max_unavailable: ${CP4BA_INST_ADS_RUNTIME_ROLLING_MAX_UNAVAILABLE}
         max_surge: ${CP4BA_INST_ADS_RUNTIME_ROLLING_MAX_SURGE}
 
+    # 20261111
+    parsing_service:
+      resources:
+        limits:
+          ephemeral_storage: 1Gi
 
     # rr_integration:
     # rest_api:
     # credentials_service:
     # git_service:
     # run_service:
-    # parsing_service:
 
   # IBM Business Automation Workflow Authoring configuration
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-studio

@@ -113,6 +113,12 @@ spec:
     decision_runtime:
       enabled: true
 
+    # 20261111
+    parsing_service:
+      resources:
+        limits:
+          ephemeral_storage: 1Gi
+
   bastudio_configuration:
     kafka_services:
       enabled: true

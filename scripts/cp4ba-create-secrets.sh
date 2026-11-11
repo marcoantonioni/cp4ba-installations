@@ -722,6 +722,7 @@ EOF
     --from-literal=decisionRuntimeMonitorPassword="${CP4BA_INST_ADS_SECRETS_DRS_MON_PASS}" \
     --from-literal=deploymentSpaceManagerUsername="${CP4BA_INST_ADS_SECRETS_DEPL_MGR_USER}" \
     --from-literal=deploymentSpaceManagerPassword="${CP4BA_INST_ADS_SECRETS_DEPL_MGR_PASS}" \
+    --from-literal=mlConfig="" \
     --from-literal=encryptionKeys="{\"activeKey\":\"key1\",\"secretKeyList\":[{\"secretKeyId\":\"key1\",\"value\":\"123344566745435\"},{\"secretKeyId\":\"key2\",\"value\":\"987766544365675\"}]}" \
     --from-literal=sslKeystorePassword="averymuchlongpasswordtobecompliantwithfips" 2> /dev/null 1> /dev/null
   if [[ $? -gt 0 ]]; then
