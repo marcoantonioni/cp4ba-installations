@@ -522,6 +522,7 @@ spec:
   # Business Automation Workflow Authoring
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/25.0.1?topic=parameters-business-automation-workflow-authoring
   workflow_authoring_configuration:
+    jvm_customize_options: '-Dcom.ibm.json4j.max.string.length=120000000,-Dorg.apache.cxf.attachment-max-size=-1'
 
     ## The configurations for content integration for attachment in process
     content_integration:

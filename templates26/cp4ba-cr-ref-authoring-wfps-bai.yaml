@@ -228,6 +228,8 @@ spec:
   # Business Automation Workflow Authoring
   # https://www.ibm.com/docs/en/cloud-paks/cp-biz-automation/26.0.0?topic=parameters-business-automation-workflow-authoring
   workflow_authoring_configuration:
+    jvm_customize_options: '-Dcom.ibm.json4j.max.string.length=120000000,-Dorg.apache.cxf.attachment-max-size=-1'
+
     ## storage configuration
     storage:
       use_dynamic_provisioning: ${CP4BA_INST_BAW_STORAGE_DYNAMIC_PROVISIONING}

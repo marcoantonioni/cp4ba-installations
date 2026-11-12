@@ -1,6 +1,17 @@
 
 # Change Log
 
+## [1.7.18] - 2026-11-12
+
+### Added
+
+### Changed
+
+Size tuning for 'workflow_authoring_configuration.jvm_customize_options' for size attachment (HTTP 413 importing large project/solution)
+
+### Fixed
+
+
 ## [1.7.17] - 2026-11-11
 
 ### Added
