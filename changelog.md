@@ -1,6 +1,18 @@
 
 # Change Log
 
+## [1.7.19] - 2026-11-17
+
+### Added
+
+- Optional AddOns added to TOS object store in yaml templates
+- CP4BA_INST_GENAI_WX_RUNTIME_AGENT_WATSONX_MODEL_ID (LLM name, eg: openai/gpt-oss-120b )
+- CP4BA_INST_GENAI_WX_AUTHORING_AGENT_WATSONX_MODEL_ID (LLM name, eg: openai/gpt-oss-120b )
+
+### Changed
+
+### Fixed
+
 ## [1.7.18] - 2026-11-12
 
 ### Added
