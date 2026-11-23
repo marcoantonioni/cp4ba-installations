@@ -635,6 +635,14 @@ postInstallationSteps () {
     #   fi
     # fi
 
+    # Configure custom OpenSearch cluster
+    if [[ "${CP4BA_INST_OPENSEARCH_CUSTOM_INSTALL}" = "true" ]]; then
+      $_SCRIPT_DIR/../../cp4ba-opensearch/scripts/cp4ba-opensearch-setup-cluster.sh -c ${_CFG} -k install
+      if [[ $? -ne 0 ]]; then
+        log_error "${_CLR_RED}[✗] Error, custom opensearch cluster not configured.${_CLR_NC}"
+        exit 1
+      fi
+    fi
 
     # Configure BAIWorkforce
     if [[ "${CP4BA_INST_BAI_BPC_WORKFORCE}" = "true" ]]; then

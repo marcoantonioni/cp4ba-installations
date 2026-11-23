@@ -2,7 +2,7 @@
 
 Utilities for IBM Cloud Pak® for Business Automation
 
-<i>Last update: 2026-11-17</i> (see changelog.md for details)
+<i>Last update: 2026-11-23</i> (see changelog.md for details)
 
 As of June 26 2026, the 'main' branch contains artifacts compatible with v26.
 
@@ -313,6 +313,9 @@ git clone https://github.com/marcoantonioni/cp4ba-logger.git
 
 # mandatory only if PFS in configuration
 git clone https://github.com/marcoantonioni/cp4ba-process-federation-server.git
+
+# mandatory only for OpenSearch custom cluster configuration (IBM Content Assistant scenario)
+git clone https://github.com/marcoantonioni/cp4ba-opensearch.git
 
 # for Workflow Process Service installation (not automated using 'cp4ba-installations')
 git clone https://github.com/marcoantonioni/cp4ba-wfps.git

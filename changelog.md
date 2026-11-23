@@ -1,6 +1,16 @@
 
 # Change Log
 
+## [1.7.20] - 2026-11-23
+
+### Added
+
+- Custom OpenSearch cluster installation
+
+### Changed
+
+### Fixed
+
 ## [1.7.19] - 2026-11-17
 
 ### Added
