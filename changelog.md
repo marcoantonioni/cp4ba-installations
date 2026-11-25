@@ -1,6 +1,16 @@
 
 # Change Log
 
+## [1.7.21] - 2026-11-25
+
+### Added
+
+- Content Assistant [work in progress]
+
+### Changed
+
+### Fixed
+
 ## [1.7.20] - 2026-11-23
 
 ### Added

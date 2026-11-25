@@ -316,6 +316,7 @@ git clone https://github.com/marcoantonioni/cp4ba-process-federation-server.git
 
 # mandatory only for OpenSearch custom cluster configuration (IBM Content Assistant scenario)
 git clone https://github.com/marcoantonioni/cp4ba-opensearch.git
+git clone https://github.com/marcoantonioni/cp4ba-content-assistant
 
 # for Workflow Process Service installation (not automated using 'cp4ba-installations')
 git clone https://github.com/marcoantonioni/cp4ba-wfps.git
