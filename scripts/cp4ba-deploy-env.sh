@@ -639,7 +639,16 @@ postInstallationSteps () {
     if [[ "${CP4BA_INST_OPENSEARCH_CUSTOM_INSTALL}" = "true" ]]; then
       $_SCRIPT_DIR/../../cp4ba-opensearch/scripts/cp4ba-opensearch-setup-cluster.sh -c ${_CFG} -k install
       if [[ $? -ne 0 ]]; then
-        log_error "${_CLR_RED}[✗] Error, custom opensearch cluster not configured.${_CLR_NC}"
+        log_error "${_CLR_RED}[✗] Error, custom OpenSearch cluster not configured.${_CLR_NC}"
+        exit 1
+      fi
+    fi
+
+    # Configure Content Assistant cluster (requires custom OpenSearch cluster)
+    if [[ "${CP4BA_INST_CACMS_INSTALL}" = "true" && "${CP4BA_INST_OPENSEARCH_CUSTOM_INSTALL}" = "true" ]]; then
+      $_SCRIPT_DIR/../../cp4ba-content-assistant/scripts/cp4ba-content-assistant.sh -c ${_CFG} -k install
+      if [[ $? -ne 0 ]]; then
+        log_error "${_CLR_RED}[✗] Error, Content Assistant cluster not configured.${_CLR_NC}"
         exit 1
       fi
     fi

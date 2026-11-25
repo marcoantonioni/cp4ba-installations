@@ -53,6 +53,19 @@ CONFIG_FILE=${_PTC}/env1-authoring-baw.properties
 ./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
 ```
 
+last test: 20261125
+```bash
+
+export CP4BA_INST_CACMS_AIPROVIDER_API_KEY="..."
+export CP4BA_INST_CACMS_AIPROVIDER_SPACE_ID="..."
+
+_VV=26.0.4
+_KK=26.0.0-IF004
+_PTC=/home/$USER/cp4ba-projects/cp4ba-installations/configs26
+CONFIG_FILE=${_PTC}/env1-authoring-baw-cacms.properties
+./cp4ba-one-shot-installation.sh -c ${CONFIG_FILE} -m -v ${_VV} -k ${_KK}
+```
+
 last test: 20260806
 ```bash
 _VV=26.0.2
