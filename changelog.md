@@ -11,6 +11,9 @@
 
 ### Fixed
 
+Wrong definition of variables CP4BA_INST_GENAI_WX_RUNTIME_AGENT_WATSONX_MODEL_ID and CP4BA_INST_GENAI_WX_AUTHORING_AGENT_WATSONX_MODEL_ID in .properties
+
+
 ## [1.7.20] - 2026-11-23
 
 ### Added
